@@ -1,0 +1,50 @@
+id: movies-alt
+title: Movies (grading instance)
+description: A second, invented instance with the same schema. Answers are checked against it too, so a query that only works by coincidence on the lecture data is marked wrong.
+hidden: true
+alternateOf: [movies-v1, movies-outer, movies-v2]
+tables:
+  - name: Movies
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: title }
+      - { name: director }
+      - { name: year, type: int }
+      - { name: length, type: int }
+    rows:
+      - [10, Night Harbor, Kubrick, 1979, 117]
+      - [11, Glass Orchard, Lucas, 1970, 140]
+      - [12, Paper Moonrise, Polaski, 1984, 101]
+      - [13, Salt Road, Kubrick, 1968, 149]
+      - [14, Quiet Engine, Altman, 1975, 146]
+  - name: Artists
+    columns:
+      - { name: aID, type: int, pk: true }
+      - { name: aName }
+      - { name: nationality }
+    rows:
+      - [11, Okafor, British]
+      - [12, Lindqvist, Swedish]
+      - [13, "O'Neill", American]
+      - [14, Mehta, Indian]
+      - [15, Brandt, American]
+      - [16, Moreau, French]
+  - name: Roles
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: aID, type: int, pk: true }
+      - { name: character }
+    foreignKeys:
+      - { columns: [mID], references: { table: Movies, columns: [mID] } }
+      - { columns: [aID], references: { table: Artists, columns: [aID] } }
+    rows:
+      - [10, 13, Captain Reyes]
+      - [10, 11, Dr. Hale]
+      - [11, 12, Ida]
+      - [11, 13, Marsh]
+      - [12, 13, Tom Bell]
+      - [13, 13, The Warden]
+      - [13, 14, Ravi]
+      - [13, 15, Rosa]
+      - [14, 13, Joe Lark]
+      - [14, 11, Mr. Pym]

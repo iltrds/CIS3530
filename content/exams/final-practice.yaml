@@ -1,0 +1,12 @@
+id: final-practice
+title: Final exam practice
+description: Cumulative over every published week. Timed, with results at the end.
+kind: exam
+covers: released
+timeLimitMin: 120
+feedback: end
+slots:
+  - { name: Concepts, types: [mcq, multi, true_false, numeric, short], count: 14 }
+  - { name: Keys, constraints and schemas, types: [matching, blanks, select_attributes], count: 3 }
+  - { name: Relational algebra, types: [ra, predict_table], count: 5 }
+  - { name: SQL, types: [sql], count: 5 }

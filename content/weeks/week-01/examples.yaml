@@ -1,0 +1,124 @@
+- id: w1-ex-degree-cardinality
+  title: Degree and cardinality of S
+  topics: [rm.terminology]
+  dataset: supplier-parts-w1
+  question: What are the degree and cardinality of relation S in the Week 1 instance?
+  steps:
+    - title: Look at the instance
+      body: "The schema is S(sno, sname, status, city)."
+      ra: S
+    - title: Count the columns for the degree
+      body: "Four attributes: sno, sname, status, city. **Degree = 4.**"
+      showResult: false
+    - title: Count the rows for the cardinality
+      body: "Six tuples, S1 to S6. **Cardinality = 6.** HARRY's null status and city don't change the count: a tuple with nulls is still a tuple."
+      showResult: false
+  pitfalls:
+    - "Degree counts columns, cardinality counts rows. Swapping them is the classic mistake."
+
+- id: w1-ex-keys-sp
+  title: Finding the keys of SP
+  topics: [keys.superkey, keys.candidate, keys.primary]
+  dataset: supplier-parts-w1
+  question: Which sets of attributes of SP(sno, pno, qty) are superkeys, and which is the candidate key?
+  steps:
+    - title: Test single attributes
+      body: "sno repeats (S5 supplies five parts) and pno repeats (P3 is supplied by S2, S3 and S5), so neither alone is unique. qty repeats too (200 appears several times)."
+      ra: SP
+    - title: Test pairs
+      body: "{sno, pno} is unique: a supplier appears with each part at most once. {sno, qty} fails (S5 has qty 200 twice) and so does {pno, qty}."
+      showResult: false
+    - title: Superkeys
+      body: "Every set containing {sno, pno} is a superkey: {sno, pno} and {sno, pno, qty}."
+      showResult: false
+    - title: Candidate and primary key
+      body: "{sno, pno} is minimal: removing either attribute loses uniqueness. So it is the only candidate key, and it is the primary key."
+      showResult: false
+  pitfalls:
+    - "Checking uniqueness on the current instance only proves a set is *not* a key when you find duplicates. In practice keys come from the meaning of the data, which is why schemas mark them."
+
+- id: w1-ex-foreign-keys
+  title: Primary and foreign keys in S–P–SP
+  topics: [keys.primary, keys.foreign, rm.schema-reading]
+  dataset: supplier-parts-w1
+  question: Identify the primary keys of S, P and SP, and the foreign keys in SP.
+  steps:
+    - title: Primary keys
+      body: "S: **sno**. P: **pno**. SP: the composite **(sno, pno)**."
+      showResult: false
+    - title: Foreign keys
+      body: "SP.sno references S.sno and SP.pno references P.pno. Each sno in SP is a supplier in S; each pno is a part in P."
+      showResult: false
+    - title: Why these FKs can't be null
+      body: "sno and pno are also part of SP's own primary key, so entity integrity forbids nulls in them. That is the one case where a foreign key can't be null by definition."
+      showResult: false
+
+- id: w1-ex-integrity-university
+  title: Which constraint does each operation break?
+  topics: [integrity.entity, integrity.referential, keys.foreign]
+  dataset: university
+  question: "Using the university instance (course's primary key is (courseCode, dno)), decide what each operation would violate."
+  steps:
+    - title: The instance
+      body: "Two departments, 60 and 61. Lab 4 is a section of course (2500, 60)."
+      ra: dept
+    - title: "Insert ⟨61, Chemistry, RH⟩ into dept"
+      body: "dno 61 already exists: **primary key violation** (duplicate key value)."
+      showResult: false
+    - title: "Insert ⟨2500, Databases II, 3, core, 62⟩ into course"
+      body: "(2500, 62) is a new key, fine. But dno 62 is not in dept: **referential integrity violation**."
+      showResult: false
+    - title: "Insert ⟨null, Statistics, 3, core, 60⟩ into course"
+      body: "courseCode is part of the primary key and can't be null: **entity integrity violation**."
+      showResult: false
+    - title: "Delete dept 61"
+      body: "Courses 1400, 2500 and 3100, and prof JL and NS still reference dno 61: **referential integrity violation** (unless the DBMS is told to cascade)."
+      showResult: false
+    - title: "Set prof NS's dno to null"
+      body: "prof.dno is a foreign key but not part of prof's primary key, so null is allowed: **no violation**."
+      showResult: false
+    - title: "Delete lab 8"
+      body: "Nothing references lab 8 except labasst row (103, 12, 8), so this breaks referential integrity *in this instance*. Without that labasst row, it would be fine."
+      showResult: false
+  pitfalls:
+    - "Deleting from a *child* never breaks referential integrity for that child's own FKs. Deleting from a *parent* can."
+    - "A foreign key can be null; a primary key attribute can't."
+
+- id: w1-ex-is-it-a-relation
+  title: Is it a relation?
+  topics: [rm.relations-math]
+  question: "Let A₁ = {p, q, r, s}, A₂ = {1, 2, 3}, A₃ = {100, 200}. Which of these are relations on A₁, A₂, A₃?"
+  steps:
+    - title: "r = {⟨q, 2, 100⟩, ⟨s, 3, 200⟩, ⟨p, 1, 200⟩}"
+      body: "Every tuple has three values, the first from A₁, second from A₂, third from A₃. It's a subset of A₁ × A₂ × A₃: **a relation**."
+      showResult: false
+    - title: "r₁ = {⟨p, q, 1, 100⟩, ⟨s, t, 3, 200⟩}"
+      body: "These tuples have four values, and t isn't in A₁ at all. **Not a relation** on these three domains."
+      showResult: false
+    - title: "r₂ = {⟨p, 1, 100⟩, ⟨p, 1, 100⟩}"
+      body: "As a set it's just {⟨p, 1, 100⟩}, a relation with cardinality 1. Sets can't hold the same tuple twice."
+      showResult: false
+    - title: "r₃ = {}"
+      body: "The empty set is a subset of any set, so it's a relation with cardinality 0."
+      showResult: false
+
+- id: w1-ex-reading-schema
+  title: Reading the university schema
+  topics: [rm.schema-reading, keys.primary, keys.foreign]
+  dataset: university
+  question: "What does the university schema say about courses, labs, departments and professors?"
+  steps:
+    - title: "course(courseCode, …, dno), key (courseCode, dno)"
+      body: "The *pair* must be unique, so the same courseCode may exist in two departments (2500 is in both CIS and Physics). Within one department a code appears once."
+      ra: σ courseCode = 2500 (course)
+    - title: "lab(labId, courseCode, dno, …)"
+      body: "Each lab row references one course, and nothing stops several labs referencing the same course: a course can have **many** lab sections. Nothing forces a course to have a lab either (4540 has none)."
+      showResult: false
+    - title: "prof(profId, …, dno, …)"
+      body: "prof.dno references dept. It isn't part of prof's key, so it may be null: a prof can exist without a department (TK)."
+      showResult: false
+    - title: "dept(dno, dname, profId)"
+      body: "dept.profId references prof: each department records **one** prof (e.g. its chair). Several profs can still *belong* to a department through prof.dno."
+      showResult: false
+  pitfalls:
+    - "\"A department can have several professors\" is true through prof.dno, even though dept itself stores only one profId."

@@ -1,0 +1,43 @@
+id: movies-v2
+title: Movies (division instance)
+description: The trimmed instance from Week 2/3 used to demonstrate division. Only four movies, and Nicholson appears in all of them.
+source: Week 3 Part I slides
+tables:
+  - name: Movies
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: title }
+      - { name: director }
+      - { name: year, type: int }
+      - { name: length, type: int }
+    rows:
+      - [1, Shining, Kubrick, 1980, 146]
+      - [3, Chinatown, Polaski, 1974, 131]
+      - [5, Star Wars IV, Lucas, 1977, 126]
+      - [6, American Graffiti, Lucas, 1973, 110]
+  - name: Artists
+    columns:
+      - { name: aID, type: int, pk: true }
+      - { name: aName }
+      - { name: nationality }
+    rows:
+      - [1, Nicholson, American]
+      - [2, Ford, American]
+      - [3, Stone, British]
+      - [4, Fisher, American]
+      - [5, Bachchan, Indian]
+  - name: Roles
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: aID, type: int, pk: true }
+      - { name: character }
+    foreignKeys:
+      - { columns: [mID], references: { table: Movies, columns: [mID] } }
+      - { columns: [aID], references: { table: Artists, columns: [aID] } }
+    rows:
+      - [1, 1, Jack Torrance]
+      - [3, 1, "Jake 'J.J.' Gittes"]
+      - [1, 3, Delbert Grady]
+      - [5, 1, Han Solo]
+      - [6, 1, Bob Falfa]
+      - [5, 4, Princess Leia Organa]

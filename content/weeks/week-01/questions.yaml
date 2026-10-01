@@ -1,0 +1,486 @@
+# Week 1 question bank. Quiz-style items copy the format of the in-class quizzes
+# (negated stems, "All/None of the given choices", matching, True/False fill-ins).
+
+- id: w1-q-not-true-relation
+  type: mcq
+  topics: [rm.properties]
+  difficulty: 1
+  tags: [negated-stem, quiz-style]
+  prompt: Which of the following is **not true** about a relation?
+  options:
+    - Each cell holds exactly one atomic value.
+    - The order of the tuples has no significance.
+    - Two attributes of the same relation may share a name.
+    - No two tuples are identical.
+    - None of the given choices
+  answer: 2
+  explanation: Attribute names must be distinct within a relation. The other three statements are properties of every relation.
+
+- id: w1-q-not-true-relation-2
+  type: mcq
+  topics: [rm.properties]
+  difficulty: 1
+  tags: [negated-stem, quiz-style]
+  prompt: Which of the following is **not true** about a relation?
+  options:
+    - A relation is a set of tuples.
+    - The order of attributes has no significance.
+    - All values of an attribute come from the same domain.
+    - A cell may hold a list of values if they share a domain.
+    - None of the given choices
+  answer: 3
+  explanation: Every cell holds a single atomic value. A list in one cell breaks that property no matter what the domain is.
+
+- id: w1-q-synonym-attribute
+  type: mcq
+  topics: [rm.terminology]
+  difficulty: 1
+  tags: [terminology, quiz-style, trap, quiz-miss]
+  prompt: Which of the following terms means the same as "attribute" in a relation?
+  options:
+    - Row
+    - Column
+    - Table
+    - Tuple
+    - None of the given choices
+  answer: 1
+  explanation: An attribute is a column. A tuple is a row, and a relation is a table.
+
+- id: w1-q-synonym-relation
+  type: mcq
+  topics: [rm.terminology]
+  difficulty: 1
+  tags: [terminology, quiz-style]
+  prompt: Which of the following terms means the same as "relation"?
+  options:
+    - Field
+    - Record
+    - Table
+    - Domain
+    - None of the given choices
+  answer: 2
+  explanation: A relation is a table. A record is a row (tuple), a field is a column (attribute), and a domain is the set of allowed values for an attribute.
+
+- id: w1-q-synonym-cardinality
+  type: mcq
+  topics: [rm.terminology]
+  difficulty: 1
+  tags: [terminology, quiz-style]
+  prompt: The number of tuples in a relation is called its…
+  options:
+    - degree
+    - arity
+    - cardinality
+    - domain
+    - None of the given choices
+  answer: 2
+  explanation: Cardinality counts tuples (rows). Degree, also called arity, counts attributes (columns).
+
+- id: w1-q-degree-s
+  type: numeric
+  topics: [rm.terminology]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: What is the **degree** of relation S?
+  answer: 4
+  explanation: "S has four attributes: sno, sname, status, city."
+
+- id: w1-q-cardinality-sp
+  type: numeric
+  topics: [rm.terminology]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { tables: [SP] }
+  prompt: What is the **cardinality** of relation SP in this instance?
+  answer: 11
+  explanation: SP has 11 tuples in the Week 1 instance. (The Week 3 instance has 12.)
+
+- id: w1-q-cardinality-course
+  type: numeric
+  topics: [rm.terminology]
+  difficulty: 1
+  dataset: university
+  show: { tables: [course] }
+  prompt: What is the **cardinality** of relation course?
+  answer: 11
+  explanation: Count the rows. 2500 appears twice, but those are two different tuples (different dno).
+
+- id: w1-q-degree-lab
+  type: numeric
+  topics: [rm.terminology]
+  difficulty: 1
+  dataset: university
+  show: { tables: [lab] }
+  prompt: What is the **degree** of relation lab in this instance?
+  answer: 9
+  explanation: "labId, courseCode, dno, qtrCode, profId, time, length, days, room: nine attributes."
+
+- id: w1-q-superkeys-a-pk
+  type: mcq
+  topics: [keys.superkey]
+  difficulty: 2
+  tags: [all-none-option, quiz-style, trap]
+  prompt: "Which of the following are superkeys of R, given R(<u>B</u>, A, C) where B is the primary key?"
+  options:
+    - (B, C)
+    - (A, B, C)
+    - All of the given choices
+    - None of the given choices
+    - (A, B)
+  answer: 2
+  explanation: Any set of attributes that contains the primary key B is a superkey, so (B, C), (A, B, C) and (A, B) all are. "All of the given choices" refers to the other options, so pick it even though it isn't last.
+
+- id: w1-q-superkeys-count
+  type: numeric
+  topics: [keys.superkey]
+  difficulty: 2
+  tags: [worksheet-variant]
+  prompt: "R(<u>A</u>, B, C, D) has primary key A and no other candidate keys. How many superkeys does R have?"
+  answer: 8
+  explanation: "A superkey is A plus any subset of {B, C, D}. There are 2³ = 8 subsets, so 8 superkeys: {A}, {A,B}, {A,C}, {A,D}, {A,B,C}, {A,B,D}, {A,C,D}, {A,B,C,D}."
+
+- id: w1-q-superkeys-composite
+  type: multi
+  topics: [keys.superkey]
+  difficulty: 2
+  tags: [worksheet-variant]
+  prompt: "R(<u>A</u>, <u>B</u>, C) has the composite primary key (A, B). Select **every** superkey."
+  options:
+    - "{A}"
+    - "{A, B}"
+    - "{A, C}"
+    - "{A, B, C}"
+    - "{B, C}"
+  answer: [1, 3]
+  explanation: A superkey must contain the whole key (A, B). Only {A, B} and {A, B, C} do. {A} alone isn't unique, since A is only unique in combination with B.
+
+- id: w1-q-candidate-props
+  type: multi
+  topics: [keys.candidate]
+  difficulty: 1
+  prompt: Which properties must a candidate key have? Select all that apply.
+  options:
+    - Uniqueness
+    - Irreducibility
+    - It must be a single attribute
+    - It must be chosen as the primary key
+    - It must be system-generated
+  answer: [0, 1]
+  explanation: A candidate key is a minimal superkey. It may be composite, and only one candidate key becomes the primary key; the rest are alternate keys.
+
+- id: w1-q-alternate
+  type: mcq
+  topics: [keys.primary]
+  difficulty: 1
+  prompt: "Student(studentId, email, sin, name): studentId, email and sin are each unique, and studentId is chosen as the primary key. What are email and sin?"
+  options:
+    - Surrogate keys
+    - Alternate keys
+    - Foreign keys
+    - Superkeys that are not candidate keys
+    - None of the given choices
+  answer: 1
+  explanation: They are candidate keys that weren't chosen, which makes them alternate keys.
+
+- id: w1-q-surrogate
+  type: mcq
+  topics: [keys.primary]
+  difficulty: 1
+  prompt: A table uses an auto-incrementing `id` column as its primary key, even though `email` is already unique. What kind of key is `id`?
+  options:
+    - Surrogate key
+    - Alternate key
+    - Foreign key
+    - Composite key
+  answer: 0
+  explanation: A surrogate key is system-generated and has no business meaning. email would then be an alternate key.
+
+- id: w1-q-composite-true-false
+  type: true_false
+  topics: [keys.primary]
+  difficulty: 1
+  tags: [trap, quiz-miss]
+  dataset: university
+  show: { diagram: true }
+  prompt: "Table course has two primary keys: courseCode and dno."
+  answer: false
+  explanation: "course has **one** primary key, the composite (courseCode, dno). Two underlined attributes form a single key."
+
+- id: w1-q-select-pk-sp
+  type: select_attributes
+  topics: [keys.primary, keys.candidate]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { tables: [SP] }
+  prompt: Select the attributes that form the primary key of SP.
+  attributes: [sno, pno, qty]
+  answer: [sno, pno]
+  explanation: A supplier supplies each part at most once, so (sno, pno) is unique; neither alone is.
+
+- id: w1-q-select-fk-lab
+  type: select_attributes
+  topics: [keys.foreign, rm.schema-reading]
+  difficulty: 2
+  dataset: university
+  show: { diagram: true }
+  prompt: Select every attribute of **lab** that is part of a foreign key.
+  attributes: [labId, courseCode, dno, qtrCode, profId, time, length, days, room]
+  answer: [courseCode, dno, profId]
+  explanation: "(courseCode, dno) references course, and profId references prof. labId is the primary key, not a foreign key."
+
+- id: w1-q-fk-definition
+  type: mcq
+  topics: [keys.foreign]
+  difficulty: 2
+  tags: [negated-stem]
+  prompt: "FK in R₁ references the primary key PK of R₂. Which statement is **not** required?"
+  options:
+    - FK has the same domain as PK.
+    - Each FK value appears as a PK value in R₂ or is null.
+    - FK has the same attribute name as PK.
+    - The rule is checked when tuples are inserted into R₁.
+  answer: 2
+  explanation: "Names don't matter; domains do. dept.profId could just as well be called headId."
+
+- id: w1-q-fk-null
+  type: true_false
+  topics: [keys.foreign, integrity.referential]
+  difficulty: 2
+  tags: [trap]
+  dataset: university
+  show: { diagram: true }
+  prompt: "Column dno in relation prof cannot be null, because it is a foreign key that references dept."
+  answer: false
+  explanation: "Foreign keys may be null. prof.dno isn't part of prof's primary key, so a prof without a department (dno null) is allowed."
+
+- id: w1-q-entity-integrity
+  type: mcq
+  topics: [integrity.entity]
+  difficulty: 1
+  prompt: Entity integrity says that…
+  options:
+    - every foreign key value must match a primary key value
+    - no primary key attribute may be null
+    - every value must come from its attribute's domain
+    - every relation must have a surrogate key
+  answer: 1
+  explanation: Primary key values identify tuples, so none of their attributes can be null.
+
+- id: w1-q-domain-violation
+  type: mcq
+  topics: [integrity.domain]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "S.status is an integer. Inserting ⟨S9, KIM, 'high', TORONTO⟩ into S violates…"
+  options:
+    - the domain constraint
+    - entity integrity
+    - referential integrity
+    - no constraint
+  answer: 0
+  explanation: "'high' isn't a value from status's domain (integers)."
+
+- id: w1-q-match-violations-1
+  type: matching
+  topics: [integrity.entity, integrity.referential]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true, tables: [course, dept] }
+  prompt: "Using the instance of course and dept (course's primary key is (courseCode, dno); dept's is dno), match each operation to its outcome."
+  left:
+    - "Insert ⟨3110, Operating Systems II, 3, core, 63⟩ into course"
+    - "Insert ⟨null, Statistics, 3, core, 60⟩ into course"
+    - "Change the courseType of (1050, 60) to elective"
+  right: [No violation, Primary key violation, Foreign key violation]
+  answer: [2, 1, 0]
+  explanation: "dno 63 isn't a department (FK). A primary key attribute can't be null (entity integrity). courseType isn't part of any key, so changing it is fine."
+
+- id: w1-q-match-violations-2
+  type: matching
+  topics: [integrity.entity, integrity.referential]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true, tables: [course, dept] }
+  prompt: Match each operation to its outcome.
+  left:
+    - "Insert ⟨61, Chemistry, RH⟩ into dept"
+    - "Delete the course tuple (4540, 60)"
+    - "Delete dept 60"
+  right: [No violation, Primary key violation, Foreign key violation]
+  answer: [1, 0, 2]
+  explanation: "dept 61 already exists (duplicate key). No lab references course 4540, so deleting it is fine. Many courses, profs and labs reference dept 60, so deleting it breaks referential integrity."
+
+- id: w1-q-match-violations-3
+  type: matching
+  topics: [integrity.entity, integrity.referential]
+  difficulty: 3
+  points: 3
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true, tables: [course, lab] }
+  prompt: Match each operation to its outcome.
+  left:
+    - "Change the dno of lab 8 to 64"
+    - "Delete the course tuple (2500, 61)"
+    - "Insert ⟨2500, Databases II, 3, core, 60⟩ into course"
+  right: [No violation, Primary key violation, Foreign key violation]
+  answer: [2, 0, 1]
+  explanation: "Lab 8 would reference course (1400, 64), which doesn't exist. No lab references (2500, 61), so deleting it is fine. (2500, 60) already exists, so inserting it again duplicates the key."
+
+- id: w1-q-delete-child
+  type: true_false
+  topics: [integrity.referential]
+  difficulty: 2
+  prompt: Deleting a tuple from the *referencing* (child) relation can violate that relation's own foreign key constraint.
+  answer: false
+  explanation: "Removing a child row can't leave a dangling reference from that row. Referential integrity is broken by deleting *parent* rows that are still referenced, or by inserting/updating child rows with bad FK values."
+
+- id: w1-q-blanks-schema-1
+  type: blanks
+  topics: [rm.schema-reading, keys.primary, keys.foreign]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true }
+  prompt: "In context with this schema, type **True** or **False** in each box (exactly True or False, as on CourseLink)."
+  parts:
+    - { text: "No two departments can have courses with the same courseCode.", answer: "False" }
+    - { text: "A prof in this schema can exist without belonging to any dept.", answer: "True" }
+    - { text: "A course can have more than one lab section.", answer: "True" }
+    - { text: "Table lab has a composite primary key.", answer: "False" }
+  explanation: "course's key is (courseCode, dno), so two departments can share a code. prof.dno is a nullable FK. Many lab rows can reference one course. lab's key is just labId."
+
+- id: w1-q-blanks-schema-2
+  type: blanks
+  topics: [rm.schema-reading, keys.foreign, integrity.referential]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true }
+  prompt: "In context with this schema, type **True** or **False** in each box."
+  parts:
+    - { text: "A course must have at least one lab.", answer: "False" }
+    - { text: "A department can have several professors in it.", answer: "True" }
+    - { text: "dept.profId must match an existing prof.profId or be null.", answer: "True" }
+    - { text: "labasst.labId can be null.", answer: "False" }
+  explanation: "Nothing forces a course to appear in lab. Many prof rows can share a dno. dept.profId is a nullable FK. labasst.labId is part of labasst's primary key, so entity integrity forbids null."
+
+- id: w1-q-blanks-schema-3
+  type: blanks
+  topics: [rm.schema-reading, keys.primary]
+  difficulty: 3
+  points: 4
+  tags: [quiz-style, trap]
+  dataset: university
+  show: { diagram: true }
+  prompt: "In context with this schema, type **True** or **False** in each box."
+  parts:
+    - { text: "A TA (labasst) can assist in more than one lab.", answer: "True" }
+    - { text: "Table assignment has two primary keys, assntId and studentId.", answer: "False" }
+    - { text: "Each department records exactly one profId in dept.", answer: "True" }
+    - { text: "Two labs can share the same labId if they are in different quarters.", answer: "False" }
+  explanation: "labasst's key is (studentId, labId), so one student can appear with several labs. assignment has one composite key. dept stores one profId per department. labId alone is lab's key, so it's unique regardless of quarter."
+
+- id: w1-q-is-relation
+  type: true_false
+  topics: [rm.relations-math]
+  difficulty: 2
+  prompt: "With A₁ = {p, q, r, s}, A₂ = {1, 2, 3}, A₃ = {100, 200}: the set r = {⟨q, 2, 100⟩, ⟨s, 3, 200⟩, ⟨p, 1, 200⟩} is a relation on A₁, A₂, A₃."
+  answer: true
+  explanation: Each tuple takes its first value from A₁, second from A₂ and third from A₃, so r is a subset of A₁ × A₂ × A₃.
+
+- id: w1-q-is-relation-2
+  type: true_false
+  topics: [rm.relations-math]
+  difficulty: 2
+  prompt: "With the same domains, r₁ = {⟨p, q, 1, 100⟩, ⟨s, 1, 200⟩} is a relation on A₁, A₂, A₃."
+  answer: false
+  explanation: "The first tuple has four values and puts q (from A₁) where a value from A₂ belongs. A relation's tuples all have the same degree and follow the domains in order."
+
+- id: w1-q-product-size
+  type: numeric
+  topics: [rm.relations-math]
+  difficulty: 1
+  prompt: "How many tuples are in A₁ × A₂ × A₃ where A₁ = {p, q, r, s}, A₂ = {1, 2, 3} and A₃ = {100, 200}?"
+  answer: 24
+  explanation: "4 × 3 × 2 = 24."
+
+- id: w1-q-schema-vs-instance
+  type: mcq
+  topics: [rm.terminology]
+  difficulty: 1
+  prompt: Which changes most often?
+  options:
+    - The relation schema
+    - The relation instance
+    - The database schema
+    - They change equally often
+  answer: 1
+  explanation: Instances change with every insert, update and delete; schemas change rarely.
+
+- id: w1-q-dbms-def
+  type: mcq
+  topics: [rm.definitions]
+  difficulty: 1
+  prompt: "PostgreSQL is an example of a…"
+  options:
+    - database
+    - data model
+    - DBMS
+    - mini-world
+  answer: 2
+  explanation: PostgreSQL is database management software. The data you store with it is the database.
+
+- id: w1-q-data-model-parts
+  type: multi
+  topics: [rm.definitions]
+  difficulty: 1
+  prompt: A data model describes which of the following? Select all that apply.
+  options:
+    - The structure of the data
+    - Constraints on the data
+    - Operations on the data
+    - The hardware the data is stored on
+  answer: [0, 1, 2]
+  explanation: Structure, constraints and operations. Storage hardware is below the level a data model describes.
+
+- id: w1-q-bags
+  type: mcq
+  topics: [rm.properties]
+  difficulty: 2
+  prompt: Commercial DBMSs treat tables as bags rather than sets. What does that mean?
+  options:
+    - Tables can contain duplicate rows
+    - Columns can be in any order
+    - Cells can hold lists of values
+    - Tables need no primary key
+  answer: 0
+  explanation: A bag (multiset) allows duplicates; a set doesn't. That's why SQL has DISTINCT.
+
+- id: w1-q-duplicate-rows-s
+  type: true_false
+  topics: [rm.properties]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: "Relation S contains a duplicate tuple, because S2 and S3 are both in PARIS."
+  answer: false
+  explanation: Tuples are duplicates only if they agree on every attribute. S2 and S3 differ in sno, sname and status.
+
+- id: w1-q-status-domain
+  type: short
+  topics: [integrity.domain, rm.terminology]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: "In one word, what kind of values make up the domain of status in S? (e.g. text, integers, dates)"
+  answers: [integers, integer, int, whole numbers, numbers, number]
+  explanation: status holds whole numbers (10, 20, 30), so its domain is the integers. HARRY's null means "no value", not a different domain.

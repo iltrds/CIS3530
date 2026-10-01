@@ -1,0 +1,55 @@
+id: supplier-parts-alt
+title: Supplier–Parts (grading instance)
+description: Invented second instance with the same schema, used only to check answers.
+hidden: true
+alternateOf: [supplier-parts, supplier-parts-w1]
+tables:
+  - name: S
+    columns:
+      - { name: sno, pk: true }
+      - { name: sname }
+      - { name: status, type: int }
+      - { name: city }
+    rows:
+      - [S1, KOVAC, 15, LONDON]
+      - [S2, ABARA, 25, ROME]
+      - [S3, AMARI, 30, LONDON]
+      - [S4, BELL, null, PARIS]
+      - [S5, CHEN, 20, GUELPH]
+      - [S7, ADLER, 10, ATHENS]
+      - [S8, "O'HARA", 30, PARIS]
+  - name: P
+    columns:
+      - { name: pno, pk: true }
+      - { name: pname }
+      - { name: color }
+      - { name: weight, type: numeric }
+      - { name: city }
+    rows:
+      - [P1, NUT, RED, 12.00, LONDON]
+      - [P2, BOLT, GREEN, 17.00, PARIS]
+      - [P3, SCREW, BLUE, 17.00, ROME]
+      - [P4, SCREW, RED, 14.00, LONDON]
+      - [P5, CAN, BLUE, 12.00, PARIS]
+      - [P6, COG, RED, 19.00, LONDON]
+      - [P7, WASHER, RED, 3.00, GUELPH]
+  - name: SP
+    columns:
+      - { name: sno, pk: true }
+      - { name: pno, pk: true }
+      - { name: qty, type: int }
+    foreignKeys:
+      - { columns: [sno], references: { table: S, columns: [sno] } }
+      - { columns: [pno], references: { table: P, columns: [pno] } }
+    rows:
+      - [S1, P2, 300]
+      - [S1, P7, 150]
+      - [S2, P3, 100]
+      - [S2, P2, 200]
+      - [S3, P1, 350]
+      - [S3, P5, 200]
+      - [S5, P3, 400]
+      - [S5, P6, 100]
+      - [S7, P2, 250]
+      - [S7, P4, 120]
+      - [S8, P1, 90]

@@ -1,0 +1,429 @@
+- id: w3-q-sql-london
+  type: sql
+  topics: [sql.select-from-where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List the names of all suppliers who live in London.
+  reference: SELECT sname FROM S WHERE city = 'LONDON';
+  hints:
+    - "Check how the data spells London."
+
+- id: w3-q-sql-join
+  type: sql
+  topics: [sql.joins]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "List every supplier together with the parts they supply. Report sno, sname, pno and qty."
+  reference: SELECT S.sno, sname, pno, qty FROM S, SP WHERE S.sno = SP.sno;
+
+- id: w3-q-sql-qty-under
+  type: sql
+  topics: [sql.joins, sql.where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "List suppliers and the parts they supply where the quantity is less than 350. Report sname, pno and qty."
+  reference: SELECT sname, pno, qty FROM S JOIN SP ON S.sno = SP.sno WHERE qty < 350;
+
+- id: w3-q-sql-like-a
+  type: sql
+  topics: [sql.where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List the names of suppliers whose name starts with A.
+  reference: SELECT sname FROM S WHERE sname LIKE 'A%';
+
+- id: w3-q-sql-between
+  type: sql
+  topics: [sql.where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "List the shipments (sno, pno, qty) whose quantity is between 150 and 400, both inclusive."
+  reference: SELECT sno, pno, qty FROM SP WHERE qty BETWEEN 150 AND 400;
+
+- id: w3-q-sql-distinct-cities
+  type: sql
+  topics: [sql.distinct-order, sql.basics]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List each city in which a supplier lives, **once**.
+  reference: SELECT DISTINCT city FROM S;
+  compare: bag
+  hints:
+    - SQL keeps duplicate rows unless you ask it not to.
+
+- id: w3-q-sql-p3
+  type: sql
+  topics: [sql.subqueries]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: Get supplier names for suppliers who supply part P3. Use a subquery.
+  reference: SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno = 'P3');
+
+- id: w3-q-sql-red
+  type: sql
+  topics: [sql.subqueries]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: Get supplier names for suppliers who supply at least one red part.
+  reference: SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno IN (SELECT pno FROM P WHERE color = 'RED'));
+  hints:
+    - "Colour is in P, suppliers in S, and SP connects them."
+
+- id: w3-q-sql-not-p2
+  type: sql
+  topics: [sql.subqueries, sql.set-ops]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: Get supplier names for suppliers who do **not** supply part P2.
+  reference: SELECT sname FROM S WHERE sno NOT IN (SELECT sno FROM SP WHERE pno = 'P2');
+  hints:
+    - "First find who *does* supply P2."
+
+- id: w3-q-sql-no-parts
+  type: sql
+  topics: [sql.subqueries]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List the names of suppliers who don't supply any part.
+  reference: SELECT sname FROM S WHERE sno NOT IN (SELECT sno FROM SP);
+
+- id: w3-q-sql-same-city
+  type: sql
+  topics: [sql.joins, sql.distinct-order]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "Get all pairs of supplier numbers such that the two suppliers are located in the same city. List each pair once, smaller sno first."
+  reference: SELECT S1.sno, S2.sno FROM S AS S1, S AS S2 WHERE S1.city = S2.city AND S1.sno < S2.sno;
+  hints:
+    - "Give S two aliases."
+
+- id: w3-q-sql-ordered
+  type: sql
+  topics: [sql.distinct-order, sql.subqueries]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List the names of suppliers who supply at least one part, in **reverse** alphabetical order.
+  reference: SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP) ORDER BY sname DESC;
+  compare: ordered
+
+- id: w3-q-sql-status-null
+  type: sql
+  topics: [sql.where]
+  difficulty: 1
+  dataset: supplier-parts-w1
+  show: { diagram: true, tables: [S] }
+  prompt: "Using the Week 1 instance, list the sno of every supplier whose status is missing."
+  reference: SELECT sno FROM S WHERE status IS NULL;
+  hints:
+    - "= NULL is never true."
+
+- id: w3-q-sql-count
+  type: sql
+  topics: [sql.aggregates]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "In one row, report the number of different suppliers that appear in SP and the number of shipments (rows) in SP."
+  reference: SELECT COUNT(DISTINCT sno), COUNT(*) FROM SP;
+
+- id: w3-q-sql-sum-p3
+  type: sql
+  topics: [sql.aggregates]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: What is the total quantity of part P3 supplied?
+  reference: SELECT SUM(qty) FROM SP WHERE pno = 'P3';
+
+- id: w3-q-sql-union
+  type: sql
+  topics: [sql.set-ops]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List every city that has a supplier or a part (each city once). Use a set operator.
+  reference: SELECT city FROM S UNION SELECT city FROM P;
+  compare: bag
+
+- id: w3-q-sql-intersect
+  type: sql
+  topics: [sql.set-ops]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: List every city that has both a supplier and a part.
+  reference: SELECT city FROM S INTERSECT SELECT city FROM P;
+  compare: bag
+
+- id: w3-q-ra-not-movie-1
+  type: ra
+  topics: [ra.set-ops]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Find the IDs of actors who do not work in the movie with mID = 1.
+  reference: "π aID (Artists) − π aID (σ mID = 1 (Roles))"
+
+- id: w3-q-ra-not-movie-1-names
+  type: ra
+  topics: [ra.set-ops, ra.natjoin]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Find the names of actors who do not work in the movie with mID = 1.
+  reference: "π aName ((π aID (Artists) − π aID (σ mID = 1 (Roles))) ⋈ Artists)"
+  hints:
+    - "σ mID <> 1 isn't enough: an actor in movie 1 may also be in other movies."
+
+- id: w3-q-ra-sql-london
+  type: ra
+  topics: [sql.select-from-where, ra.select]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "Translate to RA: `SELECT sname FROM S WHERE status > 15 AND city = 'PARIS';`"
+  reference: "π sname (σ status > 15 ∧ city = 'PARIS' (S))"
+
+- id: w3-q-select-is-pi
+  type: mcq
+  topics: [sql.select-from-where]
+  difficulty: 1
+  tags: [trap, quiz-style]
+  prompt: "The SELECT clause of an SQL query corresponds to which relational algebra operator?"
+  options: ["σ (select)", "π (project)", "× (product)", "ρ (rename)", "None of the given choices"]
+  answer: 1
+  explanation: SELECT chooses columns, like π. WHERE plays the part of σ.
+
+- id: w3-q-order-steps
+  type: order_steps
+  topics: [sql.execution-order]
+  difficulty: 1
+  prompt: Put the clauses in the order they are evaluated.
+  items: [FROM, WHERE, SELECT]
+  explanation: "Pick the tables, filter the rows, then choose the columns."
+
+- id: w3-q-eq-subquery
+  type: mcq
+  topics: [sql.subqueries]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Why does this query raise an error on the Week 3 instance?
+    ```sql
+    SELECT sname FROM S
+    WHERE sno = (SELECT sno FROM SP);
+    ```
+  options:
+    - "sno is ambiguous"
+    - "The subquery returns more than one row, and = needs a single value"
+    - "Subqueries aren't allowed in WHERE"
+    - "S and SP aren't union compatible"
+    - "None of the given choices"
+  answer: 1
+  explanation: "Replace = with IN to test membership in the subquery's result."
+
+- id: w3-q-null-compare
+  type: mcq
+  topics: [sql.where]
+  difficulty: 1
+  tags: [trap]
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: "On the Week 1 instance, how many rows does `SELECT * FROM S WHERE city = NULL;` return?"
+  options: ["0", "1", "6", "An error"]
+  answer: 0
+  explanation: "A comparison with NULL is never true, so no row qualifies, even HARRY's. Use IS NULL."
+
+- id: w3-q-like-underscore
+  type: multi
+  topics: [sql.where]
+  difficulty: 2
+  prompt: "Which names match `sname LIKE '_L%'`? Select all that apply."
+  options: [BLAKE, CLARK, SMITH, ALI, LEE]
+  answer: [0, 1, 3]
+  explanation: "_ is exactly one character, then L, then anything. BLAKE, CLARK and ALI have L second. LEE has L first."
+
+- id: w3-q-between-inclusive
+  type: true_false
+  topics: [sql.where]
+  difficulty: 1
+  prompt: "`qty BETWEEN 100 AND 200` includes rows where qty is exactly 100 or exactly 200."
+  answer: true
+  explanation: BETWEEN is inclusive at both ends.
+
+- id: w3-q-union-dups
+  type: true_false
+  topics: [sql.set-ops]
+  difficulty: 1
+  prompt: UNION keeps duplicate rows in its result.
+  answer: false
+  explanation: UNION, INTERSECT and EXCEPT return sets. (UNION ALL keeps duplicates.)
+
+- id: w3-q-count-star
+  type: numeric
+  topics: [sql.aggregates]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  prompt: "What does `SELECT COUNT(DISTINCT pno) FROM SP;` return on the Week 3 instance?"
+  answer: 6
+  explanation: All six parts, P1 to P6, appear in at least one shipment.
+
+- id: w3-q-count-null
+  type: numeric
+  topics: [sql.aggregates]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: "On the Week 1 instance, what does `SELECT COUNT(status) FROM S;` return?"
+  answer: 5
+  explanation: "COUNT(column) skips nulls. HARRY's status is null, so 5 of the 6 rows count. COUNT(*) would give 6."
+
+- id: w3-q-sum-s5
+  type: numeric
+  topics: [sql.aggregates]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  prompt: "What does `SELECT SUM(qty) FROM SP WHERE sno = 'S5';` return?"
+  answer: 2000
+  explanation: "200 + 500 + 200 + 100 + 200 + 800."
+
+- id: w3-q-count-product
+  type: numeric
+  topics: [sql.joins, sql.aggregates]
+  difficulty: 2
+  dataset: supplier-parts
+  prompt: "What does `SELECT COUNT(*) FROM S, SP;` return on the Week 3 instance (6 suppliers, 12 shipments)?"
+  answer: 72
+  explanation: "Without a join condition, FROM S, SP is the Cartesian product: 6 × 12 = 72 rows."
+
+- id: w3-q-natural-three
+  type: mcq
+  topics: [sql.joins]
+  difficulty: 3
+  tags: [trap]
+  dataset: supplier-parts
+  show: { diagram: true }
+  prompt: "`SELECT * FROM S NATURAL JOIN SP NATURAL JOIN P;` returns fewer rows than there are shipments. Why?"
+  options:
+    - NATURAL JOIN only works on two tables
+    - S and P both have a city column, so it also requires S.city = P.city
+    - SP's primary key is composite
+    - NATURAL JOIN removes duplicate rows
+  answer: 1
+  explanation: "Natural join matches every same-named column. Joining through SP with USING (sno) and USING (pno) avoids matching on city."
+
+- id: w3-q-predict-distinct
+  type: predict_table
+  topics: [sql.distinct-order, sql.where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  prompt: Fill in the result of this query.
+  sql: SELECT DISTINCT city FROM S WHERE status >= 20;
+  explanation: "S1, S3, S4 and S5 have status of at least 20; their cities are LONDON, PARIS, LONDON, ATHENS. DISTINCT keeps each once."
+
+- id: w3-q-predict-in
+  type: predict_table
+  topics: [sql.where]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  prompt: Fill in the result of this query.
+  sql: SELECT DISTINCT sno FROM SP WHERE qty BETWEEN 200 AND 400 AND pno IN ('P3', 'P6');
+  explanation: "Shipments of P3 or P6 with quantity 200 to 400: S2–P3 (400), S3–P3, S4–P6, S5–P6 and S5–P3."
+
+- id: w3-q-match-clauses
+  type: matching
+  topics: [sql.select-from-where, sql.distinct-order]
+  difficulty: 1
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each clause to what it does.
+  left: [FROM, WHERE, ORDER BY]
+  right: ["Sorts the result", "Names the tables to read", "Keeps only the rows that satisfy a condition"]
+  answer: [1, 2, 0]
+
+- id: w3-q-match-where
+  type: matching
+  topics: [sql.where]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each condition to its meaning.
+  left: ["qty BETWEEN 100 AND 200", "qty IN (100, 200)", "sname LIKE 'S%'"]
+  right: ["qty = 100 OR qty = 200", "sname begins with S", "qty >= 100 AND qty <= 200"]
+  answer: [2, 0, 1]
+
+- id: w3-q-blanks-sql-1
+  type: blanks
+  topics: [sql.where, sql.set-ops, sql.basics]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "BETWEEN 100 AND 200 includes both 100 and 200.", answer: "True" }
+    - { text: "WHERE city = NULL finds suppliers with no city.", answer: "False" }
+    - { text: "UNION keeps duplicate rows.", answer: "False" }
+    - { text: "A SELECT without DISTINCT can return duplicate rows.", answer: "True" }
+
+- id: w3-q-blanks-sql-2
+  type: blanks
+  topics: [sql.aggregates, sql.where, sql.select-from-where]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "COUNT(*) counts rows, including rows that contain nulls.", answer: "True" }
+    - { text: "COUNT(DISTINCT sno) and COUNT(sno) always return the same number.", answer: "False" }
+    - { text: "In LIKE, _ matches exactly one character.", answer: "True" }
+    - { text: "SQL's SELECT clause does the same job as σ in relational algebra.", answer: "False" }
+  explanation: "COUNT(sno) counts every non-null sno, repeats included. SELECT corresponds to π; WHERE corresponds to σ."
+
+- id: w3-q-bag-meaning
+  type: mcq
+  topics: [sql.basics]
+  difficulty: 1
+  tags: [negated-stem]
+  prompt: Which is **not** a way to keep duplicate rows out of SQL results or tables?
+  options: [A PRIMARY KEY constraint, A UNIQUE constraint, SELECT DISTINCT, ORDER BY]
+  answer: 3
+  explanation: ORDER BY only sorts; duplicates stay.
+
+- id: w3-q-dml
+  type: mcq
+  topics: [sql.basics]
+  difficulty: 1
+  prompt: SELECT, INSERT, UPDATE and DELETE belong to which part of SQL?
+  options: [DDL, DML, DCL, None of the given choices]
+  answer: 1
+  explanation: They manipulate data. CREATE TABLE is DDL; GRANT is DCL.
+
+- id: w3-q-plans
+  type: mcq
+  topics: [ra.plans]
+  difficulty: 2
+  prompt: "Two RA expressions return the same result. One selects the 1970s movies before joining with Roles, the other joins first. What's the practical difference?"
+  options:
+    - They can return different tuples
+    - The select-first plan builds smaller intermediate relations
+    - Only the join-first version is valid RA
+    - None; RA has no notion of cost
+  answer: 1
+  explanation: Both are correct; each suggests a different execution plan. Filtering early means fewer tuples to combine.

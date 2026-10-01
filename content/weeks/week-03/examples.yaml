@@ -1,0 +1,188 @@
+- id: w3-ex-london
+  title: London suppliers in RA and SQL
+  topics: [sql.select-from-where, sql.execution-order]
+  dataset: supplier-parts
+  question: List the names of all suppliers who live in London.
+  steps:
+    - title: Relational algebra
+      ra: π sname (σ city = 'LONDON' (S))
+    - title: SQL
+      body: "FROM picks the table (1), WHERE keeps the London rows (2), SELECT keeps the sname column (3). SELECT plays the part of π, WHERE the part of σ."
+      sql: |
+        SELECT sname
+        FROM   S
+        WHERE  city = 'LONDON';
+    - title: Case matters
+      body: "The instructor's instance stores cities in capitals, so 'London' matches nothing."
+      sql: SELECT sname FROM S WHERE city = 'London';
+  pitfalls:
+    - "Use the case the data actually uses. Check with SELECT * first if you're not sure."
+
+- id: w3-ex-joins
+  title: Four ways to join S and SP
+  topics: [sql.joins]
+  dataset: supplier-parts
+  question: List all suppliers and the parts they supply.
+  steps:
+    - title: Product plus WHERE
+      sql: |
+        SELECT *
+        FROM   S, SP
+        WHERE  S.sno = SP.sno;
+    - title: NATURAL JOIN
+      body: "Matches on every same-named column. S and SP share only sno, so this gives the same rows with sno shown once."
+      sql: SELECT * FROM S NATURAL JOIN SP;
+    - title: JOIN … USING
+      body: Same result, but you name the join column yourself.
+      sql: SELECT * FROM S JOIN SP USING (sno);
+    - title: JOIN … ON
+      body: Any condition; both sno columns are kept.
+      sql: SELECT * FROM S JOIN SP ON S.sno = SP.sno;
+    - title: LEFT JOIN keeps HENRY
+      body: "S6 HENRY supplies nothing, so every inner join drops him. A left join keeps him with nulls."
+      sql: SELECT S.sno, sname, pno, qty FROM S LEFT JOIN SP ON S.sno = SP.sno;
+  pitfalls:
+    - "S NATURAL JOIN SP NATURAL JOIN P also forces S.city = P.city, because both have a city column."
+
+- id: w3-ex-where
+  title: LIKE, BETWEEN and IN
+  topics: [sql.where]
+  dataset: supplier-parts
+  question: Filter the suppliers and their shipments in three different ways.
+  steps:
+    - title: Name starts with A
+      sql: |
+        SELECT *
+        FROM   S, SP
+        WHERE  S.sno = SP.sno
+          AND  sname LIKE 'A%';
+    - title: Quantity between 100 and 200 (inclusive)
+      sql: |
+        SELECT S.sno, sname, pno, qty
+        FROM   S, SP
+        WHERE  S.sno = SP.sno
+          AND  qty BETWEEN 100 AND 200;
+    - title: Quantity exactly 100 or 200
+      body: "IN is shorthand for qty = 100 OR qty = 200. This drops nothing here, because no quantity strictly between 100 and 200 exists in the instance."
+      sql: |
+        SELECT S.sno, sname, pno, qty
+        FROM   S, SP
+        WHERE  S.sno = SP.sno
+          AND  qty IN (100, 200);
+
+- id: w3-ex-distinct
+  title: Bags and DISTINCT
+  topics: [sql.basics, sql.distinct-order]
+  dataset: supplier-parts
+  question: List the cities in which a supplier lives.
+  steps:
+    - title: Without DISTINCT
+      body: "One row per supplier, so LONDON and PARIS each appear twice. SQL keeps duplicates."
+      sql: SELECT city FROM S;
+    - title: With DISTINCT
+      sql: SELECT DISTINCT city FROM S;
+    - title: Sorted
+      sql: SELECT DISTINCT city FROM S ORDER BY city DESC;
+  pitfalls:
+    - "In RA, π city (S) would already have removed the duplicates. SQL only does that when asked."
+
+- id: w3-ex-subquery-in
+  title: "= versus IN with a subquery"
+  topics: [sql.subqueries]
+  dataset: supplier-parts
+  question: List the names of all suppliers who supply a part.
+  steps:
+    - title: The subquery returns many rows
+      sql: SELECT sno FROM SP;
+    - title: "= fails"
+      body: "Postgres reports: more than one row returned by a subquery used as an expression. = compares with a single value."
+      showResult: false
+    - title: IN works
+      sql: |
+        SELECT sname
+        FROM   S
+        WHERE  sno IN (SELECT sno FROM SP)
+        ORDER BY sname;
+    - title: Nesting subqueries
+      body: Suppliers of at least one red part.
+      sql: |
+        SELECT sname
+        FROM   S
+        WHERE  sno IN (SELECT sno
+                       FROM   SP
+                       WHERE  pno IN (SELECT pno
+                                      FROM   P
+                                      WHERE  color = 'RED'));
+
+- id: w3-ex-not-p2
+  title: Suppliers who don't supply P2, two ways
+  topics: [sql.subqueries, sql.set-ops]
+  dataset: supplier-parts
+  question: Get the names of suppliers who do not supply part P2.
+  steps:
+    - title: Who does supply P2?
+      sql: SELECT sno FROM SP WHERE pno = 'P2';
+    - title: NOT IN
+      sql: |
+        SELECT sname
+        FROM   S
+        WHERE  sno NOT IN (SELECT sno FROM SP WHERE pno = 'P2');
+    - title: EXCEPT
+      body: "All supplier names minus the names of P2's suppliers. EXCEPT removes duplicates, like RA's −."
+      sql: |
+        SELECT sname FROM S
+        EXCEPT
+        SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno = 'P2');
+    - title: The same idea in RA
+      ra: π sname (S) − π sname (σ pno = 'P2' (S ⋈ SP))
+  pitfalls:
+    - "WHERE pno <> 'P2' on SP is a different question: it keeps every supplier with at least one *other* part, including S5, who does supply P2."
+
+- id: w3-ex-aggregates
+  title: Aggregate functions on SP
+  topics: [sql.aggregates]
+  dataset: supplier-parts
+  question: How many shipments are there, of how many different suppliers, and what are the largest and total quantities?
+  steps:
+    - title: COUNT, MAX, SUM
+      sql: SELECT COUNT(sno), MAX(qty), SUM(qty) FROM SP;
+    - title: COUNT(DISTINCT …) vs COUNT(*)
+      body: "Twelve shipments, but only five different suppliers."
+      sql: SELECT COUNT(DISTINCT sno), COUNT(*) FROM SP;
+    - title: Aggregates with WHERE
+      body: WHERE filters rows first, then the aggregate runs over what's left.
+      sql: SELECT SUM(qty) FROM SP WHERE pno = 'P3';
+
+- id: w3-ex-not-movie-1
+  title: Actors who don't work in movie 1
+  topics: [ra.set-ops, ra.strategy]
+  dataset: movies-v1
+  question: Find the IDs, then the names, of actors who do not work in the movie with mID = 1.
+  steps:
+    - title: Who does work in movie 1?
+      ra: π aID (σ mID = 1 (Roles))
+    - title: Everyone else
+      ra: π aID (Artists) − π aID (σ mID = 1 (Roles))
+    - title: Their names
+      ra: π aName ((π aID (Artists) − π aID (σ mID = 1 (Roles))) ⋈ Artists)
+  pitfalls:
+    - "σ mID <> 1 (Roles) is wrong: Nicholson also plays in movie 3, so he'd appear even though he works in movie 1."
+
+- id: w3-ex-plans
+  title: Two plans for the same query
+  topics: [ra.plans, ra.rename-assign]
+  dataset: movies-v1
+  question: Find names of all characters in movies from the 1970s, two ways.
+  steps:
+    - title: "Plan 1: product first"
+      body: "R1 pairs every role with every movie (42 tuples) before filtering."
+      ra: |
+        R1 := σ Roles.mID = Movies.mID (Roles × Movies)
+        R2 := σ year >= 1970 ∧ year < 1980 (R1)
+        Ans := π character (R2)
+    - title: "Plan 2: select first"
+      body: "R1 has only the three 1970s movies, so the product is 6 × 3 = 18 tuples instead of 42."
+      ra: |
+        R1 := σ year >= 1970 ∧ year < 1980 (Movies)
+        R2 := σ Roles.mID = R1.mID (Roles × R1)
+        Ans := π character (R2)

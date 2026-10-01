@@ -1,0 +1,18 @@
+code: CIS*3530
+title: Database Systems & Concepts
+term: Fall 2026
+# Lectures are Tuesdays at 7:00 PM; each lecture opens with a quiz on the previous week.
+lecture: { weekday: 2, time: "19:00" }
+weights:
+  - { item: Final exam (in person), percent: 35 }
+  - { item: Quizzes (10, best 8), percent: 20 }
+  - { item: Labs (5), percent: 15 }
+  - { item: Assignments (2), percent: 12 }
+  - { item: Lab exam (in person), percent: 10 }
+  - { item: Worksheets (10, best 8), percent: 8 }
+# Add dates here as they're announced. The home page shows the next few.
+events:
+  - { date: "2026-09-22", kind: quiz, title: Quiz 1, covers: [1] }
+  - { date: "2026-10-06", kind: quiz, title: Next in-class quiz, covers: [3], note: "Expected to cover Week 3 (RA wrap-up and SQL). Confirm in class." }
+results:
+  - { title: Quiz 1, date: "2026-09-22", score: 8, outOf: 10, missedTopics: [rm.terminology, keys.primary] }

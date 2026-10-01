@@ -1,0 +1,33 @@
+id: set-ops
+title: Student and Instructor
+description: Week 2's set-operator example. Both tables have two text columns, so they are union compatible on (first name) only after projecting.
+source: Week 2 slides (set operators)
+tables:
+  - name: Student
+    columns:
+      - { name: student_id, type: int, pk: true }
+      - { name: first_name }
+    rows:
+      - [101, HARRY]
+      - [102, ARTHUR]
+      - [103, YALE]
+      - [104, ALISHA]
+      - [105, SMITH]
+      - [107, Nina]
+      - [108, Rick]
+      - [106, Anita]
+  - name: Instructor
+    columns:
+      - { name: first_name, pk: true }
+      - { name: last_name, pk: true }
+    rows:
+      - [Fernand, Hanks]
+      - [Tom, Wojick]
+      - [Nina, Schorin]
+      - [Gary, Pertez]
+      - [Anita, Morris]
+      - [Todd, Smythe]
+      - [Marilyn, Frantzen]
+      - [Charles, Lowry]
+      - [Rick, Chow]
+      - [Irene, Willig]

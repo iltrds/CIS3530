@@ -1,0 +1,114 @@
+id: university
+title: University schema
+description: >
+  The Worksheet 1 and Quiz 1 schema. Course's primary key is the composite (courseCode, dno):
+  2500 exists in both CIS (60) and Physics (61). The course, dept and lab rows come from Worksheet 1;
+  prof, student, labasst and assignment rows are practice data added so every foreign key resolves.
+source: Worksheet 1 (schema diagram and instance); Quiz 1 (composite key of course)
+tables:
+  - name: dept
+    columns:
+      - { name: dno, type: int, pk: true }
+      - { name: dname }
+      - { name: profId }
+    foreignKeys:
+      - { columns: [profId], references: { table: prof, columns: [profId] } }
+    rows:
+      - [60, CIS, AR]
+      - [61, Physics, JL]
+  - name: prof
+    columns:
+      - { name: profId, pk: true }
+      - { name: fname }
+      - { name: lname }
+      - { name: position }
+      - { name: dno, type: int }
+      - { name: salary, type: int }
+    foreignKeys:
+      - { columns: [dno], references: { table: dept, columns: [dno] } }
+    rows:
+      - [AR, Anika, Rao, Professor, 60, 121000]
+      - [JL, Jonas, Lee, Professor, 61, 118000]
+      - [RH, Rosa, Hart, Associate Professor, 60, 99000]
+      - [DW, Dan, Walsh, Lecturer, 60, 76000]
+      - [NS, Nora, Singh, Assistant Professor, 61, 88000]
+      - [TK, Tom, Kerr, Sessional, null, 41000]
+  - name: course
+    columns:
+      - { name: courseCode, type: int, pk: true }
+      - { name: courseName }
+      - { name: courseCredit, type: int }
+      - { name: courseType }
+      - { name: dno, type: int, pk: true }
+    foreignKeys:
+      - { columns: [dno], references: { table: dept, columns: [dno] } }
+    rows:
+      - [1050, Legacy Systems, 2, core, 60]
+      - [1300, Programming in C, 2, core, 60]
+      - [2500, Advanced concepts in C, 2, core, 60]
+      - [3210, Large-scale Programming, 2, elective, 60]
+      - [3530, Database Management System, 3, core, 60]
+      - [4150, Oracle Database development, 3, elective, 60]
+      - [1400, Physics I, 2, core, 61]
+      - [2500, Mechanics, 3, elective, 61]
+      - [4540, Analysis of algorithms, 3, core, 60]
+      - [3100, Quantum Physics and Chemistry, 4, elective, 61]
+      - [3110, Operating System, 2, core, 60]
+  - name: lab
+    columns:
+      - { name: labId, type: int, pk: true }
+      - { name: courseCode, type: int }
+      - { name: dno, type: int }
+      - { name: qtrCode }
+      - { name: profId }
+      - { name: time }
+      - { name: length, type: int }
+      - { name: days }
+      - { name: room }
+    foreignKeys:
+      - { columns: [courseCode, dno], references: { table: course, columns: [courseCode, dno] } }
+      - { columns: [profId], references: { table: prof, columns: [profId] } }
+    rows:
+      - [1, 1050, 60, 2010F, AR, "11:30", 2, MW, Rey0001]
+      - [2, 1050, 60, 2011W, AR, "11:30", 2, TR, Rey0002]
+      - [3, 1300, 60, 2010F, RH, "10:00", 2, MW, ROZ0001]
+      - [4, 2500, 60, 2011W, DW, "14:30", 2, TR, TH1200]
+      - [5, 3210, 60, 2010W, DW, "14:30", 3, F, G125]
+      - [6, 4150, 60, 2010W, DW, "10:00", 2, TR, G125]
+      - [7, 3530, 60, 2011W, RH, "11:30", 3, F, MCKN50]
+      - [8, 1400, 61, 2010F, NS, "10:00", 3, F, TH1110]
+  - name: student
+    columns:
+      - { name: studentId, type: int, pk: true }
+      - { name: fname }
+      - { name: lname }
+      - { name: email }
+    rows:
+      - [101, Maya, Chen, mchen@example.ca]
+      - [102, Omar, Haddad, ohaddad@example.ca]
+      - [103, Lena, Novak, lnovak@example.ca]
+      - [104, Sam, Patel, spatel@example.ca]
+  - name: labasst
+    columns:
+      - { name: studentId, type: int, pk: true }
+      - { name: maxHrsAllowed, type: int }
+      - { name: labId, type: int, pk: true }
+    foreignKeys:
+      - { columns: [studentId], references: { table: student, columns: [studentId] } }
+      - { columns: [labId], references: { table: lab, columns: [labId] } }
+    rows:
+      - [101, 10, 1]
+      - [101, 10, 2]
+      - [102, 8, 7]
+      - [103, 12, 8]
+  - name: assignment
+    columns:
+      - { name: assntId, type: int, pk: true }
+      - { name: studentId, type: int, pk: true }
+      - { name: countGraded, type: int }
+    foreignKeys:
+      - { columns: [studentId], references: { table: student, columns: [studentId] } }
+    rows:
+      - [1, 101, 40]
+      - [1, 102, 35]
+      - [2, 103, 60]

@@ -1,0 +1,132 @@
+- id: w1-fc-database
+  topic: rm.definitions
+  front: What is a database?
+  back: A shared collection of logically related data (and its description) about some mini-world, designed to meet an organization's information needs.
+- id: w1-fc-miniworld
+  topic: rm.definitions
+  front: What is the mini-world?
+  back: The part of the real world a database stores data about, e.g. student grades and transcripts at a university.
+- id: w1-fc-dbms
+  topic: rm.definitions
+  front: What is a DBMS?
+  back: Software that lets users define, create and maintain a database and provides controlled access to it. This course uses PostgreSQL.
+- id: w1-fc-dbsystem
+  topic: rm.definitions
+  front: Database vs DBMS vs database system?
+  back: "The database is the data. The DBMS is the software. The database system is the DBMS together with the data (sometimes the applications too)."
+- id: w1-fc-datamodel
+  topic: rm.definitions
+  front: What three things does a data model describe?
+  back: "The **structure** of the data, **constraints** on its content, and **operations** on it."
+- id: w1-fc-models
+  topic: rm.definitions
+  front: Name four data models.
+  back: "Network and hierarchical (historic), relational, and semistructured."
+- id: w1-fc-relation-math
+  topic: rm.relations-math
+  front: Mathematically, what is a relation on domains D₁, …, Dₙ?
+  back: Any subset of the Cartesian product D₁ × D₂ × … × Dₙ.
+- id: w1-fc-product-count
+  topic: rm.relations-math
+  front: How many ordered pairs are in {2, 4} × {1, 3, 5}?
+  back: "6 (2 × 3): (2,1) (2,3) (2,5) (4,1) (4,3) (4,5)."
+- id: w1-fc-tuple
+  topic: rm.terminology
+  front: Formal names for a row, a column and a table?
+  back: "Row = **tuple**, column = **attribute**, table = **relation**."
+  tags: [trap, quiz-miss]
+- id: w1-fc-tuple-not-attribute
+  topic: rm.terminology
+  front: Is a tuple the same as an attribute?
+  back: "No. A tuple is a **row**; an attribute is a **column** (a field). Quiz 1 tested exactly this."
+  tags: [trap, quiz-miss]
+- id: w1-fc-domain
+  topic: rm.terminology
+  front: What is the domain of an attribute?
+  back: The set of atomic values the attribute may take, like a type in a programming language.
+- id: w1-fc-degree
+  topic: rm.terminology
+  front: Degree (arity) of a relation?
+  back: The number of attributes (columns).
+- id: w1-fc-cardinality
+  topic: rm.terminology
+  front: Cardinality of a relation?
+  back: The number of tuples (rows).
+- id: w1-fc-schema-instance
+  topic: rm.terminology
+  front: Schema vs instance?
+  back: "The schema is the structure, e.g. S(sno, sname, city, status). The instance is the data in it at a given moment. Instances change constantly; schemas rarely."
+- id: w1-fc-properties
+  topic: rm.properties
+  front: List the properties of a relation.
+  back: "Distinct relation name; atomic cells; distinct attribute names; one domain per attribute; no duplicate tuples; tuple order irrelevant; attribute order irrelevant."
+- id: w1-fc-bags
+  topic: rm.properties
+  front: Sets vs bags. Which do commercial DBMSs use?
+  back: A relation in theory is a set (no duplicates). Commercial DBMSs use bags, which allow duplicate rows.
+- id: w1-fc-superkey
+  topic: keys.superkey
+  front: What is a superkey?
+  back: A set of one or more attributes whose combined values are unique; no two tuples agree on all of them.
+- id: w1-fc-superkey-exists
+  topic: keys.superkey
+  front: Does every relation have a superkey?
+  back: Yes. Since tuples are distinct, the set of all attributes is always a superkey.
+- id: w1-fc-superkeys-abc
+  topic: keys.superkey
+  front: R(A, B, C) with primary key A. What are its superkeys?
+  back: "Every set containing A: {A}, {A, B}, {A, C}, {A, B, C}."
+- id: w1-fc-candidate
+  topic: keys.candidate
+  front: What two properties make a superkey a candidate key?
+  back: "**Uniqueness** (its values identify each tuple) and **irreducibility** (no proper subset is unique). A candidate key is a minimal superkey."
+- id: w1-fc-primary
+  topic: keys.primary
+  front: Primary key vs alternate key?
+  back: The primary key is the candidate key chosen to identify tuples. The other candidate keys are alternate keys.
+- id: w1-fc-surrogate
+  topic: keys.primary
+  front: What is a surrogate key?
+  back: A system-generated primary key with no business meaning, used only to guarantee uniqueness (e.g. an auto-increment id).
+- id: w1-fc-composite
+  topic: keys.primary
+  front: "course(courseCode, courseName, …, dno) with courseCode and dno underlined. How many primary keys?"
+  back: "**One** composite primary key made of two attributes. \"Course has two primary keys\" is false."
+  tags: [trap, quiz-miss]
+- id: w1-fc-foreign
+  topic: keys.foreign
+  front: Definition of a foreign key FK in R₁ referencing R₂?
+  back: FK has the same domain as R₂'s primary key, and each FK value either appears as a primary key value in R₂ or is null.
+- id: w1-fc-fk-null
+  topic: keys.foreign
+  front: Can a foreign key value be null?
+  back: "Yes, unless the FK is part of its own relation's primary key (entity integrity) or is declared NOT NULL. Being a foreign key doesn't forbid null."
+  tags: [trap]
+- id: w1-fc-arrows
+  topic: rm.schema-reading
+  front: In a schema diagram, which way do foreign key arrows point?
+  back: From the referencing (child) relation's attribute to the referenced (parent) relation's primary key.
+- id: w1-fc-domain-constraint
+  topic: integrity.domain
+  front: Domain constraint?
+  back: Within each tuple, every attribute's value must be an atomic value from that attribute's domain.
+- id: w1-fc-entity
+  topic: integrity.entity
+  front: Entity integrity constraint?
+  back: No primary key attribute can be null, because primary key values identify the tuples.
+- id: w1-fc-referential
+  topic: integrity.referential
+  front: Referential integrity constraint?
+  back: A foreign key value must match an existing primary key value in the referenced relation, or be null.
+- id: w1-fc-ri-ops
+  topic: integrity.referential
+  front: Which operations can break referential integrity?
+  back: "Inserting (or updating) a child row with an FK value that doesn't exist in the parent, and deleting (or changing the key of) a parent row that children still reference."
+- id: w1-fc-dup-pk
+  topic: integrity.entity
+  front: Inserting a tuple whose primary key value already exists. Which constraint breaks?
+  back: The key (uniqueness) constraint. On quizzes this is a "primary key violation", the same label as a null primary key.
+- id: w1-fc-advantages
+  topic: rm.definitions
+  front: Advantages of the relational model?
+  back: Simple and elegant; tables are easy for non-technical users; queries are expressed in rows and columns; supports data independence.

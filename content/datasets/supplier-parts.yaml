@@ -1,0 +1,53 @@
+id: supplier-parts
+title: Supplier–Parts (Week 3)
+description: C. J. Date's S–P–SP database, using the instructor's Week 3 instance from the psql screenshots. Values are uppercase, so compare with 'LONDON' and 'RED', not 'London' or 'red'.
+source: Week 3 Part 2 slides (psql output); matches the slide's COUNT/MAX/SUM results (12 rows, max 800, sum 3700)
+tables:
+  - name: S
+    columns:
+      - { name: sno, pk: true }
+      - { name: sname }
+      - { name: status, type: int }
+      - { name: city }
+    rows:
+      - [S1, SMITH, 20, LONDON]
+      - [S2, JONES, 10, PARIS]
+      - [S3, BLAKE, 30, PARIS]
+      - [S4, CLARK, 20, LONDON]
+      - [S5, ADAMS, 30, ATHENS]
+      - [S6, HENRY, 12, GUELPH]
+  - name: P
+    columns:
+      - { name: pno, pk: true }
+      - { name: pname }
+      - { name: color }
+      - { name: weight, type: numeric }
+      - { name: city }
+    rows:
+      - [P1, NUT, RED, 12.00, LONDON]
+      - [P2, BOLT, GREEN, 17.00, PARIS]
+      - [P3, SCREW, BLUE, 17.00, ROME]
+      - [P4, SCREW, RED, 14.00, LONDON]
+      - [P5, CAN, BLUE, 12.00, PARIS]
+      - [P6, COG, RED, 19.00, LONDON]
+  - name: SP
+    columns:
+      - { name: sno, pk: true }
+      - { name: pno, pk: true }
+      - { name: qty, type: int }
+    foreignKeys:
+      - { columns: [sno], references: { table: S, columns: [sno] } }
+      - { columns: [pno], references: { table: P, columns: [pno] } }
+    rows:
+      - [S1, P1, 200]
+      - [S2, P3, 400]
+      - [S2, P5, 100]
+      - [S3, P3, 200]
+      - [S3, P4, 500]
+      - [S4, P6, 300]
+      - [S5, P2, 200]
+      - [S5, P5, 500]
+      - [S5, P6, 200]
+      - [S5, P1, 100]
+      - [S5, P3, 200]
+      - [S5, P4, 800]

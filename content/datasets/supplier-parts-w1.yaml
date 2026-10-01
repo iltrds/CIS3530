@@ -1,0 +1,52 @@
+id: supplier-parts-w1
+title: Supplier–Parts (Week 1)
+description: "The Week 1 instance used for keys and constraints. It differs from Week 3's: S6 is HARRY with a null status and city, and SP has 11 rows (no S5–P1)."
+source: Week 1 slides
+tables:
+  - name: S
+    columns:
+      - { name: sno, pk: true }
+      - { name: sname }
+      - { name: status, type: int }
+      - { name: city }
+    rows:
+      - [S2, JONES, 10, PARIS]
+      - [S3, BLAKE, 30, PARIS]
+      - [S4, CLARK, 20, LONDON]
+      - [S5, ADAMS, 30, ATHENS]
+      - [S1, SMITH, 20, LONDON]
+      - [S6, HARRY, null, null]
+  - name: P
+    columns:
+      - { name: pno, pk: true }
+      - { name: pname }
+      - { name: color }
+      - { name: weight, type: numeric }
+      - { name: city }
+    rows:
+      - [P2, BOLT, GREEN, 17.00, PARIS]
+      - [P3, SCREW, BLUE, 17.00, ROME]
+      - [P4, SCREW, RED, 14.00, LONDON]
+      - [P5, CAN, BLUE, 12.00, PARIS]
+      - [P6, COG, RED, 19.00, LONDON]
+      - [P1, NUT, RED, 12.00, LONDON]
+  - name: SP
+    columns:
+      - { name: sno, pk: true }
+      - { name: pno, pk: true }
+      - { name: qty, type: int }
+    foreignKeys:
+      - { columns: [sno], references: { table: S, columns: [sno] } }
+      - { columns: [pno], references: { table: P, columns: [pno] } }
+    rows:
+      - [S2, P3, 400]
+      - [S2, P5, 100]
+      - [S3, P3, 200]
+      - [S3, P4, 500]
+      - [S4, P6, 300]
+      - [S5, P2, 200]
+      - [S5, P5, 500]
+      - [S5, P6, 200]
+      - [S5, P3, 200]
+      - [S5, P4, 800]
+      - [S1, P1, 200]

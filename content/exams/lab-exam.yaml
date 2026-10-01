@@ -1,0 +1,9 @@
+id: lab-exam
+title: Lab exam practice
+description: Hands-on SQL only, run against real Postgres in your browser.
+kind: exam
+covers: released
+timeLimitMin: 50
+feedback: end
+slots:
+  - { name: SQL, types: [sql], count: 8 }

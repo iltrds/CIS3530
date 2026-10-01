@@ -1,0 +1,475 @@
+- id: w2-q-select-degree
+  type: mcq
+  topics: [ra.select, ra.degree-cardinality]
+  difficulty: 1
+  prompt: "R₁ = σ<sub>length < 140</sub>(Movies). Which is true?"
+  options:
+    - Degree of R₁ < degree of Movies
+    - Degree of R₁ = degree of Movies, cardinality of R₁ ≤ cardinality of Movies
+    - Degree of R₁ = degree of Movies, cardinality of R₁ = cardinality of Movies
+    - Cardinality of R₁ > cardinality of Movies
+  answer: 1
+  explanation: Select keeps every attribute and some (possibly all, possibly none) of the tuples.
+
+- id: w2-q-lucas-titles
+  type: numeric
+  topics: [ra.select, ra.project, ra.degree-cardinality]
+  difficulty: 1
+  tags: [worksheet-variant]
+  dataset: movies-v1
+  show: { tables: [Movies] }
+  prompt: "How many tuples are in the result of π<sub>title</sub>(σ<sub>director = 'Polaski'</sub>(Movies))?"
+  answer: 2
+  explanation: Polaski directed Chinatown and Repulsion.
+
+- id: w2-q-distinct-lengths
+  type: numeric
+  topics: [ra.project, ra.degree-cardinality]
+  difficulty: 2
+  tags: [trap]
+  dataset: movies-v1
+  show: { tables: [Movies] }
+  prompt: "How many tuples are in π<sub>length</sub>(Movies)?"
+  answer: 6
+  explanation: "Seven movies, but Shining and Player are both 146 minutes. Projection removes the duplicate, leaving 6."
+
+- id: w2-q-directors-card
+  type: numeric
+  topics: [ra.project, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Movies] }
+  prompt: "What is the cardinality of π<sub>director</sub>(Movies)?"
+  answer: 4
+  explanation: Kubrick, Altman, Polaski and Lucas.
+
+- id: w2-q-artists-x-roles
+  type: numeric
+  topics: [ra.product, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Artists, Roles] }
+  prompt: How many tuples are in Artists × Roles?
+  answer: 24
+  explanation: "|Artists| × |Roles| = 4 × 6 = 24."
+
+- id: w2-q-artists-join-roles
+  type: numeric
+  topics: [ra.natjoin, ra.degree-cardinality]
+  difficulty: 2
+  dataset: movies-v1
+  show: { tables: [Artists, Roles] }
+  prompt: How many tuples are in Artists ⋈ Roles?
+  answer: 6
+  explanation: They join on aID. Every Roles tuple has an aID that exists in Artists, so each of the 6 roles matches exactly one artist.
+
+- id: w2-q-movies-join-roles-degree
+  type: numeric
+  topics: [ra.natjoin, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  prompt: What is the degree of Movies ⋈ Roles?
+  answer: 7
+  explanation: "5 + 3 − 1 common attribute (mID) = 7."
+
+- id: w2-q-theta-degree
+  type: numeric
+  topics: [ra.theta, ra.degree-cardinality]
+  difficulty: 2
+  dataset: movies-v1
+  prompt: "What is the degree of Movies ⋈<sub>Movies.mID = Roles.mID</sub> Roles (a theta join)?"
+  answer: 8
+  explanation: "A theta join is σ(Movies × Roles), so no column is dropped: 5 + 3 = 8."
+
+- id: w2-q-toy-product
+  type: numeric
+  topics: [ra.product, ra.degree-cardinality]
+  difficulty: 1
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the cardinality of R1 × R2?
+  answer: 18
+  explanation: "6 × 3 = 18. (Its degree is 3 + 4 = 7.)"
+
+- id: w2-q-toy-join-degree
+  type: numeric
+  topics: [ra.natjoin, ra.degree-cardinality]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the degree of R1 ⋈ R2?
+  answer: 5
+  explanation: "They share C1 and C2: 3 + 4 − 2 = 5."
+
+- id: w2-q-toy-join-card
+  type: numeric
+  topics: [ra.natjoin, ra.degree-cardinality]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the cardinality of R1 ⋈ R2?
+  answer: 2
+  explanation: "Only (A, 1) and (B, 2) appear in both on C1 and C2."
+
+- id: w2-q-toy-left-card
+  type: numeric
+  topics: [ra.outer, ra.degree-cardinality]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the cardinality of R1 ⟕ R2 (left outer join)?
+  answer: 6
+  explanation: "The 2 matching tuples, plus the 4 R1 tuples with no match padded with nulls: every R1 tuple appears once."
+
+- id: w2-q-toy-right-card
+  type: numeric
+  topics: [ra.outer, ra.degree-cardinality]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the cardinality of R1 ⟖ R2 (right outer join)?
+  answer: 3
+  explanation: "The 2 matches, plus R2's (D, 1, z, 3), which matches nothing and is padded."
+
+- id: w2-q-toy-full-card
+  type: numeric
+  topics: [ra.outer, ra.degree-cardinality]
+  difficulty: 2
+  dataset: toy
+  show: { tables: [R1, R2] }
+  prompt: What is the cardinality of R1 ⟗ R2 (full outer join)?
+  answer: 7
+  explanation: "2 matches + 4 unmatched from R1 + 1 unmatched from R2."
+
+- id: w2-q-predict-left
+  type: predict_table
+  topics: [ra.outer]
+  difficulty: 2
+  dataset: toy
+  show: { tables: [J1, J2] }
+  prompt: Fill in the result of J1 ⟕ J2. Write null for a padded value.
+  ra: J1 ⟕ J2
+  explanation: "a matches both J2 tuples with col1 = 1. b has no match, so it is kept and padded with null."
+
+- id: w2-q-predict-division-slide
+  type: predict_table
+  topics: [ra.division]
+  difficulty: 1
+  dataset: toy
+  show: { tables: [D1, D2] }
+  prompt: Fill in the result of D1 ÷ D2.
+  ra: D1 ÷ D2
+  explanation: "A and B appear with both 1 and 2. C appears only with 1."
+
+- id: w2-q-predict-division-2
+  type: predict_table
+  topics: [ra.division]
+  difficulty: 3
+  tags: [worksheet-variant]
+  dataset: toy
+  show: { tables: [R1] }
+  prompt: "Fill in the result of π<sub>C1, C3</sub>(R1) ÷ π<sub>C3</sub>(σ<sub>C1 = 'B'</sub>(R1))."
+  ra: "π C1, C3 (R1) ÷ π C3 (σ C1 = 'B' (R1))"
+  explanation: "The divisor is B's C3 values, {b, c}. B has both b and c; C has c and b; A has only a."
+
+- id: w2-q-predict-join
+  type: predict_table
+  topics: [ra.natjoin]
+  difficulty: 2
+  dataset: toy
+  show: { tables: [R1, R3] }
+  prompt: Fill in the result of R1 ⋈ R3.
+  ra: R1 ⋈ R3
+  explanation: "They share C1, C2 and C3, so a tuple joins only when all three match: (A, 1, a) and (B, 2, c)."
+
+- id: w2-q-predict-minus
+  type: predict_table
+  topics: [ra.set-ops]
+  difficulty: 1
+  dataset: toy
+  show: { tables: [R1, R3] }
+  prompt: "Fill in the result of π<sub>C3</sub>(R1) − π<sub>C3</sub>(R3)."
+  ra: "π C3 (R1) − π C3 (R3)"
+  explanation: "R1's C3 values are {a, b, c}; R3's are {a, c}. Only b is left."
+
+- id: w2-q-ra-british
+  type: ra
+  topics: [ra.select, ra.project]
+  difficulty: 1
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Write an RA expression for the names of all British actors.
+  reference: "π aName (σ nationality = 'British' (Artists))"
+  hints:
+    - Only one relation holds nationality.
+    - Select the rows first, then project the column.
+
+- id: w2-q-ra-1970s
+  type: ra
+  topics: [ra.select]
+  difficulty: 1
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Write an RA expression for all movies (all attributes) from the 1970s.
+  reference: "σ year >= 1970 ∧ year <= 1979 (Movies)"
+  hints:
+    - "Combine two comparisons with ∧ (or `and`)."
+
+- id: w2-q-ra-directors-1970s
+  type: ra
+  topics: [ra.select, ra.project]
+  difficulty: 1
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Write an RA expression for all directors of movies from the 1970s.
+  reference: "π director (σ year >= 1970 ∧ year <= 1979 (Movies))"
+
+- id: w2-q-ra-characters-1970s
+  type: ra
+  topics: [ra.natjoin, ra.select, ra.project]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Write an RA expression for the names of all characters in movies from the 1970s.
+  reference: "π character (σ year >= 1970 ∧ year <= 1979 (Movies) ⋈ Roles)"
+  hints:
+    - Year is in Movies and character is in Roles. Which attribute links them?
+
+- id: w2-q-ra-lucas-actors
+  type: ra
+  topics: [ra.natjoin, ra.select, ra.project]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: "Find every actor who has been in a Lucas movie. Report the actor's name and the movie title."
+  reference: "π aName, title (σ director = 'Lucas' (Movies) ⋈ Roles ⋈ Artists)"
+  hints:
+    - "Three relations: Movies for the director, Artists for the name, Roles to connect them."
+
+- id: w2-q-ra-british-kubrick
+  type: ra
+  topics: [ra.natjoin, ra.select, ra.project]
+  difficulty: 2
+  tags: [worksheet-variant]
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Find the names of British actors who have been in a Kubrick movie.
+  reference: "π aName (σ nationality = 'British' ∧ director = 'Kubrick' (Artists ⋈ Roles ⋈ Movies))"
+
+- id: w2-q-ra-nationalities
+  type: ra
+  topics: [ra.project]
+  difficulty: 1
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Report the different nationalities in the database.
+  reference: "π nationality (Artists)"
+  explanation: "Projection removes duplicates, so American appears once. The result has degree 1 and cardinality 2."
+
+- id: w2-q-ra-pairs-nationality
+  type: ra
+  topics: [ra.rename-assign, ra.product, ra.strategy]
+  difficulty: 3
+  tags: [worksheet-variant]
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: "Find pairs of names of artists with the same nationality. List each pair once, with the artist who has the smaller aID first."
+  reference: "π A1.aName, A2.aName (σ A1.nationality = A2.nationality ∧ A1.aID < A2.aID (ρ A1 (Artists) × ρ A2 (Artists)))"
+  hints:
+    - "You need two copies of Artists. Name them with ρ."
+    - "A1.aID < A2.aID stops an artist pairing with themself and lists each pair once."
+
+- id: w2-q-ra-pairs-director
+  type: ra
+  topics: [ra.rename-assign, ra.product, ra.strategy]
+  difficulty: 3
+  tags: [worksheet-variant]
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: "Find pairs of titles of movies with the same director. List each pair once, with the smaller mID first."
+  reference: "π M1.title, M2.title (σ M1.director = M2.director ∧ M1.mID < M2.mID (ρ M1 (Movies) × ρ M2 (Movies)))"
+
+- id: w2-q-ra-no-roles
+  type: ra
+  topics: [ra.set-ops, ra.natjoin]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Find the titles of movies that have no roles recorded in Roles.
+  reference: "π title ((π mID (Movies) − π mID (Roles)) ⋈ Movies)"
+  hints:
+    - "Which mIDs are in Movies but not in Roles? Then get their titles."
+
+- id: w2-q-ra-every-movie
+  type: ra
+  topics: [ra.division]
+  difficulty: 3
+  dataset: movies-v2
+  show: { diagram: true, tables: [Movies, Roles] }
+  prompt: List the names of all actors who play a role in **every** movie in the database.
+  reference: "π aName ((π mID, aID (Roles) ÷ π mID (Movies)) ⋈ Artists)"
+  hints:
+    - "\"Every\" is the cue for ÷."
+    - "Divide the (mID, aID) pairs by the set of all mIDs."
+
+- id: w2-q-ra-outer
+  type: ra
+  topics: [ra.outer]
+  difficulty: 2
+  dataset: movies-outer
+  show: { diagram: true, tables: [Artists] }
+  prompt: "List every artist's name with the character they play (aName, character), including artists who play no role."
+  reference: "π aName, character (Artists ⟕ Roles)"
+  hints:
+    - "A natural join drops Bachchan. Which join keeps every tuple of its left operand?"
+
+- id: w2-q-ra-same-name
+  type: ra
+  topics: [ra.set-ops]
+  difficulty: 2
+  dataset: set-ops
+  show: { tables: [Student, Instructor] }
+  prompt: List the first names that belong to both an instructor and a student.
+  reference: "π first_name (Instructor) ∩ π first_name (Student)"
+
+- id: w2-q-union-compat
+  type: mcq
+  topics: [ra.set-ops]
+  difficulty: 2
+  dataset: set-ops
+  show: { tables: [Student, Instructor] }
+  prompt: "Are Student(student_id, first_name) and Instructor(first_name, last_name) union compatible?"
+  options:
+    - "Yes: both have degree 2"
+    - "No: the domain of the first attribute differs"
+    - "Yes: both have a first_name attribute"
+    - "No: they have different cardinalities"
+  answer: 1
+  explanation: "Union compatibility needs the same degree **and** matching domains position by position. student_id is an integer; Instructor's first attribute is text. Cardinality doesn't matter."
+
+- id: w2-q-not-true-natjoin
+  type: mcq
+  topics: [ra.natjoin]
+  difficulty: 2
+  tags: [negated-stem, quiz-style]
+  prompt: Which of the following is **not true** about natural join?
+  options:
+    - R ⋈ S = S ⋈ R, apart from the order of attributes.
+    - If R and S share no attribute names, R ⋈ S = R × S.
+    - R ⋈ S keeps both copies of every attribute R and S have in common.
+    - R ⋈ (S ⋈ T) = (R ⋈ S) ⋈ T
+    - None of the given choices
+  answer: 2
+  explanation: Natural join projects away the duplicate copy of each common attribute. A theta join keeps both.
+
+- id: w2-q-theta-def
+  type: mcq
+  topics: [ra.theta]
+  difficulty: 1
+  prompt: "R ⋈<sub>c</sub> S (theta join) is equivalent to…"
+  options:
+    - "σ<sub>c</sub>(R ⋈ S)"
+    - "σ<sub>c</sub>(R × S)"
+    - "π<sub>c</sub>(R × S)"
+    - "R × σ<sub>c</sub>(S)"
+  answer: 1
+  explanation: A theta join is a Cartesian product followed by a select, not a natural join followed by a select.
+
+- id: w2-q-precedence
+  type: mcq
+  topics: [ra.precedence]
+  difficulty: 2
+  prompt: "Which operator has the **lowest** precedence?"
+  options: ["σ", "⋈", "∩", "∪"]
+  answer: 3
+  explanation: "σ, π bind tightest, then × and ⋈, then ∩, then ∪ and −."
+
+- id: w2-q-every-cue
+  type: mcq
+  topics: [ra.strategy, ra.division]
+  difficulty: 1
+  prompt: "\"Find suppliers who supply **all** red parts.\" Which operator does the wording point to?"
+  options: ["×", "÷", "−", "ρ"]
+  answer: 1
+  explanation: "\"All\" and \"every\" are the cue for division."
+
+- id: w2-q-selfjoin
+  type: mcq
+  topics: [ra.strategy, ra.rename-assign]
+  difficulty: 2
+  prompt: To find pairs of movies with the same director, what do you need?
+  options:
+    - Movies ⋈ Movies
+    - Two renamed copies of Movies, a product, and a select
+    - Movies ÷ Movies
+    - π director (Movies) ∩ π director (Movies)
+  answer: 1
+  explanation: "Movies ⋈ Movies matches on every attribute and just returns Movies. A self join needs ρ to name the two copies, then × and σ."
+
+- id: w2-q-assign
+  type: true_false
+  topics: [ra.rename-assign]
+  difficulty: 1
+  prompt: "Movies := σ year > 1980 (Movies) deletes the older movies from the Movies relation."
+  answer: false
+  explanation: Assignment only defines a temporary relation, and its name must be new. It never updates a relation in the schema.
+
+- id: w2-q-match-operators
+  type: matching
+  topics: [ra.select, ra.project, ra.product, ra.division]
+  difficulty: 1
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each operator to what it does.
+  left: ["σ", "π", "÷"]
+  right:
+    - Keeps the values that appear with every tuple of the divisor
+    - Chooses rows
+    - Chooses columns
+  answer: [1, 2, 0]
+
+- id: w2-q-match-degrees
+  type: matching
+  topics: [ra.degree-cardinality]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: "R has degree 3 and S has degree 2, and they share one attribute name. Match each expression to the degree of its result."
+  left: ["R × S", "R ⋈ S", "π<sub>A</sub>(R) ∪ π<sub>B</sub>(S)"]
+  right: ["1", "4", "5"]
+  answer: [2, 1, 0]
+  explanation: "3 + 2 = 5; 3 + 2 − 1 = 4; each side of the union is projected to one attribute."
+
+- id: w2-q-blanks-ra-1
+  type: blanks
+  topics: [ra.select, ra.project, ra.natjoin]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "The degree of σ<sub>c</sub>(R) always equals the degree of R.", answer: "True" }
+    - { text: "π<sub>L</sub>(R) can have more tuples than R.", answer: "False" }
+    - { text: "If R and S share no attribute names, R ⋈ S is the same as R × S.", answer: "True" }
+    - { text: "A theta join is a natural join followed by a select.", answer: "False" }
+  explanation: "Select never changes the columns. Projection can only merge duplicates. With no shared names there's nothing to match on. A theta join is a *product* followed by a select."
+
+- id: w2-q-blanks-ra-2
+  type: blanks
+  topics: [ra.set-ops, ra.division, ra.outer]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "R − S = S − R for any union-compatible R and S.", answer: "False" }
+    - { text: "For R ÷ S, every attribute of S must be an attribute of R.", answer: "True" }
+    - { text: "Two relations with the same degree are always union compatible.", answer: "False" }
+    - { text: "A left outer join keeps every tuple of the left operand.", answer: "True" }
+  explanation: "Difference isn't commutative. Division requires S's attributes to be a subset of R's. Union compatibility also needs matching domains. Left outer join pads unmatched left tuples rather than dropping them."

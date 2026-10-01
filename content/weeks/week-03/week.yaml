@@ -1,0 +1,7 @@
+number: 3
+title: RA wrap-up and SQL queries
+summary: Division, set difference and equivalent RA plans, then SQL's SELECT–FROM–WHERE, joins, WHERE operators, subqueries, set operators and aggregates.
+status: published
+topics: [ra.division, ra.set-ops, ra.plans, sql.basics, sql.select-from-where, sql.execution-order, sql.joins, sql.where, sql.distinct-order, sql.subqueries, sql.set-ops, sql.aggregates]
+readings: ["Elmasri & Navathe 4.1, 4.2, 4.3, 4.4"]
+sources: [Week3_PartI_leftOverRA.pdf, Week3_part2_SQL_DML.pdf]

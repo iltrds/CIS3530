@@ -1,0 +1,28 @@
+id: toy
+title: Small practice relations
+description: >
+  Tiny relations for predicting results by hand. J1/J2 and D1/D2 are the join and division examples
+  from the slides; R1, R2 and R3 are new relations in the style of Worksheet 2.
+source: Week 2 slides (joins, division); new practice relations
+tables:
+  - name: J1
+    columns: [{ name: col0 }, { name: col1, type: int }]
+    rows: [[a, 1], [b, 2]]
+  - name: J2
+    columns: [{ name: col1, type: int }, { name: col2 }]
+    rows: [[1, x], [1, y], [3, z]]
+  - name: D1
+    columns: [{ name: Col1 }, { name: Col2, type: int }]
+    rows: [[A, 1], [A, 2], [B, 1], [B, 2], [C, 1]]
+  - name: D2
+    columns: [{ name: Col2, type: int }]
+    rows: [[1], [2]]
+  - name: R1
+    columns: [{ name: C1 }, { name: C2, type: int }, { name: C3 }]
+    rows: [[A, 1, a], [A, 2, a], [B, 1, b], [B, 2, c], [C, 1, c], [C, 2, b]]
+  - name: R2
+    columns: [{ name: C1 }, { name: C2, type: int }, { name: D3 }, { name: D4, type: int }]
+    rows: [[A, 1, x, 1], [B, 2, y, 2], [D, 1, z, 3]]
+  - name: R3
+    columns: [{ name: C1 }, { name: C2, type: int }, { name: C3 }, { name: D4, type: int }]
+    rows: [[A, 1, a, 1], [B, 2, c, 2]]

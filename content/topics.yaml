@@ -1,0 +1,38 @@
+# Every question, card and example is tagged with one or more of these ids.
+# The weak-topic dashboard and the quiz builder group by them.
+- { id: rm.definitions, label: "Databases, DBMSs and data models", week: 1 }
+- { id: rm.relations-math, label: "Relations as sets", week: 1 }
+- { id: rm.terminology, label: "Relational terminology", week: 1 }
+- { id: rm.properties, label: "Properties of relations", week: 1 }
+- { id: keys.superkey, label: "Superkeys", week: 1 }
+- { id: keys.candidate, label: "Candidate keys", week: 1 }
+- { id: keys.primary, label: "Primary, alternate and surrogate keys", week: 1 }
+- { id: keys.foreign, label: "Foreign keys", week: 1 }
+- { id: integrity.domain, label: "Domain constraints", week: 1 }
+- { id: integrity.entity, label: "Entity integrity", week: 1 }
+- { id: integrity.referential, label: "Referential integrity", week: 1 }
+- { id: rm.schema-reading, label: "Reading a schema diagram", week: 1 }
+
+- { id: ra.select, label: "Select (σ)", week: 2 }
+- { id: ra.project, label: "Project (π)", week: 2 }
+- { id: ra.product, label: "Cartesian product (×)", week: 2 }
+- { id: ra.natjoin, label: "Natural join (⋈)", week: 2 }
+- { id: ra.theta, label: "Theta and equi joins", week: 2 }
+- { id: ra.outer, label: "Outer joins", week: 2 }
+- { id: ra.rename-assign, label: "Rename (ρ) and assignment (:=)", week: 2 }
+- { id: ra.precedence, label: "Precedence and composing expressions", week: 2 }
+- { id: ra.degree-cardinality, label: "Degree and cardinality of results", week: 2 }
+- { id: ra.set-ops, label: "Set operators and union compatibility", week: 2 }
+- { id: ra.division, label: "Division (÷)", week: 2 }
+- { id: ra.strategy, label: "Approaching RA problems", week: 2 }
+
+- { id: ra.plans, label: "Equivalent RA expressions", week: 3 }
+- { id: sql.basics, label: "SQL overview and bag semantics", week: 3 }
+- { id: sql.select-from-where, label: "SELECT–FROM–WHERE", week: 3 }
+- { id: sql.execution-order, label: "Order of execution", week: 3 }
+- { id: sql.joins, label: "Joins in the FROM clause", week: 3 }
+- { id: sql.where, label: "WHERE operators (LIKE, BETWEEN, IN, NULL)", week: 3 }
+- { id: sql.distinct-order, label: "DISTINCT, aliases and ORDER BY", week: 3 }
+- { id: sql.subqueries, label: "Subqueries (IN, NOT IN)", week: 3 }
+- { id: sql.set-ops, label: "UNION, INTERSECT, EXCEPT", week: 3 }
+- { id: sql.aggregates, label: "Aggregate functions", week: 3 }

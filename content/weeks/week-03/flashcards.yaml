@@ -1,0 +1,113 @@
+- id: w3-fc-difference-not
+  topic: ra.set-ops
+  front: Which RA operator answers "not" questions, like actors who don't work in movie 1?
+  back: "Set difference: all actors minus the ones who do. π aID (Artists) − π aID (σ mID = 1 (Roles))."
+- id: w3-fc-plans
+  topic: ra.plans
+  front: Why can two correct RA expressions for the same question differ in cost?
+  back: Each suggests a different query execution plan. Selecting before a product or join keeps intermediate relations small.
+- id: w3-fc-sql-parts
+  topic: sql.basics
+  front: DDL, DML and DCL?
+  back: "Data Definition Language (create/alter schemas), Data Manipulation Language (query, insert, update, delete), Data Control Language (permissions)."
+- id: w3-fc-bag
+  topic: sql.basics
+  front: Is an SQL table a set or a bag?
+  back: A bag. Duplicate rows are allowed unless a PRIMARY KEY or UNIQUE constraint prevents them, or the query uses DISTINCT.
+- id: w3-fc-set-ways
+  topic: sql.basics
+  front: Three ways to make SQL relations behave like sets?
+  back: "PRIMARY KEY or UNIQUE constraints on the table, or DISTINCT in the query."
+- id: w3-fc-select-not-sigma
+  topic: sql.select-from-where
+  front: SQL's SELECT clause corresponds to which RA operator?
+  back: "π (project): it chooses columns. RA's σ corresponds to SQL's WHERE."
+  tags: [trap]
+- id: w3-fc-order
+  topic: sql.execution-order
+  front: In what order are FROM, WHERE and SELECT evaluated?
+  back: "FROM (1), WHERE (2), SELECT (3)."
+- id: w3-fc-case
+  topic: sql.where
+  front: Does city = 'London' match 'LONDON'?
+  back: No. String comparison is case-sensitive, and the Week 3 instance stores values in capitals.
+  tags: [trap]
+- id: w3-fc-comma-join
+  topic: sql.joins
+  front: What does FROM S, SP produce on its own?
+  back: The Cartesian product. Add WHERE S.sno = SP.sno to keep matching rows.
+- id: w3-fc-natural
+  topic: sql.joins
+  front: NATURAL JOIN vs JOIN … USING (col) vs JOIN … ON cond?
+  back: "NATURAL JOIN matches every same-named column. USING matches only the listed columns. ON takes any condition and keeps both copies of the columns."
+- id: w3-fc-natural-trap
+  topic: sql.joins
+  front: Why can S NATURAL JOIN SP NATURAL JOIN P lose rows?
+  back: S and P both have a city column, so the natural join also requires the supplier's city to equal the part's city.
+  tags: [trap]
+- id: w3-fc-left-join
+  topic: sql.joins
+  front: How do you list every supplier, including ones with no shipments?
+  back: "S LEFT JOIN SP ON S.sno = SP.sno. Suppliers without a match get nulls in SP's columns."
+- id: w3-fc-alias
+  topic: sql.joins
+  front: How do you join a table with itself in SQL?
+  back: "Give it two aliases: FROM S S1, S S2 (or S AS S1, S AS S2), then compare S1.col with S2.col."
+- id: w3-fc-subquery-from
+  topic: sql.joins
+  front: Can FROM contain a query?
+  back: "Yes: FROM (SELECT …) AS t. The subquery must be parenthesised, and named if the outer query refers to it."
+- id: w3-fc-like
+  topic: sql.where
+  front: "LIKE wildcards: % and _?"
+  back: "% matches any sequence of characters, including none. _ matches exactly one character."
+- id: w3-fc-between
+  topic: sql.where
+  front: Is BETWEEN 100 AND 200 inclusive?
+  back: Yes, both ends. It means qty >= 100 AND qty <= 200.
+- id: w3-fc-in
+  topic: sql.where
+  front: What does qty IN (100, 200) mean?
+  back: qty = 100 OR qty = 200. IN tests set membership, against a list or a subquery's result.
+- id: w3-fc-null
+  topic: sql.where
+  front: How do you find rows where sname is missing?
+  back: "WHERE sname IS NULL. Comparing with = NULL or <> NULL is never true."
+  tags: [trap]
+- id: w3-fc-distinct
+  topic: sql.distinct-order
+  front: SELECT city FROM S vs SELECT DISTINCT city FROM S?
+  back: The first returns one row per supplier, so cities repeat. DISTINCT removes duplicate rows.
+- id: w3-fc-orderby
+  topic: sql.distinct-order
+  front: Default ORDER BY direction, and how to reverse it?
+  back: Ascending (ASC) by default. Add DESC for descending.
+- id: w3-fc-eq-subquery
+  topic: sql.subqueries
+  front: "Why does WHERE sno = (SELECT sno FROM SP) fail?"
+  back: "= needs a single value, but the subquery returns many rows (\"more than one row returned by a subquery used as an expression\"). Use IN."
+  tags: [trap]
+- id: w3-fc-not-in
+  topic: sql.subqueries
+  front: How do you get suppliers who do not supply part P2?
+  back: "WHERE sno NOT IN (SELECT sno FROM SP WHERE pno = 'P2'), or the names of all suppliers EXCEPT the names of those who do."
+- id: w3-fc-nested
+  topic: sql.subqueries
+  front: How do you find suppliers of at least one red part with subqueries?
+  back: "Nest them: sno IN (SELECT sno FROM SP WHERE pno IN (SELECT pno FROM P WHERE color = 'RED'))."
+- id: w3-fc-setops
+  topic: sql.set-ops
+  front: SQL's set operators, and what they do with duplicates?
+  back: "UNION, INTERSECT, EXCEPT. They remove duplicates (the results are sets). Both queries must be union compatible."
+- id: w3-fc-aggregates
+  topic: sql.aggregates
+  front: The five aggregate functions?
+  back: "COUNT, SUM, MAX, MIN, AVG. Each turns a column into a single value."
+- id: w3-fc-count-star
+  topic: sql.aggregates
+  front: "COUNT(*) vs COUNT(col) vs COUNT(DISTINCT col)?"
+  back: "COUNT(*) counts rows, including ones with nulls. COUNT(col) counts non-null values. COUNT(DISTINCT col) counts different non-null values."
+- id: w3-fc-count-sp
+  topic: sql.aggregates
+  front: "Week 3 instance: SELECT COUNT(DISTINCT sno), COUNT(*) FROM SP?"
+  back: "5 and 12. Five different suppliers across twelve shipments."

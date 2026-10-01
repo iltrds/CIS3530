@@ -1,0 +1,20 @@
+id: social
+title: Profiles and Follows
+description: Week 2's tiny example for Cartesian product and natural join. Natural join matches on shared attribute names, so renaming columns changes the result.
+source: Week 2 slides
+tables:
+  - name: profiles
+    columns:
+      - { name: ID, pk: true }
+      - { name: Name }
+    rows:
+      - [Oprah, Oprah Winfrey]
+      - [ginab, Gina Bianchini]
+  - name: follows
+    columns:
+      - { name: a, pk: true }
+      - { name: b, pk: true }
+    rows:
+      - [Oprah, ev]
+      - [edyson, ginab]
+      - [ginab, ev]

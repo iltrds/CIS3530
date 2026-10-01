@@ -1,0 +1,46 @@
+id: movies-outer
+title: Movies with Bachchan added
+description: Week 2's outer-join instance. Artists gains Bachchan, who plays no role, so a natural join drops him and a left outer join keeps him.
+source: Week 2 slides ("Artists table UPDATED")
+tables:
+  - name: Movies
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: title }
+      - { name: director }
+      - { name: year, type: int }
+      - { name: length, type: int }
+    rows:
+      - [1, Shining, Kubrick, 1980, 146]
+      - [2, Player, Altman, 1992, 146]
+      - [3, Chinatown, Polaski, 1974, 131]
+      - [4, Repulsion, Polaski, 1965, 143]
+      - [5, Star Wars IV, Lucas, 1977, 126]
+      - [6, American Graffiti, Lucas, 1973, 110]
+      - [7, Full Metal Jacket, Kubrick, 1987, 156]
+  - name: Artists
+    columns:
+      - { name: aID, type: int, pk: true }
+      - { name: aName }
+      - { name: nationality }
+    rows:
+      - [1, Nicholson, American]
+      - [2, Ford, American]
+      - [3, Stone, British]
+      - [4, Fisher, American]
+      - [5, Bachchan, Indian]
+  - name: Roles
+    columns:
+      - { name: mID, type: int, pk: true }
+      - { name: aID, type: int, pk: true }
+      - { name: character }
+    foreignKeys:
+      - { columns: [mID], references: { table: Movies, columns: [mID] } }
+      - { columns: [aID], references: { table: Artists, columns: [aID] } }
+    rows:
+      - [1, 1, Jack Torrance]
+      - [3, 1, "Jake 'J.J.' Gittes"]
+      - [1, 3, Delbert Grady]
+      - [5, 2, Han Solo]
+      - [6, 2, Bob Falfa]
+      - [5, 4, Princess Leia Organa]

@@ -1,0 +1,133 @@
+- id: w2-ex-british
+  title: Names of British actors
+  topics: [ra.select, ra.project]
+  dataset: movies-v1
+  question: Find the names of all British actors.
+  steps:
+    - title: Choose the rows with σ
+      body: "Only Artists is needed. Select the British ones."
+      ra: σ nationality = 'British' (Artists)
+    - title: Choose the column with π
+      body: "The question asks only for names, so project onto aName."
+      ra: π aName (σ nationality = 'British' (Artists))
+  pitfalls:
+    - "π first and σ second fails: after π aName the nationality column is gone, so the condition has nothing to test."
+
+- id: w2-ex-1970s-characters
+  title: Characters in movies from the 1970s
+  topics: [ra.product, ra.natjoin, ra.plans]
+  dataset: movies-v1
+  question: Find the names of all characters in movies from the 1970s.
+  steps:
+    - title: Which relations?
+      body: "Year is in Movies, character is in Roles, so both are needed. They connect through mID."
+      showResult: false
+    - title: Product, then keep the matching pairs
+      body: "Movies × Roles has 7 × 6 = 42 tuples, most of them nonsense (a role paired with the wrong movie). Keep the ones where the mIDs agree."
+      ra: σ Movies.mID = Roles.mID (Movies × Roles)
+    - title: Keep the 1970s and project
+      ra: π character (σ Movies.mID = Roles.mID ∧ year >= 1970 ∧ year <= 1979 (Movies × Roles))
+    - title: The same query with a natural join
+      body: "Natural join does the mID matching for you. Selecting the 1970s movies first keeps the join small, which is one reason different RA solutions suggest different query plans."
+      ra: π character (σ year >= 1970 ∧ year <= 1979 (Movies) ⋈ Roles)
+  pitfalls:
+    - "Forgetting the mID condition after × gives every character in the database paired with every 1970s movie."
+
+- id: w2-ex-overmatch
+  title: Natural join matches on names, not meaning
+  topics: [ra.natjoin, ra.product, ra.rename-assign]
+  dataset: social
+  question: "profiles(ID, Name) and follows(a, b). Find each profile together with the accounts it follows."
+  steps:
+    - title: No shared names means a product
+      body: "profiles and follows share no attribute names, so profiles ⋈ follows is just the Cartesian product: 2 × 3 = 6 tuples, most meaningless."
+      ra: profiles ⋈ follows
+    - title: Rename so the right columns match
+      body: "We want profiles.ID = follows.a. Renaming follows' attributes to (ID, b) makes natural join match exactly that."
+      ra: profiles ⋈ ρ F(ID, b) (follows)
+    - title: Or say it explicitly with a theta join
+      body: "A theta join keeps both columns, so the result has 4 attributes instead of 3."
+      ra: profiles ⋈ [ID = a] follows
+  pitfalls:
+    - "Natural join only looks at names. If follows had named its *second* column ID instead, the join would match profiles against the accounts they are followed by: a different question, and no error to warn you."
+
+- id: w2-ex-outer
+  title: Keeping artists with no roles
+  topics: [ra.outer, ra.natjoin]
+  dataset: movies-outer
+  question: List all artists and the roles they play, including artists who play none.
+  steps:
+    - title: Natural join drops Bachchan
+      body: "Bachchan has no tuple in Roles, so he's a dangling tuple and the natural join leaves him out."
+      ra: π aName, character (Artists ⋈ Roles)
+    - title: Left outer join keeps him
+      body: "The left operand is Artists, so ⟕ keeps every artist and pads the missing role with null."
+      ra: π aName, character (Artists ⟕ Roles)
+  pitfalls:
+    - "Roles ⟕ Artists would keep unmatched *roles*, not unmatched artists. The padded side is the one opposite the kept side."
+
+- id: w2-ex-pairs
+  title: Pairs of artists with the same nationality
+  topics: [ra.rename-assign, ra.product, ra.strategy]
+  dataset: movies-v1
+  question: Find pairs of names of artists with the same nationality.
+  steps:
+    - title: Two copies of Artists
+      body: "Comparing Artists with itself needs two names for it, or every attribute would be ambiguous. Their product has 4 × 4 = 16 tuples."
+      ra: ρ A1 (Artists) × ρ A2 (Artists)
+    - title: Same nationality, each pair once
+      body: "A1.nationality = A2.nationality alone also pairs each artist with itself and lists every pair in both orders. Requiring A1.aID < A2.aID removes both."
+      ra: π A1.aName, A2.aName (σ A1.nationality = A2.nationality ∧ A1.aID < A2.aID (ρ A1 (Artists) × ρ A2 (Artists)))
+  pitfalls:
+    - "A natural join of the two copies would match on *every* attribute (aID, aName, nationality) and just give Artists back."
+
+- id: w2-ex-division
+  title: Actors in every movie
+  topics: [ra.division, ra.strategy]
+  dataset: movies-v2
+  question: List all actors who play a role in every movie in the database (4-movie instance).
+  steps:
+    - title: "\"Every\" means division"
+      body: "Dividend: which actor appears in which movie."
+      ra: π mID, aID (Roles)
+    - title: The divisor is all the movies
+      ra: π mID (Movies)
+    - title: Divide
+      body: "Keeps each aID that appears with all four mIDs. Only aID 1 does (movies 1, 3, 5 and 6)."
+      ra: π mID, aID (Roles) ÷ π mID (Movies)
+    - title: Get the name
+      ra: π aName ((π mID, aID (Roles) ÷ π mID (Movies)) ⋈ Artists)
+  pitfalls:
+    - "Dividing Roles itself (with character) fails: character is different in each tuple, so no (aID, character) pair appears with every movie. Project the dividend down first."
+
+- id: w2-ex-setops
+  title: Students and instructors with the same first name
+  topics: [ra.set-ops]
+  dataset: set-ops
+  question: "Student(student_id, first_name) and Instructor(first_name, last_name). Which instructors share a first name with a student?"
+  steps:
+    - title: Are they union compatible?
+      body: "Both have degree 2, but position 1 is an integer in Student and text in Instructor. Not compatible as they stand."
+      showResult: false
+    - title: Project both onto first_name, then intersect
+      ra: π first_name (Instructor) ∩ π first_name (Student)
+    - title: Instructors who don't share a name with a student
+      ra: π first_name (Instructor) − π first_name (Student)
+    - title: Students who don't share a name with an instructor
+      body: "Difference isn't symmetric: swapping the operands answers a different question."
+      ra: π first_name (Student) − π first_name (Instructor)
+  pitfalls:
+    - "Comparisons are case-sensitive: 'Nina' matches 'Nina', but 'SMITH' would not match 'Smith'."
+
+- id: w2-ex-theta
+  title: Theta join vs natural join
+  topics: [ra.theta, ra.natjoin, ra.degree-cardinality]
+  dataset: movies-v1
+  question: Join Movies and Roles on mID with a theta join and with a natural join. How do the results differ?
+  steps:
+    - title: Theta (equi) join
+      body: "Movies ⋈<sub>Movies.mID = Roles.mID</sub> Roles is σ(Movies × Roles): both mID columns stay. Degree 5 + 3 = 8."
+      ra: Movies ⋈ [Movies.mID = Roles.mID] Roles
+    - title: Natural join
+      body: "Same tuples, but the second mID is dropped. Degree 5 + 3 − 1 = 7."
+      ra: Movies ⋈ Roles

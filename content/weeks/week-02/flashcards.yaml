@@ -1,0 +1,118 @@
+- id: w2-fc-ra
+  topic: ra.strategy
+  front: In relational algebra, what are the operands and what is every result?
+  back: The operands are relations, and every result is also a relation, so expressions can be nested.
+- id: w2-fc-select
+  topic: ra.select
+  front: "σ<sub>c</sub>(R): what does it do, and what are its degree and cardinality?"
+  back: "Keeps the tuples of R that satisfy condition c. Degree = degree of R; cardinality ≤ cardinality of R."
+- id: w2-fc-project
+  topic: ra.project
+  front: "π<sub>L</sub>(R): what does it do?"
+  back: "Keeps only the attributes in L, in that order, and removes any duplicate tuples this creates."
+- id: w2-fc-project-dup
+  topic: ra.project
+  front: Can π<sub>age</sub>(People) have fewer tuples than People?
+  back: Yes. Projection keeps one copy of each duplicate, so six people with three distinct ages give three tuples.
+  tags: [trap]
+- id: w2-fc-product
+  topic: ra.product
+  front: "Degree and cardinality of R × S?"
+  back: "Degree = deg R + deg S. Cardinality = |R| × |S|."
+- id: w2-fc-product-names
+  topic: ra.product
+  front: What happens to an attribute name that appears in both R and S in R × S?
+  back: It appears twice, and each copy is qualified with its relation name, e.g. Movies.mID and Roles.mID.
+- id: w2-fc-natjoin
+  topic: ra.natjoin
+  front: The three steps that define R ⋈ S?
+  back: "Take R × S, select tuples where same-named attributes are equal, then project away the duplicate copies of those attributes."
+- id: w2-fc-natjoin-degree
+  topic: ra.degree-cardinality
+  front: Degree of R ⋈ S?
+  back: "deg R + deg S − (number of attributes R and S have in common)."
+- id: w2-fc-natjoin-none
+  topic: ra.natjoin
+  front: What is R ⋈ S when R and S share no attribute names?
+  back: The Cartesian product R × S.
+- id: w2-fc-natjoin-same
+  topic: ra.natjoin
+  front: What is R ⋈ S when R and S have exactly the same attributes?
+  back: "R ∩ S: a tuple survives only if it matches on every attribute."
+- id: w2-fc-natjoin-props
+  topic: ra.natjoin
+  front: Is natural join commutative? Associative?
+  back: "Both (up to the order of attributes). So R₁ ⋈ R₂ ⋈ … ⋈ Rₙ needs no brackets."
+- id: w2-fc-overmatch
+  topic: ra.natjoin
+  front: How can natural join "over-match"?
+  back: It matches every pair of same-named attributes. If two attributes share a name but mean different things (actor name vs movie name), rename one with ρ or use × with an explicit σ.
+- id: w2-fc-theta
+  topic: ra.theta
+  front: Define the theta join R ⋈<sub>c</sub> S.
+  back: "σ<sub>c</sub>(R × S). It's the Cartesian product followed by select, not a natural join, so both copies of any shared attribute remain."
+- id: w2-fc-equi
+  topic: ra.theta
+  front: What is an equi join?
+  back: A theta join whose condition uses only equality comparisons.
+- id: w2-fc-dangling
+  topic: ra.outer
+  front: What is a dangling tuple?
+  back: A tuple with no match in the other relation, which a natural join leaves out (e.g. an artist who plays no role).
+- id: w2-fc-outer
+  topic: ra.outer
+  front: Left, right and full outer join?
+  back: "Natural join, plus unmatched tuples padded with nulls: left keeps unmatched tuples from the left operand, right from the right operand, full from both."
+- id: w2-fc-rename
+  topic: ra.rename-assign
+  front: "What does ρ<sub>R1</sub>(R2) do, and when do you need it?"
+  back: "Gives R2's result the name R1 (same tuples). Needed to join a relation with itself, or to stop natural join matching attributes you don't want matched."
+- id: w2-fc-assign
+  topic: ra.rename-assign
+  front: "What does R := expression do?"
+  back: Stores an intermediate result in a temporary relation R to break a problem down. R must be a new name; it never updates a relation in the schema.
+- id: w2-fc-precedence
+  topic: ra.precedence
+  front: RA operator precedence, highest to lowest?
+  back: "σ, π → ×, ⋈ → ∩ → ∪, −. Use brackets unless you're certain."
+- id: w2-fc-union-compat
+  topic: ra.set-ops
+  front: When are R and S union compatible?
+  back: "Same degree n, and dom(Aᵢ) = dom(Bᵢ) for every position i. Project to make them compatible."
+- id: w2-fc-setops
+  topic: ra.set-ops
+  front: "R ∪ S, R ∩ S, R − S?"
+  back: "In either (duplicates removed); in both; in R but not in S."
+- id: w2-fc-minus-order
+  topic: ra.set-ops
+  front: Is R − S the same as S − R?
+  back: No. Difference isn't commutative. Union and intersection are.
+  tags: [trap]
+- id: w2-fc-division
+  topic: ra.division
+  front: "R ÷ S: what does it return?"
+  back: The attributes of R that aren't in S, keeping only values that appear in R with every tuple of S.
+- id: w2-fc-division-rule
+  topic: ra.division
+  front: What must be true of the attributes for R ÷ S?
+  back: Every attribute of S must also be an attribute of R.
+- id: w2-fc-division-cue
+  topic: ra.strategy
+  front: Which words in a question hint at division?
+  back: "\"every\", \"all\", \"for all\": e.g. actors who play a role in every movie."
+- id: w2-fc-selfjoin
+  topic: ra.strategy
+  front: How do you find pairs of tuples from the same relation (e.g. artists with the same nationality)?
+  back: "A self join: rename two copies with ρ, take their product ×, then σ on the matching condition (and something like A1.aID < A2.aID to avoid pairing a tuple with itself or listing each pair twice)."
+- id: w2-fc-select-card
+  topic: ra.degree-cardinality
+  front: Cardinality of R ∪ S, R ∩ S, R − S?
+  back: "R ∪ S: between max(|R|, |S|) and |R| + |S|. R ∩ S: at most min(|R|, |S|). R − S: at most |R|."
+- id: w2-fc-calculus
+  topic: ra.strategy
+  front: Relational calculus vs relational algebra?
+  back: "Calculus is declarative (describe *what* you want, based on first-order logic); algebra is procedural. Same expressive power. Only RA is examined in 3530 this term."
+- id: w2-fc-plan
+  topic: ra.strategy
+  front: What's the first thing to do with an RA question that comes with an instance?
+  back: Work out the answer by hand from the data. It tells you which relations and operators you need, and gives you something to check your expression against.
