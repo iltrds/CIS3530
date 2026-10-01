@@ -26,22 +26,19 @@ See [CONTENT_SPEC.md](CONTENT_SPEC.md). In short: scaffold, fill in (it includes
 
 After each in-class quiz, add the result to `results` in `content/course.yaml`, and upcoming dates to `events`, so the home page shows the next quiz.
 
-## Deploy
+## Deploy (GitHub Pages)
 
-The site is plain files in `dist/`, so any static host works.
+The site is plain files in `dist/`, and `.github/workflows/deploy.yml` publishes them to GitHub Pages.
 
-**Cloudflare Pages (set up in `.github/workflows/deploy.yml`)**
+1. Push this folder to a GitHub repository with the default branch `main`.
+2. In the repo, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. Push to `main` (or re-run the workflow). It typechecks, runs the tests, builds, and deploys to `https://<username>.github.io/<repo>/`.
 
-1. Push this folder to a **private** GitHub repository.
-2. In Cloudflare, create a Pages project named `cis3530-study` (Direct Upload).
-3. Create an API token with the *Cloudflare Pages: Edit* permission.
-4. In the GitHub repo, add secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+Other branches and pull requests are tested and built but not published, so a new week can be checked in a branch before it goes live.
 
-Every push then runs typecheck, tests and build; pushes to `main` deploy to production and other branches get a preview URL. Until the secrets exist, CI still tests and builds.
+All asset paths are relative and routing uses the URL hash, so the site works under the `/<repo>/` subpath with no configuration.
 
-**Netlify instead**: replace the last workflow step with `bunx netlify-cli deploy --dir=dist --prod` and add `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` secrets. Or drag `dist/` onto Netlify's deploy page.
-
-Keep the site private (Cloudflare Access or Netlify password protection) unless the instructor is happy for it to be shared: it's built from course material.
+**Visibility.** On a free GitHub plan, Pages needs a public repository, and a Pages site is public either way. The notes and questions are written in our own words and don't include worksheet or quiz answers, but the site is built from course material, so check with the instructor before sharing the link widely. Your in-class results in `content/course.yaml` appear on the home and Progress pages; leave `results` empty if you don't want them public.
 
 ## How it's put together
 
