@@ -35,7 +35,7 @@
   type: mcq
   topics: [rm.terminology]
   difficulty: 1
-  tags: [terminology, quiz-style, trap, quiz-miss]
+  tags: [terminology, quiz-style, trap]
   prompt: Which of the following terms means the same as "attribute" in a relation?
   options:
     - Row
@@ -200,7 +200,7 @@
   type: true_false
   topics: [keys.primary]
   difficulty: 1
-  tags: [trap, quiz-miss]
+  tags: [trap]
   dataset: university
   show: { diagram: true }
   prompt: "Table course has two primary keys: courseCode and dno."

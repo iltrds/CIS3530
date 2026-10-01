@@ -126,7 +126,7 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
           In-class quiz simulator
         </h2>
         <p className="muted">
-          Same shape as Quiz 1: three 1-point multiple-choice questions, a 3-point matching question and a 4-point True/False fill-in, on one week, with a 10-minute timer. True and False must be typed exactly.
+          Same shape as the in-class quizzes: three 1-point multiple-choice questions, a 3-point matching question and a 4-point True/False fill-in, on one week, with a 10-minute timer. True and False must be typed exactly.
         </p>
         <div className="row">
           <div className="chips" role="group" aria-label="Week to quiz on">
@@ -149,7 +149,7 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
         {mistakeIds.length ? (
           <>
             <p className="muted">
-              {mistakeIds.length} question{mistakeIds.length === 1 ? "" : "s"} you got wrong. Each leaves the queue after you get it right twice in a row. Your Quiz 1 misses start here.
+              {mistakeIds.length} question{mistakeIds.length === 1 ? "" : "s"} you got wrong. Each leaves the queue after you get it right twice in a row.
             </p>
             <a className="btn primary" href={href("/quiz/run", { mode: "mistakes" })}>
               Redo {mistakeIds.length} question{mistakeIds.length === 1 ? "" : "s"}

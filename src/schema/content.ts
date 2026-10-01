@@ -182,17 +182,6 @@ export const Course = z.object({
   lecture: z.object({ weekday: z.number().int().min(0).max(6), time: z.string() }),
   weights: z.array(z.object({ item: z.string(), percent: z.number() })),
   events: z.array(CourseEvent).default([]),
-  results: z
-    .array(
-      z.object({
-        title: z.string(),
-        date: z.string(),
-        score: z.number(),
-        outOf: z.number(),
-        missedTopics: z.array(z.string()).default([]),
-      }),
-    )
-    .default([]),
 });
 
 // ---------------------------------------------------------------- quiz & exam blueprints

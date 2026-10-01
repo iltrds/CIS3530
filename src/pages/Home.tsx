@@ -47,7 +47,6 @@ export function Home({ ctx }: { ctx: Ctx }) {
     .filter(([, s]) => s.attempts >= 2)
     .sort((a, b) => a[1].accuracy - b[1].accuracy)
     .slice(0, 4);
-  const lastResult = [...m.course.results].pop();
   const lastRun = [...p.runs].pop();
 
   return (
@@ -85,11 +84,9 @@ export function Home({ ctx }: { ctx: Ctx }) {
           {mistakes ? <a href={href("/quiz/run", { mode: "mistakes" })}>Redo them</a> : <span className="small muted">Wrong answers land here.</span>}
         </div>
         <div>
-          <div className="stat-label">{lastRun ? "Last practice run" : lastResult ? `${lastResult.title} (in class)` : "Last result"}</div>
-          <div className="stat-num">
-            {lastRun ? `${Math.round((lastRun.score / lastRun.outOf) * 100)}%` : lastResult ? `${lastResult.score}/${lastResult.outOf}` : "–"}
-          </div>
-          <a href="#/progress">See progress</a>
+          <div className="stat-label">Last practice quiz</div>
+          <div className="stat-num">{lastRun ? `${Math.round((lastRun.score / lastRun.outOf) * 100)}%` : "–"}</div>
+          {lastRun ? <a href="#/quiz">See recent quizzes</a> : <a href={href("/quiz/run", { bp: "in-class", week: quizWeek })}>Take one</a>}
         </div>
       </div>
 

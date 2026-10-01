@@ -4,7 +4,7 @@ Everything the site shows comes from `content/`. The build validates every file 
 
 ```
 content/
-  course.yaml          term info, grade weights, dates (quizzes, labs…), your in-class results
+  course.yaml          term info, grade weights, dates (quizzes, labs…)
   topics.yaml          every topic id, its label and the week it belongs to
   datasets/*.yaml      relations with their rows, keys and foreign keys
   weeks/week-NN/
@@ -62,7 +62,7 @@ Every dataset is loaded into Postgres with its keys and foreign keys, so the row
   topic: sql.grouping
   front: WHERE vs HAVING?
   back: WHERE filters rows before grouping; HAVING filters groups after.
-  tags: [trap]            # optional: trap, quiz-miss
+  tags: [trap]            # optional: trap cards are introduced first
 ```
 
 ## Worked examples

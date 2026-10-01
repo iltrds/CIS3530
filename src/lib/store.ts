@@ -1,6 +1,6 @@
 /**
- * Progress lives in localStorage (per browser). Everything is exportable as
- * JSON from the Progress page so a cleared browser doesn't lose history.
+ * Each visitor's study state (flash card schedule, attempts, mistakes queue,
+ * recent quizzes, theme) lives in their own browser's localStorage.
  */
 import { useSyncExternalStore } from "react";
 import { createEmptyCard, fsrs, generatorParameters, Rating, State, type Card, type Grade as FsrsGrade } from "ts-fsrs";
@@ -30,11 +30,10 @@ export interface Progress {
   mistakes: Record<string, { since: string; streak: number }>;
   runs: Run[];
   settings: { theme: "system" | "light" | "dark" };
-  seeded: string[];
 }
 
 const KEY = "cis3530-study.v1";
-const empty = (): Progress => ({ v: 1, cards: {}, attempts: [], mistakes: {}, runs: [], settings: { theme: "system" }, seeded: [] });
+const empty = (): Progress => ({ v: 1, cards: {}, attempts: [], mistakes: {}, runs: [], settings: { theme: "system" } });
 
 function read(): Progress {
   try {
@@ -107,7 +106,7 @@ export const NEW_PER_SESSION = 20;
 export function dueQueue<T extends { id: string; tags: string[] }>(cards: T[], now = new Date()): T[] {
   const reviews = cards.filter((c) => !isNew(c.id) && isDue(c.id, now)).sort((a, b) => cardState(a.id).due.getTime() - cardState(b.id).due.getTime());
   const fresh = cards.filter((c) => isNew(c.id));
-  const prio = (c: T) => (c.tags.includes("quiz-miss") ? 0 : c.tags.includes("trap") ? 1 : 2);
+  const prio = (c: T) => (c.tags.includes("trap") ? 0 : 1);
   const newOnes = [...fresh].sort((a, b) => prio(a) - prio(b)).slice(0, NEW_PER_SESSION);
   return [...newOnes.filter((c) => prio(c) === 0), ...reviews, ...newOnes.filter((c) => prio(c) !== 0)];
 }
@@ -173,34 +172,6 @@ export function topicStats(p: Progress): Record<string, { attempts: number; accu
     out[t] = { attempts: xs.length, accuracy: recent.reduce((s, x) => s + x, 0) / recent.length };
   }
   return out;
-}
-
-/** One-time seeding: questions tagged quiz-miss start in the mistakes queue. */
-export function seedMistakes(ids: string[], tag: string) {
-  if (state.seeded.includes(tag)) return;
-  update((p) => {
-    const mistakes = { ...p.mistakes };
-    for (const id of ids) mistakes[id] ??= { since: new Date().toISOString(), streak: 0 };
-    return { ...p, mistakes, seeded: [...p.seeded, tag] };
-  });
-}
-
-export function exportProgress(): string {
-  return JSON.stringify(state, null, 2);
-}
-
-export function importProgress(json: string) {
-  const p = JSON.parse(json) as Progress;
-  if (p.v !== 1 || typeof p.cards !== "object") throw new Error("That file isn't a progress export from this site.");
-  for (const c of Object.values(p.cards)) {
-    c.due = new Date(c.due);
-    if (c.last_review) c.last_review = new Date(c.last_review);
-  }
-  save({ ...empty(), ...p });
-}
-
-export function resetProgress() {
-  save(empty());
 }
 
 export function setTheme(theme: Progress["settings"]["theme"]) {

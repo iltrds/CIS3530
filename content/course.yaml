@@ -12,7 +12,4 @@ weights:
   - { item: Worksheets (10, best 8), percent: 8 }
 # Add dates here as they're announced. The home page shows the next few.
 events:
-  - { date: "2026-09-22", kind: quiz, title: Quiz 1, covers: [1] }
   - { date: "2026-10-06", kind: quiz, title: Next in-class quiz, covers: [3], note: "Expected to cover Week 3 (RA wrap-up and SQL). Confirm in class." }
-results:
-  - { title: Quiz 1, date: "2026-09-22", score: 8, outOf: 10, missedTopics: [rm.terminology, keys.primary] }

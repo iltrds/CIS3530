@@ -84,7 +84,7 @@ export function FlashcardsPage({ ctx, query }: { ctx: Ctx; query: URLSearchParam
       <div className="page-head">
         <h1>Flash cards</h1>
         <p>
-          Cards come back on a spaced-repetition schedule: the better you know one, the longer until you see it again. Each session adds up to {NEW_PER_SESSION} new cards, your Quiz 1 misses and common traps first. Cram mode shows every card in the deck without changing the schedule.
+          Cards come back on a spaced-repetition schedule: the better you know one, the longer until you see it again. Each session adds up to {NEW_PER_SESSION} new cards, common traps first. Cram mode shows every card in the deck without changing the schedule.
         </p>
       </div>
       <div className="stack no-print" style={{ marginBottom: 24 }}>

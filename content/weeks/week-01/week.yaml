@@ -4,4 +4,4 @@ summary: What a relation is, the vocabulary for describing one, keys, and the th
 status: published
 topics: [rm.definitions, rm.relations-math, rm.terminology, rm.properties, keys.superkey, keys.candidate, keys.primary, keys.foreign, integrity.domain, integrity.entity, integrity.referential, rm.schema-reading]
 readings: ["Elmasri & Navathe, ch. 5 (the relational model and constraints)"]
-sources: [W1.pdf, Worksheet1.pdf, Quiz 1 format]
+sources: [W1.pdf, Worksheet1.pdf]

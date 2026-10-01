@@ -1,10 +1,10 @@
 id: university
 title: University schema
 description: >
-  The Worksheet 1 and Quiz 1 schema. Course's primary key is the composite (courseCode, dno):
+  The Worksheet 1 schema. Course's primary key is the composite (courseCode, dno):
   2500 exists in both CIS (60) and Physics (61). The course, dept and lab rows come from Worksheet 1;
   prof, student, labasst and assignment rows are practice data added so every foreign key resolves.
-source: Worksheet 1 (schema diagram and instance); Quiz 1 (composite key of course)
+source: Worksheet 1 (schema diagram and instance)
 tables:
   - name: dept
     columns:

@@ -34,12 +34,12 @@
   topic: rm.terminology
   front: Formal names for a row, a column and a table?
   back: "Row = **tuple**, column = **attribute**, table = **relation**."
-  tags: [trap, quiz-miss]
+  tags: [trap]
 - id: w1-fc-tuple-not-attribute
   topic: rm.terminology
   front: Is a tuple the same as an attribute?
-  back: "No. A tuple is a **row**; an attribute is a **column** (a field). Quiz 1 tested exactly this."
-  tags: [trap, quiz-miss]
+  back: "No. A tuple is a **row**; an attribute is a **column** (a field)."
+  tags: [trap]
 - id: w1-fc-domain
   topic: rm.terminology
   front: What is the domain of an attribute?
@@ -92,7 +92,7 @@
   topic: keys.primary
   front: "course(courseCode, courseName, …, dno) with courseCode and dno underlined. How many primary keys?"
   back: "**One** composite primary key made of two attributes. \"Course has two primary keys\" is false."
-  tags: [trap, quiz-miss]
+  tags: [trap]
 - id: w1-fc-foreign
   topic: keys.foreign
   front: Definition of a foreign key FK in R₁ referencing R₂?

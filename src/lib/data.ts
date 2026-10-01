@@ -52,7 +52,6 @@ export interface Manifest {
     lecture: { weekday: number; time: string };
     weights: { item: string; percent: number }[];
     events: CourseEvent[];
-    results: { title: string; date: string; score: number; outOf: number; missedTopics: string[] }[];
   };
   topics: Topic[];
   weeks: WeekMeta[];

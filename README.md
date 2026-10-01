@@ -2,7 +2,7 @@
 
 A study site for CIS*3530 Database Systems & Concepts (Fall 2026): notes, flash cards with spaced repetition, worked examples, quizzes (including a simulator of the in-class quiz format), practice exams, and a playground that runs relational algebra and real PostgreSQL in the browser.
 
-Built with **Bun + TypeScript + React**. The output is a static site: no server, no accounts. Progress is stored in your browser and can be exported from the Progress page.
+Built with **Bun + TypeScript + React**. The output is a static site: no server, no accounts. Each visitor's flash card schedule, mistakes queue and recent quizzes are stored in their own browser.
 
 ## Run it
 
@@ -24,7 +24,7 @@ bun run dev          # http://localhost:3000, reloads when content/ changes
 
 See [CONTENT_SPEC.md](CONTENT_SPEC.md). In short: scaffold, fill in (it includes a prompt for Claude), `bun run validate --week N`, preview, set `status: published`, push.
 
-After each in-class quiz, add the result to `results` in `content/course.yaml`, and upcoming dates to `events`, so the home page shows the next quiz.
+Add upcoming quiz and lab dates to `events` in `content/course.yaml` so the home page shows the next quiz.
 
 ## Deploy (GitHub Pages)
 
@@ -38,7 +38,7 @@ Other branches and pull requests are tested and built but not published, so a ne
 
 All asset paths are relative and routing uses the URL hash, so the site works under the `/<repo>/` subpath with no configuration.
 
-**Visibility.** On a free GitHub plan, Pages needs a public repository, and a Pages site is public either way. The notes and questions are written in our own words and don't include worksheet or quiz answers, but the site is built from course material, so check with the instructor before sharing the link widely. Your in-class results in `content/course.yaml` appear on the home and Progress pages; leave `results` empty if you don't want them public.
+**Visibility.** On a free GitHub plan, Pages needs a public repository, and a Pages site is public either way. The notes and questions are written in our own words and don't include worksheet or quiz answers, but the site is built from course material, so check with the instructor before sharing the link widely.
 
 ## How it's put together
 
@@ -53,7 +53,7 @@ src/
     datasets.ts     dataset → RA relations, Postgres DDL, RelaX text
   lib/              data loading, hash router, progress store (FSRS), quiz assembly
   components/       tables, schema diagram, query editor, question inputs, quiz runners
-  pages/            home, week, flash cards, quizzes, exams, playground, progress, search
+  pages/            home, week, flash cards, quizzes, exams, playground, search
 scripts/            build, dev, validate, new-week; lib/compile.ts is the content compiler
 tests/
 ```

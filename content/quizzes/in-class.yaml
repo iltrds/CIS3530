@@ -1,9 +1,9 @@
 id: in-class
 title: In-class quiz simulator
-description: Copies Quiz 1's format. 10 points across 5 questions on one week, answers checked at the end, True/False typed exactly.
+description: Copies the in-class quiz format. 10 points across 5 questions on one week, answers checked at the end, True/False typed exactly.
 kind: quiz
 covers: one_week
-timeLimitMin: 10          # the real limit isn't shown on the results page; Quiz 1 took about 6 minutes
+timeLimitMin: 10          # in-class quizzes are short; adjust if the real limit differs
 strictAnswers: true       # "True", not "TRUE" or "true", as CourseLink requires
 feedback: end
 slots:

@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRoute, href } from "./lib/router.ts";
 import { loadManifest, loadAllWeeks, useAsync, type Manifest, type WeekData } from "./lib/data.ts";
-import { dueQueue, seedMistakes, setTheme, useProgress, storageWorks } from "./lib/store.ts";
+import { dueQueue, setTheme, useProgress, storageWorks } from "./lib/store.ts";
 import { Home } from "./pages/Home.tsx";
 import { WeekPage } from "./pages/Week.tsx";
 import { FlashcardsPage } from "./pages/Flashcards.tsx";
 import { QuizPage } from "./pages/Quiz.tsx";
 import { ExamsPage } from "./pages/Exams.tsx";
 import { Playground } from "./pages/Playground.tsx";
-import { ProgressPage } from "./pages/Progress.tsx";
 import { SearchPage } from "./pages/Search.tsx";
 
 export interface Ctx {
@@ -37,11 +36,6 @@ export function App() {
   const progress = useProgress();
 
   useEffect(() => setNavOpen(false), [route.raw]);
-  useEffect(() => {
-    if (!data) return;
-    const missed = data.weeks.flatMap((w) => w.questions.filter((q) => q.tags.includes("quiz-miss")).map((q) => q.id));
-    seedMistakes(missed, "quiz-1");
-  }, [data]);
 
   const due = useMemo(() => (data ? dueQueue(data.weeks.flatMap((w) => w.flashcards)).length : 0), [data, progress.cards]);
   const mistakes = Object.keys(progress.mistakes).length;
@@ -85,9 +79,6 @@ export function App() {
       break;
     case "playground":
       page = <Playground ctx={ctx} query={route.query} />;
-      break;
-    case "progress":
-      page = <ProgressPage ctx={ctx} />;
       break;
     case "search":
       page = <SearchPage query={route.query} />;
@@ -152,9 +143,6 @@ export function App() {
           <a href="#/playground" aria-current={current("playground")}>
             <span className="nav-label">Query playground</span>
           </a>
-          <a href="#/progress" aria-current={current("progress")}>
-            <span className="nav-label">Progress</span>
-          </a>
           <div className="nav-group">Weeks</div>
           {ctx.m.weeks.map((w) => (
             <a key={w.number} href={`#/week/${w.number}`} aria-current={weekNum === w.number ? "page" : undefined}>
@@ -173,7 +161,7 @@ export function App() {
               <option value="dark">Dark</option>
             </select>
           </label>
-          {!storageWorks() && <span>This browser is blocking storage, so progress lasts only until you close the tab.</span>}
+          {!storageWorks() && <span>This browser is blocking storage, so your flash card schedule lasts only until you close the tab.</span>}
           <span>
             {ctx.m.course.term} · updated {new Date(ctx.m.generatedAt).toLocaleDateString()}
           </span>
