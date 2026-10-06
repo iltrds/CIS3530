@@ -33,6 +33,7 @@ tables:
       - [P5, CAN, BLUE, 12.00, PARIS]
       - [P6, COG, RED, 19.00, LONDON]
       - [P7, WASHER, RED, 3.00, GUELPH]
+      - [P8, PIN, BLUE, 2.00, ROME]
   - name: SP
     columns:
       - { name: sno, pk: true }
@@ -46,6 +47,7 @@ tables:
       - [S1, P7, 150]
       - [S2, P3, 100]
       - [S2, P2, 200]
+      - [S2, P5, 180]
       - [S3, P1, 350]
       - [S3, P5, 200]
       - [S5, P3, 400]
@@ -53,3 +55,5 @@ tables:
       - [S7, P2, 250]
       - [S7, P4, 120]
       - [S8, P1, 90]
+      - [S8, P4, 60]
+      - [S8, P6, 70]

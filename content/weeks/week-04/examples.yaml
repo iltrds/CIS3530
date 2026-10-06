@@ -1,0 +1,207 @@
+- id: w4-ex-group-count
+  title: How many parts does each supplier supply?
+  topics: [sql.group-by, sql.aggregates]
+  dataset: supplier-parts
+  question: For each supplier, how many parts do they supply, and what is their total quantity? Sort by the total.
+  steps:
+    - title: Without grouping, there's one group
+      body: "COUNT over all of SP gives a single row."
+      sql: SELECT COUNT(pno) FROM SP;
+    - title: One group per supplier
+      body: "GROUP BY sno makes five groups (S6 has no shipments, so it has no group). The count is computed inside each."
+      sql: |
+        SELECT sno, COUNT(pno)
+        FROM SP
+        GROUP BY sno;
+    - title: Name the total and sort by it
+      body: "`SUM(qty) sq` names the column, and ORDER BY can use the name."
+      sql: |
+        SELECT sno, SUM(qty) sq
+        FROM SP
+        GROUP BY sno
+        ORDER BY sq;
+  pitfalls:
+    - "`SELECT sno, COUNT(pno) FROM SP;` without GROUP BY is invalid: one row, but many sno values."
+
+- id: w4-ex-having
+  title: WHERE filters rows, HAVING filters groups
+  topics: [sql.having, sql.group-by]
+  dataset: supplier-parts
+  question: Which suppliers ship more than 1000 parts in total? And which parts are supplied by more than one supplier?
+  steps:
+    - title: Totals per supplier
+      sql: SELECT sno, SUM(qty) AS sq FROM SP GROUP BY sno;
+    - title: Keep the groups over 1000
+      body: "The condition is on the group's total, so it goes in HAVING. Postgres doesn't accept the name sq there; repeat SUM(qty)."
+      sql: |
+        SELECT sno, SUM(qty) AS sq
+        FROM SP
+        GROUP BY sno
+        HAVING SUM(qty) > 1000;
+    - title: Parts with more than one supplier
+      body: "Group by part and count the rows in each group."
+      sql: |
+        SELECT pno
+        FROM SP
+        GROUP BY pno
+        HAVING COUNT(*) > 1;
+    - title: Both kinds of condition together
+      body: "WHERE runs first and removes shipments under 200, then HAVING keeps parts that still have two or more."
+      sql: |
+        SELECT pno, COUNT(*)
+        FROM SP
+        WHERE qty >= 200
+        GROUP BY pno
+        HAVING COUNT(*) >= 2;
+  pitfalls:
+    - "`WHERE COUNT(*) > 1` is an error: aggregates can't be used in WHERE."
+
+- id: w4-ex-max
+  title: Aggregates belong in subqueries, not in WHERE
+  topics: [sql.having, sql.aggregates]
+  dataset: supplier-parts
+  question: Which suppliers made the single largest shipment?
+  steps:
+    - title: The tempting version fails
+      body: "WHERE looks at one row at a time, so an aggregate makes no sense there."
+      sql: SELECT sno FROM SP WHERE qty = MAX(qty);
+      expectError: true
+    - title: Compute the maximum in a subquery
+      sql: SELECT MAX(qty) FROM SP;
+    - title: Compare each row with it
+      sql: |
+        SELECT sno
+        FROM SP
+        WHERE qty = (SELECT MAX(qty)
+                     FROM SP);
+
+- id: w4-ex-exists
+  title: EXISTS and NOT EXISTS
+  topics: [sql.correlated, sql.subqueries]
+  dataset: supplier-parts
+  question: Which suppliers supply part P4, and which don't?
+  steps:
+    - title: Correlated EXISTS
+      body: "For each supplier S, the subquery looks for a shipment of P4 by that supplier. `S.sno` comes from the outer row."
+      sql: |
+        SELECT sname
+        FROM S
+        WHERE EXISTS (SELECT *
+                      FROM SP
+                      WHERE SP.sno = S.sno
+                        AND SP.pno = 'P4');
+    - title: NOT EXISTS for the rest
+      body: "HENRY, who ships nothing, is included: there's no P4 shipment of his."
+      sql: |
+        SELECT sname
+        FROM S
+        WHERE NOT EXISTS (SELECT *
+                          FROM SP
+                          WHERE SP.sno = S.sno
+                            AND SP.pno = 'P4');
+    - title: Forgetting the correlation
+      body: "Without `SP.sno = S.sno` the subquery asks \"does anyone ship P4?\", which is true, so every supplier is listed."
+      sql: |
+        SELECT sname
+        FROM S
+        WHERE EXISTS (SELECT *
+                      FROM SP
+                      WHERE pno = 'P4');
+
+- id: w4-ex-division-blue
+  title: "Division in SQL: suppliers of every blue part"
+  topics: [sql.division, sql.correlated]
+  dataset: supplier-parts
+  question: Which suppliers supply every BLUE part?
+  steps:
+    - title: The divisor
+      body: "The blue parts are P3 and P5."
+      sql: SELECT pno FROM P WHERE color = 'BLUE';
+    - title: Two negations
+      body: "\"Supplies every blue part\" becomes \"there is no blue part that this supplier doesn't supply\"."
+      sql: |
+        SELECT sname
+        FROM S
+        WHERE NOT EXISTS (SELECT *
+                          FROM P
+                          WHERE color = 'BLUE'
+                            AND NOT EXISTS (SELECT *
+                                            FROM SP
+                                            WHERE SP.sno = S.sno
+                                              AND SP.pno = P.pno));
+    - title: The COUNT method
+      body: "Count each supplier's blue parts and keep those with as many as there are blue parts. Filtering to blue parts before grouping matters: BLAKE also has two parts, but only one is blue."
+      sql: |
+        SELECT sname
+        FROM S
+        WHERE sno IN (SELECT sno
+                      FROM SP
+                      WHERE pno IN (SELECT pno FROM P WHERE color = 'BLUE')
+                      GROUP BY sno
+                      HAVING COUNT(pno) = (SELECT COUNT(*)
+                                           FROM P
+                                           WHERE color = 'BLUE'));
+  pitfalls:
+    - "`WHERE pno IN (blue parts)` on its own finds suppliers of at least one blue part, not every one."
+
+- id: w4-ex-num-den
+  title: The general division template
+  topics: [sql.division]
+  dataset: num-den
+  question: "Compute NUM ÷ DEN: the values of A that appear with every C in DEN."
+  steps:
+    - title: The tables
+      body: "NUM has no key, so (2, 4) appears twice. DEN holds 2, 3 and 4."
+      sql: SELECT * FROM num;
+    - title: In relational algebra
+      body: "π<sub>A,B</sub>(num) ÷ π<sub>C</sub>(den)"
+      ra: π A, B (num) ÷ ρ D(B) (π C (den))
+    - title: In SQL
+      body: "For each A, there must be no C in DEN that is missing from that A's rows in NUM. Only A = 1 has 2, 3 and 4."
+      sql: |
+        SELECT DISTINCT A
+        FROM num N1
+        WHERE NOT EXISTS (SELECT *
+                          FROM den
+                          WHERE NOT EXISTS (SELECT *
+                                            FROM num N2
+                                            WHERE N2.A = N1.A
+                                              AND N2.B = den.C));
+  pitfalls:
+    - "Without DISTINCT, A = 1 appears three times, once per row of NUM."
+
+- id: w4-ex-modify
+  title: INSERT, UPDATE and DELETE
+  topics: [sql.modify, integrity.referential, integrity.entity]
+  dataset: supplier-parts
+  question: Change the Supplier–Parts data, and see which changes the constraints refuse.
+  steps:
+    - title: UPDATE with WHERE
+      body: "Two shipments had a quantity of 100."
+      sql: |
+        UPDATE SP SET qty = 150 WHERE qty = 100;
+        SELECT * FROM SP WHERE qty = 150;
+    - title: UPDATE without WHERE changes every row
+      sql: |
+        UPDATE SP SET qty = 150;
+        SELECT COUNT(*) FROM SP WHERE qty = 150;
+    - title: INSERT a shipment
+      sql: |
+        INSERT INTO SP VALUES ('S6', 'P2', 250);
+        SELECT * FROM SP WHERE sno = 'S6';
+    - title: An unknown supplier is refused
+      body: "SP.sno must match a supplier in S (referential integrity)."
+      sql: INSERT INTO SP VALUES ('S9', 'P1', 100);
+      expectError: true
+    - title: Deleting a supplier with shipments is refused
+      body: "S2's shipments in SP would point at nothing."
+      sql: DELETE FROM S WHERE sno = 'S2';
+      expectError: true
+    - title: Delete the shipments first
+      body: "Deleting from SP is fine, and then S2 can go too."
+      sql: |
+        DELETE FROM SP WHERE sno = 'S2';
+        DELETE FROM S WHERE sno = 'S2';
+        SELECT * FROM S;
+  pitfalls:
+    - "`DELETE FROM SP;` with no WHERE empties the table."

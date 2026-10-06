@@ -1,0 +1,8 @@
+number: 4
+title: Grouping, EXISTS and changing data
+summary: GROUP BY and HAVING, correlated subqueries with EXISTS and NOT EXISTS, division in SQL, and INSERT, UPDATE and DELETE.
+status: published
+quizFormat: in-class-sql
+topics: [sql.group-by, sql.having, sql.clause-order, sql.correlated, sql.division, sql.modify, sql.aggregates]
+readings: ["Elmasri & Navathe 4.1, 4.2, 4.3, 4.4"]
+sources: [Week4_SQL_DML.pdf, Worksheet4.pdf]

@@ -92,6 +92,12 @@ function ExampleView({ ex, ctx }: { ex: Example; ctx: Ctx }) {
             {st.body && <Html className="prose" html={st.body} />}
             {(st.ra || st.sql) && <pre aria-label={st.ra ? "Relational algebra" : "SQL"}>{st.ra ?? st.sql}</pre>}
             {st.result && <DataTable data={st.result} />}
+            {st.error && (
+              <div className="feedback wrong">
+                <div className="feedback-title">Postgres refuses this</div>
+                <code>{st.error}</code>
+              </div>
+            )}
             {(st.ra || st.sql) && ex.dataset && (
               <div style={{ marginTop: 6 }}>
                 <a className="small" href={href("/playground", { ds: ex.dataset, lang: st.ra ? "ra" : "sql", q: st.ra ?? st.sql })}>

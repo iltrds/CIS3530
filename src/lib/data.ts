@@ -75,6 +75,8 @@ export interface ExampleStep {
   ra?: string;
   sql?: string;
   result?: TableData;
+  /** The database's error for a step that's meant to fail. */
+  error?: string;
 }
 export interface Example {
   id: string;

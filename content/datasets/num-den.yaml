@@ -1,0 +1,11 @@
+id: num-den
+title: NUM and DEN
+description: "The generic division example from the Week 4 slides. NUM has no primary key, so the duplicate row (2, 4) is allowed. NUM ÷ DEN keeps the A values that appear with every C in DEN: only A = 1."
+source: Week 4 slides ("Divide from RA to SQL")
+tables:
+  - name: num
+    columns: [{ name: A, type: int }, { name: B, type: int }]
+    rows: [[1, 2], [1, 3], [1, 4], [2, 4], [3, 4], [2, 4], [4, 4]]
+  - name: den
+    columns: [{ name: C, type: int, pk: true }]
+    rows: [[2], [3], [4]]

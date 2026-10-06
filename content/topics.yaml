@@ -36,3 +36,10 @@
 - { id: sql.subqueries, label: "Subqueries (IN, NOT IN)", week: 3 }
 - { id: sql.set-ops, label: "UNION, INTERSECT, EXCEPT", week: 3 }
 - { id: sql.aggregates, label: "Aggregate functions", week: 3 }
+
+- { id: sql.group-by, label: "GROUP BY and what SELECT may list", week: 4 }
+- { id: sql.having, label: "HAVING", week: 4 }
+- { id: sql.clause-order, label: "The six clauses of a query", week: 4 }
+- { id: sql.correlated, label: "Correlated subqueries: EXISTS and NOT EXISTS", week: 4 }
+- { id: sql.division, label: "Division in SQL", week: 4 }
+- { id: sql.modify, label: "INSERT, UPDATE and DELETE", week: 4 }

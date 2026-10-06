@@ -83,12 +83,10 @@ const lc = (s: string) => s.toLowerCase().replace(/^.*\./, "");
 
 /** Explains, in plain words, how a candidate's result differs from the expected one. */
 export function describeMismatch(got: TableData, want: TableData, mode: "set" | "bag" | "ordered"): string {
-  const g = got.cols.map(lc);
-  const w = want.cols.map(lc);
-  const sameCols = g.length === w.length && [...g].sort().join("|") === [...w].sort().join("|");
-  if (!sameCols) {
-    return `Returns the columns (${got.cols.join(", ")}) instead of (${want.cols.join(", ")}).`;
+  if (got.cols.length !== want.cols.length) {
+    return `Returns ${got.cols.length} column${got.cols.length === 1 ? "" : "s"} (${got.cols.join(", ")}) instead of ${want.cols.length} (${want.cols.join(", ")}).`;
   }
+  // same names in any order are matched by name; otherwise (e.g. sum vs total) by position
   const cmp = sameRelation(got, want, mode);
   if (cmp.ok) return "";
   const asSet = sameRelation(got, want, "set").ok;
@@ -124,8 +122,12 @@ export function judgeCandidate(
     const alt = describeMismatch(res, want[id]!, mode);
     if (alt) return { correct: false, reason: `Gives the right answer on these rows only by coincidence. On a different instance of the same tables it ${alt.charAt(0).toLowerCase()}${alt.slice(1)}` };
   }
-  const reordered = main.cols.map(lc).join("|") !== want[mainId]!.cols.map(lc).join("|");
-  return { correct: true, reason: reordered ? "Same result. The columns are in a different order, which doesn't change the relation." : "Same result." };
+  const g = main.cols.map(lc);
+  const w = want[mainId]!.cols.map(lc);
+  const sameNames = [...g].sort().join("|") === [...w].sort().join("|");
+  if (sameNames && g.join("|") !== w.join("|")) return { correct: true, reason: "Same result. The columns are in a different order, which doesn't change the relation." };
+  if (!sameNames) return { correct: true, reason: "Same result; only the column names differ." };
+  return { correct: true, reason: "Same result." };
 }
 
 export function buildChoices(

@@ -43,6 +43,8 @@ export interface CQuestion {
   ra?: string;
   sql?: string;
   reference?: string;
+  /** For INSERT/UPDATE/DELETE questions: SELECT run after the student's statement. */
+  check?: string;
   compare?: "set" | "bag" | "ordered";
   /** Expected result per dataset id (lecture dataset first, then grading instances). */
   expected?: Record<string, TableData>;
@@ -181,7 +183,7 @@ export async function gradeQuery(
         res = relationToTable(runRA(a, env).result);
       } else {
         const eng = await ctx.sql!();
-        res = await eng.run(id, a);
+        res = await eng.run(id, q.check ? `${a.trim().replace(/;\s*$/, "")};\n${q.check}` : a);
       }
     } catch (e) {
       const msg = e instanceof RAError ? e.message : sqlErrorMessage(e);

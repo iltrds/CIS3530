@@ -75,6 +75,8 @@ const Step = z.object({
   sql: z.string().optional(),
   /** Show the evaluated result table under this step (computed at build time). */
   showResult: z.boolean().default(true),
+  /** The step's query is supposed to fail (e.g. a foreign key violation); show the database's error. */
+  expectError: z.boolean().default(false),
 });
 
 export const Example = z.object({
@@ -151,6 +153,8 @@ export const Question = z.discriminatedUnion("type", [
   z.object({
     ...QBase,
     type: z.literal("query_shape"),
+    /** SQL run first (e.g. an UPDATE), shown above the query. Rolled back afterwards. */
+    setup: z.string().optional(),
     prompt: z.string().default("What are the degree and cardinality of the result of this query?"),
     /** The query shown to the student; exactly one of sql / ra. Degree and cardinality are computed. */
     sql: z.string().optional(),
@@ -171,12 +175,16 @@ export const Question = z.discriminatedUnion("type", [
     multi: z.boolean().default(false),
     noneOption: z.boolean().default(true),
     candidates: z.array(z.object({ query: z.string(), why: z.string().default("") })).min(2),
+    /** For INSERT/UPDATE/DELETE candidates: a SELECT run afterwards whose result is compared. */
+    check: z.string().optional(),
   }),
   z.object({
     ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),
+    /** For INSERT/UPDATE/DELETE questions: a SELECT run after the student's statement; its result is graded. */
+    check: z.string().optional(),
     alsoCheck: z.array(z.string()).default([]),
   }),
 ]);

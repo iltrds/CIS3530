@@ -1,0 +1,114 @@
+- id: w4-fc-groupby-what
+  topic: sql.group-by
+  front: What does GROUP BY do?
+  back: Splits the rows into groups that share the grouping attribute values; each aggregate is computed per group, giving one result row per group.
+- id: w4-fc-groupby-rule
+  topic: sql.group-by
+  front: With GROUP BY (or any aggregate), what may appear in SELECT?
+  back: Only aggregates and attributes listed in GROUP BY.
+  tags: [trap]
+- id: w4-fc-no-group-one-row
+  topic: sql.aggregates
+  front: How many rows does an aggregate query without GROUP BY return?
+  back: One. The whole result of FROM and WHERE is a single group.
+- id: w4-fc-sno-max
+  topic: sql.group-by
+  front: "Why is `SELECT sno, MAX(qty) FROM SP;` invalid?"
+  back: "MAX makes one row, but there are many sno values to show. Add GROUP BY sno to get each supplier's largest shipment."
+  tags: [trap]
+- id: w4-fc-agg-where
+  topic: sql.having
+  front: "Why is `WHERE qty = MAX(qty)` invalid?"
+  back: "Aggregates aren't allowed in WHERE, which looks at one row at a time. Use a subquery: WHERE qty = (SELECT MAX(qty) FROM SP)."
+  tags: [trap]
+- id: w4-fc-having
+  topic: sql.having
+  front: What does HAVING do?
+  back: Filters groups after grouping, using aggregates or grouping attributes.
+- id: w4-fc-where-vs-having
+  topic: sql.having
+  front: WHERE vs HAVING?
+  back: WHERE filters rows before grouping; HAVING filters groups after grouping.
+  tags: [trap]
+- id: w4-fc-having-count
+  topic: sql.having
+  front: How do you find the parts supplied by more than one supplier?
+  back: "SELECT pno FROM SP GROUP BY pno HAVING COUNT(*) > 1;"
+- id: w4-fc-alias
+  topic: sql.group-by
+  front: "Can you write `HAVING sq > 1000` after `SELECT sno, SUM(qty) sq`?"
+  back: "Not in Postgres: the alias works in ORDER BY but not in HAVING. Write HAVING SUM(qty) > 1000."
+  tags: [trap]
+- id: w4-fc-clause-order
+  topic: sql.clause-order
+  front: The six clauses of a query, in the order you write them?
+  back: "SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY. Only SELECT and FROM are required."
+- id: w4-fc-eval-order
+  topic: sql.clause-order
+  front: In what order are the clauses evaluated?
+  back: "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY."
+- id: w4-fc-postgres-pk
+  topic: sql.group-by
+  front: "Postgres accepts `SELECT sname, COUNT(*) FROM S NATURAL JOIN SP GROUP BY sno`. Is that valid by the course rule?"
+  back: "No. sname isn't aggregated or grouped. Postgres allows it only because sno is S's key; write GROUP BY sno, sname."
+- id: w4-fc-correlated
+  topic: sql.correlated
+  front: What is a correlated subquery?
+  back: A subquery that refers to a table from the outer query, so it's evaluated again for each outer row.
+- id: w4-fc-exists
+  topic: sql.correlated
+  front: When is `EXISTS (subquery)` true?
+  back: When the subquery returns at least one row. What it selects doesn't matter.
+- id: w4-fc-exists-uncorrelated
+  topic: sql.correlated
+  front: "What goes wrong in `WHERE EXISTS (SELECT * FROM SP WHERE pno = 'P5')` without SP.sno = S.sno?"
+  back: The subquery no longer depends on the supplier, so it's true for every supplier (or false for all).
+  tags: [trap]
+- id: w4-fc-not-exists
+  topic: sql.correlated
+  front: How do you find suppliers who don't supply part P4 with NOT EXISTS?
+  back: "WHERE NOT EXISTS (SELECT * FROM SP WHERE SP.sno = S.sno AND SP.pno = 'P4')"
+- id: w4-fc-forall
+  topic: sql.division
+  front: SQL has no "for all". How do you express "supplies every part"?
+  back: "With two negations: there is no part that the supplier doesn't supply (NOT EXISTS … NOT EXISTS)."
+- id: w4-fc-division-template
+  topic: sql.division
+  front: "Template for NUM(A, B) ÷ DEN(C) in SQL?"
+  back: "SELECT DISTINCT A FROM num N1 WHERE NOT EXISTS (SELECT * FROM den WHERE NOT EXISTS (SELECT * FROM num N2 WHERE N2.A = N1.A AND N2.B = den.C))"
+- id: w4-fc-count-method
+  topic: sql.division
+  front: How does the COUNT method do division?
+  back: "Group the candidates (GROUP BY sno) and keep those whose count of divisor values equals the size of the divisor: HAVING COUNT(pno) = (SELECT COUNT(*) FROM P)."
+- id: w4-fc-count-caveat
+  topic: sql.division
+  front: When does the COUNT method give wrong answers?
+  back: When the counted rows can repeat, or include values outside the divisor. For "every red part", filter to red parts before counting.
+  tags: [trap]
+- id: w4-fc-insert
+  topic: sql.modify
+  front: "In `INSERT INTO SP VALUES (…)`, what order must the values be in?"
+  back: The order the columns were defined in CREATE TABLE. Use null for an unknown value.
+- id: w4-fc-insert-select
+  topic: sql.modify
+  front: How do you insert the result of a query?
+  back: "INSERT INTO S_COPY (SELECT * FROM S);"
+- id: w4-fc-delete-nowhere
+  topic: sql.modify
+  front: "What does `DELETE FROM SP;` do?"
+  back: Deletes every row; the table is empty but still exists.
+  tags: [trap]
+- id: w4-fc-update-nowhere
+  topic: sql.modify
+  front: "What does `UPDATE SP SET qty = 150;` do?"
+  back: Sets qty to 150 in every row, because there's no WHERE.
+  tags: [trap]
+- id: w4-fc-delete-ri
+  topic: sql.modify
+  front: "Why does `DELETE FROM S WHERE sno = 'S2';` fail?"
+  back: S2 still has rows in SP, so deleting it would break referential integrity (unless the foreign key was declared with CASCADE).
+  tags: [trap]
+- id: w4-fc-one-table
+  topic: sql.modify
+  front: How many tables can one INSERT, UPDATE or DELETE change?
+  back: One. (A CASCADE foreign key can make the database change others for you.)

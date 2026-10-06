@@ -35,6 +35,11 @@ const md = (s: string) => (marked.parse(s, { async: false, gfm: true }) as strin
 const mdi = (s: string) => (marked.parseInline(s, { async: false, gfm: true }) as string).trim();
 const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim();
 
+/** Runs `first`, then `then`, as one script (used for INSERT/UPDATE/DELETE followed by a SELECT). */
+export function withCheck(first: string | undefined, then: string): string {
+  return first ? `${first.trim().replace(/;\s*$/, "")};\n${then}` : then;
+}
+
 async function readYamlRaw(path: string): Promise<unknown> {
   return Bun.YAML.parse(await Bun.file(path).text());
 }
@@ -175,8 +180,10 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
         else if (st.ra || st.sql) {
           try {
             result = st.ra ? await evalRA(st.ra, ex.dataset!) : await evalSQL(st.sql!, ex.dataset!);
+            if (st.expectError) fail(file, `${ex.id} step ${i + 1}`, "expectError is set but the query ran without an error");
           } catch (e) {
-            fail(file, `${ex.id} step ${i + 1}`, `Query failed: ${(e as Error).message}`);
+            if (st.expectError) error = (e as Error).message;
+            else fail(file, `${ex.id} step ${i + 1}`, `Query failed: ${(e as Error).message}`);
           }
         }
         steps.push({ title: mdi(st.title), body: md(st.body), ra: st.ra?.trim(), sql: st.sql?.trim(), result: st.showResult ? result : undefined, error });
@@ -254,13 +261,14 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           }
           try {
             const query = (q.sql ?? q.ra)!;
-            const r = q.sql ? await evalSQL(q.sql, q.dataset) : await evalRA(q.ra!, q.dataset);
+            if (q.setup && !q.sql) throw new Error("setup only works with sql");
+            const r = q.sql ? await evalSQL(withCheck(q.setup, q.sql), q.dataset) : await evalRA(q.ra!, q.dataset);
             const b = buildShape(q.id, r, q.distractors, q.answerIsNone);
             b.problems.forEach((m) => fail(file, where, m));
             out.type = "mcq";
             out.options = b.options;
             out.answer = b.answer;
-            out.prompt = md(q.prompt) + codeBlock(query);
+            out.prompt = md(q.prompt) + (q.setup ? `<p>First run:</p>${codeBlock(q.setup)}<p>Then:</p>` : "") + codeBlock(query);
             out.explanation = shapeExplanation(r, q.answerIsNone) + md(q.explanation);
             out.tags = [...new Set([...q.tags, "query-shape", q.sql ? "query-shape-sql" : "query-shape-ra"])];
           } catch (e) {
@@ -274,7 +282,7 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
             break;
           }
           const targets = [q.dataset, ...alternatesOf(q.dataset)];
-          const run = (src: string, id: string) => (q.lang === "ra" ? evalRA(src, id) : evalSQL(src, id));
+          const run = (src: string, id: string) => (q.lang === "ra" ? evalRA(src, id) : evalSQL(q.check ? withCheck(src, q.check) : src, id));
           const want: Record<string, TableData> = {};
           try {
             for (const id of targets) want[id] = await run(q.reference, id);
@@ -320,7 +328,7 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
               continue;
             }
             try {
-              out.expected[id] = q.type === "ra" ? await evalRA(q.reference, id) : await evalSQL(q.reference, id);
+              out.expected[id] = q.type === "ra" ? await evalRA(q.reference, id) : await evalSQL(q.check ? withCheck(q.reference, q.check) : q.reference, id);
             } catch (e) {
               fail(file, where, `Reference answer failed on ${id}: ${(e as Error).message}`);
             }
