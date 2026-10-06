@@ -37,7 +37,7 @@ Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a te
 | `in-class` (concepts) | the Week 1 quiz | 3 `mcq`, 1 `matching`, 1 `blanks` |
 | `in-class-sql` (SQL) | the Week 3 quiz | 2 `query_shape`, 1 `query_choices` with `multi: true`, 2 single-answer `query_choices` |
 
-Use `in-class-sql` for weeks whose quiz is about reading SQL. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
+New weeks use `in-class-sql` unless `week.yaml` says otherwise. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
 
 ### Prompt for generating a week with Claude
 

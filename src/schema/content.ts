@@ -56,8 +56,8 @@ export const Week = z.object({
   topics: z.array(z.string()).min(1),
   readings: z.array(z.string()).default([]),
   sources: z.array(z.string()).default([]),
-  /** Blueprint id the quiz simulator uses for this week (content/quizzes/*.yaml). */
-  quizFormat: z.string().default("in-class"),
+  /** Blueprint id the quiz simulator uses for this week (content/quizzes/*.yaml). New weeks get the SQL format. */
+  quizFormat: z.string().default("in-class-sql"),
 });
 
 export const Flashcard = z.object({

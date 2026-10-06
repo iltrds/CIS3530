@@ -355,6 +355,22 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
     else if (bp.covers !== "one_week") fail(`weeks/week-${String(w.number).padStart(2, "0")}/week.yaml`, "quizFormat", `${w.quizFormat} isn't a one-week quiz format`);
   }
 
+  // a week that teaches SQL must be quizzed with query-reading questions (degree/cardinality, valid/equivalent queries)
+  for (const w of weekMeta as { number: number; quizFormat: string; topics: string[] }[]) {
+    if (!w.topics.some((t) => t.startsWith("sql."))) continue;
+    const bp = blueprints.find((b) => b.id === w.quizFormat);
+    const tags = new Set(bp?.slots.flatMap((sl) => sl.requireTags) ?? []);
+    const hasShape = [...tags].some((t) => t.startsWith("query-shape"));
+    const hasChoices = [...tags].some((t) => t.startsWith("query-choices"));
+    if (bp && (!hasShape || !hasChoices)) {
+      fail(
+        `weeks/week-${String(w.number).padStart(2, "0")}/week.yaml`,
+        "quizFormat",
+        `This week covers SQL, but its quiz format (${bp.id}) has no slots for degree/cardinality and valid/equivalent-query questions. Use in-class-sql, or a format with requireTags for query-shape and query-choices.`,
+      );
+    }
+  }
+
   // blueprints reference real types
   const knownTypes = new Set(["mcq", "multi", "true_false", "numeric", "short", "matching", "blanks", "select_attributes", "order_steps", "predict_table", "ra", "sql"]);
   for (const b of blueprints) for (const s of b.slots) for (const t of s.types) if (!knownTypes.has(t)) fail(`blueprint ${b.id}`, "slots", `Unknown question type ${t}`);

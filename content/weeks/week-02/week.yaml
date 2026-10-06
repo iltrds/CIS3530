@@ -2,6 +2,7 @@ number: 2
 title: Relational algebra
 summary: The operators for querying relations (σ, π, ×, joins, set operators, ρ, ÷), how to combine them, and the size of their results.
 status: published
+quizFormat: in-class
 topics: [ra.select, ra.project, ra.product, ra.natjoin, ra.theta, ra.outer, ra.rename-assign, ra.precedence, ra.degree-cardinality, ra.set-ops, ra.division, ra.strategy]
 readings: ["Elmasri & Navathe 6.1, 6.2, 6.3, 6.5"]
 sources: [Week2.pdf, Worksheet2.pdf]
