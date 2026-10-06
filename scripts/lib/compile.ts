@@ -12,6 +12,7 @@ import { toEnv, toRelax } from "../../src/engines/datasets.ts";
 import { run as runRA, relationToTable } from "../../src/engines/ra/ra.ts";
 import { SqlEngine } from "../../src/engines/sql/engine.ts";
 import type { CQuestion, TableData } from "../../src/engines/grading.ts";
+import { buildChoices, buildShape, choicesExplanation, codeBlock, judgeCandidate, shapeExplanation, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
 const C = ROOT + "content/";
@@ -242,6 +243,69 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           }
           break;
         }
+        case "query_shape": {
+          if (!q.dataset) {
+            fail(file, where, "query_shape needs a dataset");
+            break;
+          }
+          if (!!q.ra === !!q.sql) {
+            fail(file, where, "query_shape needs exactly one of ra or sql");
+            break;
+          }
+          try {
+            const query = (q.sql ?? q.ra)!;
+            const r = q.sql ? await evalSQL(q.sql, q.dataset) : await evalRA(q.ra!, q.dataset);
+            const b = buildShape(q.id, r, q.distractors, q.answerIsNone);
+            b.problems.forEach((m) => fail(file, where, m));
+            out.type = "mcq";
+            out.options = b.options;
+            out.answer = b.answer;
+            out.prompt = md(q.prompt) + codeBlock(query);
+            out.explanation = shapeExplanation(r, q.answerIsNone) + md(q.explanation);
+            out.tags = [...new Set([...q.tags, "query-shape", q.sql ? "query-shape-sql" : "query-shape-ra"])];
+          } catch (e) {
+            fail(file, where, `Query failed: ${(e as Error).message}`);
+          }
+          break;
+        }
+        case "query_choices": {
+          if (!q.dataset) {
+            fail(file, where, "query_choices needs a dataset");
+            break;
+          }
+          const targets = [q.dataset, ...alternatesOf(q.dataset)];
+          const run = (src: string, id: string) => (q.lang === "ra" ? evalRA(src, id) : evalSQL(src, id));
+          const want: Record<string, TableData> = {};
+          try {
+            for (const id of targets) want[id] = await run(q.reference, id);
+          } catch (e) {
+            fail(file, where, `Reference query failed: ${(e as Error).message}`);
+            break;
+          }
+          const mode = q.lang === "ra" ? "set" : q.compare;
+          const judged = [];
+          for (const c of q.candidates) {
+            const cr: CandidateRun = { results: {} };
+            for (const id of targets) {
+              try {
+                cr.results[id] = await run(c.query, id);
+              } catch (e) {
+                cr.results[id] = { error: (e as Error).message };
+              }
+            }
+            judged.push({ ...c, verdict: judgeCandidate(cr, want, q.dataset, mode, q.lang) });
+          }
+          const b = buildChoices(q.id, judged, { multi: q.multi, noneOption: q.noneOption });
+          b.problems.forEach((m) => fail(file, where, m));
+          const nCorrect = Array.isArray(b.answer) ? b.answer.length : 1;
+          out.type = q.multi ? "multi" : "mcq";
+          out.options = b.options;
+          out.answer = b.answer;
+          out.prompt = md(q.prompt) + (q.multi ? `<p class="select-count">Select ${nCorrect} correct answer${nCorrect === 1 ? "" : "s"}</p>` : "");
+          out.explanation = choicesExplanation(judged, b.order, b.noneIndex, want[q.dataset]!, mdi) + md(q.explanation);
+          out.tags = [...new Set([...q.tags, "query-choices", `query-choices-${q.lang}`])];
+          break;
+        }
         case "ra":
         case "sql": {
           if (!q.dataset) {
@@ -282,6 +346,13 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
       counts: { flashcards: cardsOut.length, examples: examplesOut.length, questions: questionsOut.length, byType: typeCounts },
     });
     weeksOut[week.number] = { week, notes: notesHtml, flashcards: cardsOut, examples: examplesOut, questions: questionsOut };
+  }
+
+  // each week's quiz format must be a one-week quiz blueprint
+  for (const w of weekMeta as { number: number; quizFormat: string }[]) {
+    const bp = blueprints.find((b) => b.id === w.quizFormat);
+    if (!bp) fail(`weeks/week-${String(w.number).padStart(2, "0")}/week.yaml`, "quizFormat", `No quiz blueprint called ${w.quizFormat} in content/quizzes/`);
+    else if (bp.covers !== "one_week") fail(`weeks/week-${String(w.number).padStart(2, "0")}/week.yaml`, "quizFormat", `${w.quizFormat} isn't a one-week quiz format`);
   }
 
   // blueprints reference real types

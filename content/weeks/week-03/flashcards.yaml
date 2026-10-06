@@ -111,3 +111,40 @@
   topic: sql.aggregates
   front: "Week 3 instance: SELECT COUNT(DISTINCT sno), COUNT(*) FROM SP?"
   back: "5 and 12. Five different suppliers across twelve shipments."
+- id: w3-fc-in-to-join-distinct
+  topic: sql.subqueries
+  front: "Rewriting `WHERE sno IN (SELECT sno FROM SP …)` as a join: why add DISTINCT?"
+  back: "IN keeps each supplier at most once; a join gives one row per matching shipment, so suppliers with several matches repeat."
+  tags: [trap]
+- id: w3-fc-select-star-join
+  topic: sql.joins
+  front: "Is `SELECT * FROM S NATURAL JOIN SP WHERE …` the same as `SELECT * FROM S WHERE sno IN (…)`?"
+  back: "No. SELECT * after the join also returns SP's columns (pno, qty). List S's columns instead, and add DISTINCT."
+  tags: [trap]
+- id: w3-fc-s-natural-p
+  topic: sql.joins
+  front: What does `S NATURAL JOIN P` match on?
+  back: "city, the only column name S and P share. It pairs each supplier with the parts stored in the same city."
+  tags: [trap]
+- id: w3-fc-comma-star-degree
+  topic: sql.joins
+  front: "Degree of `SELECT * FROM S, SP WHERE S.sno = SP.sno`, and of the same query with `S NATURAL JOIN SP`?"
+  back: "7 with the comma (both sno columns kept), 6 with NATURAL JOIN (sno appears once)."
+- id: w3-fc-ambiguous
+  topic: sql.joins
+  front: "Why does `SELECT sno FROM S, SP WHERE S.sno = SP.sno` fail?"
+  back: "Both tables have sno, so plain sno is ambiguous in a Cartesian product. Write S.sno. With NATURAL JOIN or USING, plain sno is fine."
+  tags: [trap]
+- id: w3-fc-distinct-position
+  topic: sql.distinct-order
+  front: "What happens with `SELECT sno, city DISTINCT FROM S`?"
+  back: "Postgres reads DISTINCT as a new name for the city column, so duplicates stay. DISTINCT must come straight after SELECT."
+  tags: [trap]
+- id: w3-fc-order-by-count
+  topic: sql.distinct-order
+  front: Does ORDER BY change the cardinality of a result?
+  back: No. It only sorts the rows.
+- id: w3-fc-aggregate-rows
+  topic: sql.aggregates
+  front: "How many rows does `SELECT COUNT(*), MAX(qty) FROM SP WHERE …` return?"
+  back: "Exactly one, whatever WHERE keeps (without GROUP BY)."

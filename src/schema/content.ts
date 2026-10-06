@@ -56,6 +56,8 @@ export const Week = z.object({
   topics: z.array(z.string()).min(1),
   readings: z.array(z.string()).default([]),
   sources: z.array(z.string()).default([]),
+  /** Blueprint id the quiz simulator uses for this week (content/quizzes/*.yaml). */
+  quizFormat: z.string().default("in-class"),
 });
 
 export const Flashcard = z.object({
@@ -148,6 +150,30 @@ export const Question = z.discriminatedUnion("type", [
   }),
   z.object({
     ...QBase,
+    type: z.literal("query_shape"),
+    prompt: z.string().default("What are the degree and cardinality of the result of this query?"),
+    /** The query shown to the student; exactly one of sql / ra. Degree and cardinality are computed. */
+    sql: z.string().optional(),
+    ra: z.string().optional(),
+    /** Wrong [degree, cardinality] pairs offered as options. */
+    distractors: z.array(z.tuple([z.number().int().min(0), z.number().int().min(0)])).min(2),
+    /** Leave the right pair out, so "None of the given choices" is the answer. */
+    answerIsNone: z.boolean().default(false),
+  }),
+  z.object({
+    ...QBase,
+    type: z.literal("query_choices"),
+    lang: z.enum(["sql", "ra"]).default("sql"),
+    /** Defines a correct answer: a candidate is correct if it returns the same result on every instance. */
+    reference: z.string(),
+    compare: z.enum(["set", "bag", "ordered"]).default("bag"),
+    /** Select-all-that-apply (shows "Select N correct answer(s)") instead of one answer. */
+    multi: z.boolean().default(false),
+    noneOption: z.boolean().default(true),
+    candidates: z.array(z.object({ query: z.string(), why: z.string().default("") })).min(2),
+  }),
+  z.object({
+    ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),
@@ -192,12 +218,16 @@ export const Slot = z.object({
   count: z.number().int().min(1),
   points: z.number().positive().optional(),
   preferTags: z.array(z.string()).default([]),
+  /** Only questions with at least one of these tags fill the slot. */
+  requireTags: z.array(z.string()).default([]),
   topics: z.array(z.string()).default([]),
 });
 
 export const Blueprint = z.object({
   id: z.string(),
   title: z.string(),
+  /** Short name for buttons, e.g. "SQL format". */
+  label: z.string().optional(),
   description: z.string().default(""),
   kind: z.enum(["quiz", "exam"]),
   /** "previous" = one chosen week (quiz simulator); "released" = all published weeks. */

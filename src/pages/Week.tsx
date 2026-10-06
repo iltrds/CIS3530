@@ -25,7 +25,7 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
           <a className="btn" href={href("/quiz/run", { mode: "practice", weeks: n, count: 10 })}>
             Practise 10 questions
           </a>
-          <a className="btn" href={href("/quiz/run", { bp: "in-class", week: n })}>
+          <a className="btn" href={href("/quiz/run", { bp: w.week.quizFormat, week: n })}>
             Quiz simulator
           </a>
         </div>

@@ -6,7 +6,8 @@ covers: released
 timeLimitMin: 120
 feedback: end
 slots:
-  - { name: Concepts, types: [mcq, multi, true_false, numeric, short], count: 14 }
+  - { name: Reading SQL, types: [mcq, multi], requireTags: [query-shape, query-choices], count: 4 }
+  - { name: Concepts, types: [mcq, multi, true_false, numeric, short], count: 12 }
   - { name: Keys, constraints and schemas, types: [matching, blanks, select_attributes], count: 3 }
   - { name: Relational algebra, types: [ra, predict_table], count: 5 }
   - { name: SQL, types: [sql], count: 5 }

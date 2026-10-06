@@ -28,11 +28,20 @@ Text fields accept Markdown: `**bold**`, `` `code` ``, `<sub>c</sub>`, `<u>key</
 5. `bun run dev`, open http://localhost:3000 and read through it against the slides.
 6. Set `status: published` in `week.yaml`, commit and push. CI tests, builds and deploys.
 
-Targets per week: 25–35 flash cards, 6–10 worked examples, 30–50 questions. The quiz simulator needs at least **3 `mcq`, 1 `matching` and 1 `blanks`** question per week (a test enforces this).
+Targets per week: 25–35 flash cards, 6–10 worked examples, 30–50 questions.
+
+Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a test checks the week has enough questions to fill it:
+
+| `quizFormat` | Modelled on | Needs per week |
+|---|---|---|
+| `in-class` (concepts) | the Week 1 quiz | 3 `mcq`, 1 `matching`, 1 `blanks` |
+| `in-class-sql` (SQL) | the Week 3 quiz | 2 `query_shape`, 1 `query_choices` with `multi: true`, 2 single-answer `query_choices` |
+
+Use `in-class-sql` for weeks whose quiz is about reading SQL. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
 
 ### Prompt for generating a week with Claude
 
-> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Include at least 3 `mcq` (some with a **not true** stem and "All/None of the given choices" options), 1 `matching` (3 points) and 1 `blanks` (4 True/False parts), and tag them `quiz-style`. Tag wording traps `trap`. Then run `bun run validate --week N` and fix every problem.
+> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Set `quizFormat` in `week.yaml` and include enough questions for it (see the table above): for the concepts format, `mcq` (some with a **not true** stem and "All/None of the given choices" options), `matching` and `blanks` tagged `quiz-style`; for the SQL format, at least 6 `query_shape` and 6 `query_choices` (2 or more with `multi: true`), whose distractors use the usual mistakes: a missing join condition, a missing DISTINCT, `SELECT *` after a join, an unqualified shared column, DISTINCT in the wrong place, and natural joins that match an unexpected column. Tag wording traps `trap`. Then run `bun run validate --week N` and fix every problem.
 
 ## Datasets
 
@@ -101,6 +110,31 @@ Common fields: `id`, `type`, `topics`, `prompt`, optional `difficulty` (1–3), 
 | `predict_table` | `dataset` and one of `ra` / `sql` (the expression shown) | student fills a grid, compared as a set |
 | `ra` | `dataset`, `reference` | result compared as a set, on every instance |
 | `sql` | `dataset`, `reference`, `compare: set / bag / ordered` | result compared, on every instance |
+| `query_shape` | `dataset`, one of `sql` / `ra`, `distractors` (wrong `[degree, cardinality]` pairs), `answerIsNone` | becomes a multiple-choice question; the answer is computed by running the query |
+| `query_choices` | `dataset`, `lang` (`sql` or `ra`), `reference`, `candidates: [{ query, why }]`, `multi`, `compare` | each candidate is run on the lecture data and every grading instance; it's correct only if it matches the reference on all of them |
+
+For `query_shape` and `query_choices` you never write the answer. The build runs the queries, picks the right option, letters the choices a), b), c)… like CourseLink, adds "None of the given choices", and writes an explanation for every option (wrong columns, repeated rows, the database's error message, or "right only by coincidence"). Add a `why` to a candidate to explain the mistake behind it. The build fails if a distractor turns out to be the right answer, or if a single-answer question has two right candidates.
+
+```yaml
+- id: w4-q-shape-example
+  type: query_shape
+  topics: [sql.joins]
+  dataset: supplier-parts
+  show: { tables: [S, SP] }
+  sql: SELECT DISTINCT city FROM S NATURAL JOIN SP;
+  distractors: [[1, 4], [1, 12], [6, 12]]
+
+- id: w4-q-choices-example
+  type: query_choices
+  topics: [sql.subqueries]
+  dataset: supplier-parts
+  prompt: Which query returns the same result using a Cartesian product?
+  reference: SELECT * FROM S WHERE sno IN (SELECT sno FROM SP WHERE qty > 450);
+  candidates:
+    - query: SELECT DISTINCT S.sno, sname, status, city FROM S, SP WHERE S.sno = SP.sno AND qty > 450;
+    - query: SELECT S.sno, sname, status, city FROM S, SP WHERE S.sno = SP.sno AND qty > 450;
+      why: A supplier with two big shipments appears twice.
+```
 
 Use `compare: bag` when duplicates matter (the question needs DISTINCT) and `compare: ordered` when ORDER BY matters. For pair questions, say which member comes first (e.g. "smaller aID first") so the answer is unambiguous.
 
@@ -122,4 +156,6 @@ slots:
   - { types: [blanks], count: 1, points: 4 }
 ```
 
-If a later quiz uses a different format (say, writing SQL), add a new blueprint instead of editing this one.
+A slot can also require tags (`requireTags: [query-shape]`); `query_shape` questions are tagged `query-shape` and `query_choices` questions `query-choices` automatically, plus a language-specific tag (`query-shape-sql`, `query-choices-ra`, …); the SQL quiz format uses only the SQL ones. Blueprints get a short `label` for the simulator's format buttons.
+
+If a quiz arrives in a new format, add a new blueprint and point that week's `quizFormat` at it.

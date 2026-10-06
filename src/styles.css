@@ -1120,3 +1120,37 @@ table.data tr:last-child td {
     margin-top: 6px;
   }
 }
+
+/* lettered options (a, b, c…) like CourseLink, including SQL code as a choice */
+.opt-letter {
+  display: inline-block;
+  min-width: 1.6em;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.opt-body pre {
+  margin: 4px 0 2px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+label.check:has(pre) {
+  align-items: flex-start;
+}
+.select-count {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  margin-top: var(--s2);
+}
+.why-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--s3);
+}
+.why-list li {
+  margin-bottom: 4px;
+}
+.feedback .rel {
+  margin-bottom: var(--s3);
+}

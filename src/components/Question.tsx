@@ -3,7 +3,7 @@ import type { CQuestion, Grade } from "../engines/grading.ts";
 import { Html, DataTable, DatasetTable, SchemaDiagram } from "./Relations.tsx";
 import { QueryEditor } from "./QueryEditor.tsx";
 import { loadDataset, useAsync } from "../lib/data.ts";
-import { rng, shuffle } from "../lib/quiz.ts";
+import { letter, rng, shuffle } from "../lib/quiz.ts";
 
 export type Answer = unknown;
 
@@ -92,7 +92,8 @@ export function QuestionInput({
                 <input type="radio" name={name} checked={cur === i} disabled={done} onChange={() => onChange(q.type === "mcq" ? i : i === 0)} />
                 <span>
                   {done && showAnswer && i === correctIdx && cur !== i && <span className="sr-only">Correct answer: </span>}
-                  <Html as="span" html={o} />
+                  {q.type === "mcq" && <span className="opt-letter">{letter(i)})</span>}
+                  <Html as="span" className="opt-body" html={o} />
                   {done && i === correctIdx && showAnswer && cur !== i && <span className="muted small"> ← correct answer</span>}
                 </span>
               </label>
@@ -120,7 +121,10 @@ export function QuestionInput({
                     onChange([...n].sort());
                   }}
                 />
-                <Html as="span" html={o} />
+                <span>
+                  <span className="opt-letter">{letter(i)})</span>
+                  <Html as="span" className="opt-body" html={o} />
+                </span>
               </label>
             );
           })}

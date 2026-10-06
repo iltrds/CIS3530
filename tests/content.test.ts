@@ -1,5 +1,8 @@
 import { expect, test } from "bun:test";
 import { compile } from "../scripts/lib/compile.ts";
+import { assemble } from "../src/lib/quiz.ts";
+import type { Blueprint } from "../src/lib/data.ts";
+import type { CQuestion } from "../src/engines/grading.ts";
 
 // Runs the same checks as `bun run validate`, including every RA/SQL answer key.
 test("all content validates and every answer key runs", async () => {
@@ -8,12 +11,13 @@ test("all content validates and every answer key runs", async () => {
   expect(out!.stats.questions).toBeGreaterThan(0);
 }, 60000);
 
-test("every week has enough questions for the in-class quiz simulator", async () => {
+test("every week has enough questions for its in-class quiz format", async () => {
   const { out } = await compile();
-  for (const w of Object.values(out!.weeks) as { week: { number: number }; questions: { type: string }[] }[]) {
-    const count = (t: string) => w.questions.filter((q) => q.type === t).length;
-    expect(count("mcq")).toBeGreaterThanOrEqual(3);
-    expect(count("matching")).toBeGreaterThanOrEqual(1);
-    expect(count("blanks")).toBeGreaterThanOrEqual(1);
+  const m = out!.manifest as { blueprints: Blueprint[]; weeks: { number: number; quizFormat: string }[] };
+  for (const w of m.weeks) {
+    const bp = m.blueprints.find((b) => b.id === w.quizFormat)!;
+    const pool = (out!.weeks[w.number] as { questions: CQuestion[] }).questions;
+    const { shortfalls } = assemble(bp, pool, 1);
+    expect({ week: w.number, format: bp.id, shortfalls }).toEqual({ week: w.number, format: bp.id, shortfalls: [] });
   }
 }, 60000);

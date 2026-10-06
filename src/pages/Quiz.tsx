@@ -73,10 +73,7 @@ function QuizRun({ ctx, query }: { ctx: Ctx; query: URLSearchParams }) {
         <p className="note">This week doesn't have enough questions for every slot yet ({setup.shortfalls!.join("; ")}), so the quiz is shorter than usual.</p>
       )}
       {bp && (
-        <p className="small muted no-print">
-          Same format as the in-class quiz: 10 points, answers checked when you submit.
-          {bp.strictAnswers && " Type True or False exactly, as CourseLink requires."}
-        </p>
+        <p className="small muted no-print">{bp.description}</p>
       )}
       <TestRunner
         items={setup.items}
@@ -99,6 +96,10 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
   const p = useProgress();
   const latest = m.weeks[m.weeks.length - 1]!.number;
   const [simWeek, setSimWeek] = useState(latest);
+  const formats = m.blueprints.filter((b) => b.kind === "quiz" && b.covers === "one_week");
+  const weekFormat = (n: number) => m.weeks.find((w) => w.number === n)?.quizFormat ?? "in-class";
+  const [simFormat, setSimFormat] = useState(weekFormat(latest));
+  const fmt = formats.find((b) => b.id === simFormat) ?? formats[0]!;
   const [weeks, setWeeks] = useState<number[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
@@ -126,19 +127,42 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
           In-class quiz simulator
         </h2>
         <p className="muted">
-          Same shape as the in-class quizzes: three 1-point multiple-choice questions, a 3-point matching question and a 4-point True/False fill-in, on one week, with a 10-minute timer. True and False must be typed exactly.
+          A timed quiz on one week in the same format as the in-class quizzes. Each week opens in the format its own quiz used; you can switch.
         </p>
-        <div className="row">
+        <div className="stack">
           <div className="chips" role="group" aria-label="Week to quiz on">
             {m.weeks.map((w) => (
-              <button key={w.number} className="chip" aria-pressed={simWeek === w.number} onClick={() => setSimWeek(w.number)}>
+              <button
+                key={w.number}
+                className="chip"
+                aria-pressed={simWeek === w.number}
+                onClick={() => {
+                  setSimWeek(w.number);
+                  setSimFormat(weekFormat(w.number));
+                }}
+              >
                 Week {w.number}
               </button>
             ))}
           </div>
-          <a className="btn primary" href={href("/quiz/run", { bp: "in-class", week: simWeek })}>
-            Start Week {simWeek} quiz
-          </a>
+          {formats.length > 1 && (
+            <div className="chips" role="group" aria-label="Quiz format">
+              {formats.map((b) => (
+                <button key={b.id} className="chip" aria-pressed={fmt.id === b.id} onClick={() => setSimFormat(b.id)}>
+                  {b.label ?? b.title}
+                  {weekFormat(simWeek) === b.id ? " (this week's)" : ""}
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="small muted" style={{ margin: 0 }}>
+            {fmt.description}
+          </p>
+          <div>
+            <a className="btn primary" href={href("/quiz/run", { bp: fmt.id, week: simWeek })}>
+              Start Week {simWeek} quiz
+            </a>
+          </div>
         </div>
       </section>
 

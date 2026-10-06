@@ -186,3 +186,51 @@
         R1 := σ year >= 1970 ∧ year < 1980 (Movies)
         R2 := σ Roles.mID = R1.mID (Roles × R1)
         Ans := π character (R2)
+
+- id: w3-ex-shape
+  title: Degree and cardinality, step by step
+  topics: [sql.select-from-where, sql.joins, sql.distinct-order]
+  dataset: supplier-parts
+  question: "What are the degree and cardinality of `SELECT DISTINCT pname FROM P NATURAL JOIN SP WHERE sno IN ('S2', 'S3');`?"
+  steps:
+    - title: FROM
+      body: "P and SP share only pno, so the natural join gives one row per shipment: 12 rows, with pno once (5 + 3 − 1 = 7 columns)."
+      sql: SELECT * FROM P NATURAL JOIN SP;
+    - title: WHERE
+      body: "S2 and S3 have four shipments between them."
+      sql: SELECT * FROM P NATURAL JOIN SP WHERE sno IN ('S2', 'S3');
+    - title: SELECT
+      body: "One column. Three of the four shipments are SCREWs, and SQL keeps all of them."
+      sql: SELECT pname FROM P NATURAL JOIN SP WHERE sno IN ('S2', 'S3');
+    - title: DISTINCT
+      body: "**Degree 1, cardinality 2.** Without DISTINCT it would be degree 1, cardinality 4."
+      sql: SELECT DISTINCT pname FROM P NATURAL JOIN SP WHERE sno IN ('S2', 'S3');
+  pitfalls:
+    - "Before counting, check which column names the joined tables share. S and P share city."
+
+- id: w3-ex-in-to-join
+  title: Rewriting an IN subquery as a join
+  topics: [sql.subqueries, sql.joins, sql.distinct-order]
+  dataset: supplier-parts
+  question: "Rewrite `SELECT * FROM S WHERE sno IN (SELECT sno FROM SP WHERE qty < 250);` with a natural join, then with a Cartesian product."
+  steps:
+    - title: The original
+      body: "Each supplier with at least one shipment under 250 appears once."
+      sql: SELECT * FROM S WHERE sno IN (SELECT sno FROM SP WHERE qty < 250);
+    - title: A join repeats suppliers
+      body: "One row per matching shipment: ADAMS has four, so appears four times. The SP columns come along too."
+      sql: SELECT * FROM S NATURAL JOIN SP WHERE qty < 250;
+    - title: "Natural join: S's columns plus DISTINCT"
+      sql: |
+        SELECT DISTINCT sno, sname, status, city
+        FROM S NATURAL JOIN SP
+        WHERE qty < 250;
+    - title: "Cartesian product: add the join condition and qualify sno"
+      body: "In `FROM S, SP` both tables have sno, so it must be written S.sno. Leaving out `S.sno = SP.sno` would pair every supplier with every small shipment."
+      sql: |
+        SELECT DISTINCT S.sno, sname, status, city
+        FROM S, SP
+        WHERE S.sno = SP.sno
+          AND qty < 250;
+  pitfalls:
+    - "`SELECT sno, …, city DISTINCT` doesn't de-duplicate: Postgres treats DISTINCT as a new name for city."

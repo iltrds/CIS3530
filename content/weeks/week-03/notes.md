@@ -62,3 +62,26 @@ A subquery in parentheses can appear in WHERE (commonly) or FROM. `WHERE sno = (
 ### Aggregates
 
 `COUNT`, `SUM`, `MAX`, `MIN`, `AVG` turn a column into one value. `COUNT(*)` counts rows (nulls included); `COUNT(col)` counts non-null values; `COUNT(DISTINCT col)` counts different non-null values. On the Week 3 instance, `SELECT COUNT(DISTINCT sno), COUNT(*) FROM SP` gives 5 and 12.
+
+## Reading a query: degree and cardinality
+
+Quizzes ask for the size of a query's result on a given instance. Work through it in evaluation order:
+
+1. **FROM.** `FROM S, SP` is the Cartesian product (|S| × |SP| rows) until WHERE links the tables. A NATURAL JOIN matches on every column name the tables share, so check what they share first: S and SP share `sno`, P and SP share `pno`, but **S and P share `city`**. `S NATURAL JOIN P` pairs suppliers and parts in the same city.
+2. **WHERE** keeps the rows that pass.
+3. **SELECT** sets the **degree**: the number of columns listed. `SELECT *` after a comma product keeps both copies of a shared column (`S.sno` and `SP.sno`); after NATURAL JOIN or USING the shared column appears once.
+4. **DISTINCT** merges identical rows. Without it, every row from step 2 stays, repeats included.
+5. **ORDER BY** never changes the count. Aggregates without GROUP BY give exactly one row.
+
+## Rewriting an IN subquery as a join
+
+`WHERE sno IN (SELECT sno FROM SP …)` keeps each supplier **at most once**. A join produces one row **per matching shipment**, so a supplier with three matching shipments appears three times. An equivalent join query therefore needs:
+
+- **the join condition**: `S.sno = SP.sno` with a comma product, or a NATURAL JOIN / JOIN … USING. Without it every supplier pairs with every shipment.
+- **only the outer table's columns**: `SELECT *` would also return SP's columns.
+- **DISTINCT**, to put back the "at most once".
+- **qualified names** for shared columns in a comma product: `S.sno`, because plain `sno` is ambiguous. With NATURAL JOIN or USING, plain `sno` works (and so does `S.sno`).
+
+Listing the columns in a different order doesn't change the relation.
+
+**DISTINCT goes straight after SELECT** and applies to the whole row. `SELECT sno, DISTINCT city` is a syntax error. `SELECT sno, city DISTINCT` is a quieter mistake: Postgres accepts it and treats `DISTINCT` as a new *name* for the city column, so nothing is de-duplicated.

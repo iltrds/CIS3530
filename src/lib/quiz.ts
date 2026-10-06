@@ -38,6 +38,7 @@ export function assemble(bp: Blueprint, pool: CQuestion[], seed: number): { item
   for (const slot of bp.slots) {
     let cands = pool.filter((q) => slot.types.includes(q.type) && !used.has(q.id));
     if (slot.topics.length) cands = cands.filter((q) => q.topics.some((t) => slot.topics.includes(t)));
+    if (slot.requireTags.length) cands = cands.filter((q) => q.tags.some((t) => slot.requireTags.includes(t)));
     const shuffled = shuffle(cands, rand);
     const preferred = slot.preferTags.length ? shuffled.filter((q) => q.tags.some((t) => slot.preferTags.includes(t))) : [];
     const rest = shuffled.filter((q) => !preferred.includes(q));
@@ -88,14 +89,16 @@ export const TYPE_LABELS: Record<string, string> = {
   sql: "Write SQL",
 };
 
+export const letter = (i: number) => "abcdefghijklmnopqrstuvwxyz"[i] ?? String(i + 1);
+
 /** Plain-text rendering of the correct answer, for the printable answer key. */
 export function answerText(q: CQuestion): string {
   const strip = (h: string) => h.replace(/<[^>]+>/g, "");
   switch (q.type) {
     case "mcq":
-      return strip(q.options![q.answer as number]!);
+      return `${letter(q.answer as number)}) ${strip(q.options![q.answer as number]!)}`;
     case "multi":
-      return (q.answer as number[]).map((i) => strip(q.options![i]!)).join("; ");
+      return (q.answer as number[]).map((i) => `${letter(i)})`).join(", ");
     case "true_false":
       return q.answer ? "True" : "False";
     case "numeric":

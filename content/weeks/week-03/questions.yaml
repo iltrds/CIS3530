@@ -427,3 +427,415 @@
     - None; RA has no notion of cost
   answer: 1
   explanation: Both are correct; each suggests a different execution plan. Filtering early means fewer tuples to combine.
+
+# ---------------------------------------------------------------------------
+# SQL-format quiz questions: degree/cardinality of a query, and which queries
+# are valid or equivalent. Answers are computed by running the queries.
+
+- id: w3-q-shape-paris-shipments
+  type: query_shape
+  topics: [sql.subqueries, sql.select-from-where]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S, SP] }
+  sql: |
+    SELECT pno, qty
+    FROM SP
+    WHERE sno IN (SELECT sno
+                  FROM S
+                  WHERE city = 'PARIS');
+  distractors: [[2, 3], [1, 4], [2, 12], [3, 4]]
+  explanation: "The subquery finds S2 and S3, who have four shipments between them. Nothing removes duplicates, but here no two rows repeat anyway."
+
+- id: w3-q-shape-distinct-cities
+  type: query_shape
+  topics: [sql.joins, sql.distinct-order]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S, SP] }
+  sql: |
+    SELECT DISTINCT city
+    FROM S NATURAL JOIN SP;
+  distractors: [[1, 4], [1, 12], [6, 12], [1, 5]]
+  explanation: "S and SP share only sno. Every supplier except S6 has a shipment, and DISTINCT collapses their cities to one row each."
+
+- id: w3-q-shape-big-shipments
+  type: query_shape
+  topics: [sql.joins, sql.basics]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [P, SP] }
+  sql: |
+    SELECT pname
+    FROM P NATURAL JOIN SP
+    WHERE qty >= 400;
+  distractors: [[1, 2], [7, 4], [1, 3], [1, 12]]
+  explanation: "Four shipments have qty of at least 400. Three of them are SCREWs, and without DISTINCT SQL keeps all three."
+
+- id: w3-q-shape-natural-city
+  type: query_shape
+  topics: [sql.joins, ra.natjoin]
+  difficulty: 3
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [S, P] }
+  sql: |
+    SELECT DISTINCT pname
+    FROM P NATURAL JOIN S
+    WHERE status >= 20;
+  distractors: [[1, 6], [1, 0], [1, 24], [9, 5]]
+  explanation: "P and S have one attribute name in common, city, so the natural join pairs each part with the suppliers in the same city. Nothing about SP is involved."
+
+- id: w3-q-shape-comma-degree
+  type: query_shape
+  topics: [sql.joins, sql.select-from-where]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [S, SP] }
+  sql: |
+    SELECT *
+    FROM S, SP
+    WHERE S.sno = SP.sno
+      AND city = 'LONDON';
+  answerIsNone: true
+  distractors: [[6, 2], [4, 2], [7, 12], [6, 4]]
+  explanation: "A comma (Cartesian product) keeps every column of both tables, so sno appears twice: 4 + 3 = 7 columns. NATURAL JOIN or USING would keep one copy (6)."
+
+- id: w3-q-shape-aggregate
+  type: query_shape
+  topics: [sql.aggregates]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  sql: |
+    SELECT COUNT(*), MAX(qty)
+    FROM SP
+    WHERE pno = 'P3';
+  distractors: [[2, 3], [1, 1], [2, 12], [1, 3]]
+  explanation: "Without GROUP BY, aggregates collapse whatever WHERE keeps into a single row."
+
+- id: w3-q-shape-blue-cities
+  type: query_shape
+  topics: [sql.joins, sql.distinct-order]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { tables: [S, P] }
+  sql: |
+    SELECT DISTINCT S.sno, sname
+    FROM S, P
+    WHERE S.city = P.city
+      AND color = 'BLUE';
+  distractors: [[2, 3], [4, 2], [2, 12], [2, 4]]
+  explanation: "The blue parts are in ROME and PARIS. No supplier is in Rome; S2 and S3 are in Paris."
+
+- id: w3-q-shape-no-join-condition
+  type: query_shape
+  topics: [sql.joins]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [S, P] }
+  sql: |
+    SELECT sname, pname
+    FROM S, P
+    WHERE weight < 13;
+  distractors: [[2, 2], [9, 12], [2, 6], [2, 0]]
+  explanation: "There's no condition linking S and P, so every supplier is paired with each of the two light parts: 6 × 2 = 12 rows."
+
+- id: w3-q-shape-except
+  type: query_shape
+  topics: [sql.set-ops]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S, SP] }
+  sql: |
+    SELECT sno FROM S
+    EXCEPT
+    SELECT sno FROM SP;
+  distractors: [[1, 0], [1, 5], [2, 1], [1, 6]]
+  explanation: "Only S6 never appears in SP."
+
+- id: w3-q-choices-in-to-natural
+  type: query_choices
+  topics: [sql.subqueries, sql.joins, sql.distinct-order]
+  difficulty: 2
+  dataset: supplier-parts
+  prompt: |
+    This query lists every part supplied by S2 or S3:
+    ```sql
+    SELECT *
+    FROM P
+    WHERE pno IN (SELECT pno
+                  FROM SP
+                  WHERE sno IN ('S2', 'S3'));
+    ```
+    Which query returns the same result using a natural join?
+  reference: SELECT * FROM P WHERE pno IN (SELECT pno FROM SP WHERE sno IN ('S2', 'S3'));
+  candidates:
+    - query: |
+        SELECT DISTINCT P.pno, pname, color, weight, city
+        FROM P NATURAL JOIN SP
+        WHERE sno IN ('S2', 'S3');
+    - query: |
+        SELECT pno, pname, color, weight, city
+        FROM P NATURAL JOIN SP
+        WHERE sno IN ('S2', 'S3');
+      why: P3 is supplied by both S2 and S3, so the join produces it twice.
+    - query: |
+        SELECT *
+        FROM P NATURAL JOIN SP
+        WHERE sno IN ('S2', 'S3');
+      why: SELECT * after a join also returns SP's columns.
+    - query: |
+        SELECT pno, pname, DISTINCT color, weight, city
+        FROM P NATURAL JOIN SP
+        WHERE sno IN ('S2', 'S3');
+      why: DISTINCT has to come straight after SELECT; it applies to the whole row.
+
+- id: w3-q-choices-in-to-product
+  type: query_choices
+  topics: [sql.subqueries, sql.joins, sql.distinct-order]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  prompt: |
+    ```sql
+    SELECT *
+    FROM S
+    WHERE sno IN (SELECT sno
+                  FROM SP
+                  WHERE pno IN ('P3', 'P5'));
+    ```
+    Which query returns the same result using a Cartesian product (`FROM S, SP`)?
+  reference: SELECT * FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno IN ('P3', 'P5'));
+  candidates:
+    - query: |
+        SELECT DISTINCT S.sno, sname, status, city
+        FROM S, SP
+        WHERE S.sno = SP.sno
+          AND pno IN ('P3', 'P5');
+    - query: |
+        SELECT S.sno, sname, status, city
+        FROM S, SP
+        WHERE S.sno = SP.sno
+          AND pno IN ('P3', 'P5');
+      why: S2 supplies both P3 and P5, so it appears once per shipment.
+    - query: |
+        SELECT DISTINCT S.sno, sname, status, city
+        FROM S, SP
+        WHERE pno IN ('P3', 'P5');
+      why: Without S.sno = SP.sno, every supplier is paired with every matching shipment.
+    - query: |
+        SELECT DISTINCT sno, sname, status, city
+        FROM S, SP
+        WHERE S.sno = SP.sno
+          AND pno IN ('P3', 'P5');
+      why: Both S and SP have an sno column, so an unqualified sno is ambiguous in a Cartesian product.
+    - query: |
+        SELECT S.sno, sname, status, city DISTINCT
+        FROM S, SP
+        WHERE S.sno = SP.sno
+          AND pno IN ('P3', 'P5');
+      why: "Postgres doesn't reject this: it reads DISTINCT as a new name for the city column, so nothing is de-duplicated."
+
+- id: w3-q-choices-blue-none
+  type: query_choices
+  topics: [sql.joins, sql.subqueries]
+  difficulty: 3
+  tags: [trap]
+  dataset: supplier-parts
+  prompt: Which query lists the names of suppliers who supply at least one BLUE part, each name once?
+  reference: SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno IN (SELECT pno FROM P WHERE color = 'BLUE'));
+  candidates:
+    - query: |
+        SELECT sname
+        FROM S NATURAL JOIN SP NATURAL JOIN P
+        WHERE color = 'BLUE';
+      why: S and P both have a city column, so this natural join also requires the supplier and the part to be in the same city.
+    - query: |
+        SELECT sname
+        FROM S, SP, P
+        WHERE S.sno = SP.sno
+          AND SP.pno = P.pno
+          AND color = 'BLUE';
+      why: Suppliers of two blue parts appear twice.
+    - query: |
+        SELECT DISTINCT sname
+        FROM S, SP, P
+        WHERE S.sno = SP.sno
+          AND color = 'BLUE';
+      why: SP isn't linked to P, so every supplier with any shipment qualifies.
+    - query: |
+        SELECT sname
+        FROM S
+        WHERE sno = (SELECT sno
+                     FROM SP
+                     WHERE pno IN (SELECT pno FROM P WHERE color = 'BLUE'));
+      why: "= needs the subquery to return one value; use IN."
+
+- id: w3-q-choices-scan-p5
+  type: query_choices
+  topics: [sql.joins]
+  difficulty: 2
+  dataset: supplier-parts
+  prompt: |
+    Which query returns the same result as this one?
+    ```sql
+    SELECT pname, qty
+    FROM P NATURAL JOIN SP
+    WHERE sno = 'S5';
+    ```
+  reference: SELECT pname, qty FROM P NATURAL JOIN SP WHERE sno = 'S5';
+  candidates:
+    - query: |
+        SELECT pname, qty
+        FROM P, SP
+        WHERE P.pno = SP.pno
+          AND sno = 'S5';
+    - query: |
+        SELECT pname, qty
+        FROM P, SP
+        WHERE sno = 'S5';
+      why: Without P.pno = SP.pno, each of S5's shipments is paired with every part.
+    - query: |
+        SELECT pname, qty
+        FROM P, SP
+        WHERE pno = pno
+          AND sno = 'S5';
+      why: In a Cartesian product, pno exists in both tables and must be qualified.
+    - query: |
+        SELECT *
+        FROM P, SP
+        WHERE P.pno = SP.pno
+          AND sno = 'S5';
+      why: SELECT * returns every column of both tables.
+    - query: |
+        SELECT pname, qty
+        FROM P, SP
+        WHERE P.pno = SP.pno
+           OR sno = 'S5';
+      why: OR keeps every matching pair plus every pairing with an S5 shipment.
+
+- id: w3-q-choices-supply-p4
+  type: query_choices
+  topics: [sql.joins, sql.subqueries]
+  difficulty: 2
+  dataset: supplier-parts
+  multi: true
+  noneOption: true
+  prompt: Which of the following are valid queries to get the names of suppliers who supply part P4? **Select all choices that apply.**
+  reference: SELECT sname FROM S WHERE sno IN (SELECT sno FROM SP WHERE pno = 'P4');
+  candidates:
+    - query: |
+        SELECT sname
+        FROM S JOIN SP ON S.sno = SP.sno
+        WHERE pno = 'P4';
+    - query: |
+        SELECT sname
+        FROM S, SP
+        WHERE pno = 'P4';
+      why: No join condition, so every supplier is paired with every P4 shipment.
+    - query: |
+        SELECT sname
+        FROM S NATURAL JOIN SP
+        WHERE pno = 'P4'
+        ORDER BY sname;
+      why: ORDER BY only sorts; it doesn't change which rows come back.
+    - query: |
+        SELECT DISTINCT sname
+        FROM S JOIN SP USING (sno)
+        WHERE pno = 'P4';
+    - query: |
+        SELECT sname
+        FROM S, SP
+        WHERE S.sno = SP.sno
+           OR pno = 'P4';
+      why: OR instead of AND keeps every shipment of every supplier.
+    - query: |
+        SELECT sname
+        FROM S
+        WHERE sno = (SELECT sno FROM SP WHERE pno = 'P4');
+      why: "Two suppliers ship P4, so the subquery returns two rows and = fails. IN would work."
+
+- id: w3-q-choices-no-red
+  type: query_choices
+  topics: [sql.subqueries, sql.set-ops, sql.joins]
+  difficulty: 3
+  tags: [trap]
+  dataset: supplier-parts
+  multi: true
+  prompt: Which queries list the names of suppliers who supply **no** red part? **Select all choices that apply.**
+  reference: SELECT sname FROM S WHERE sno NOT IN (SELECT sno FROM SP WHERE pno IN (SELECT pno FROM P WHERE color = 'RED'));
+  candidates:
+    - query: |
+        SELECT sname FROM S
+        EXCEPT
+        SELECT sname
+        FROM S, SP, P
+        WHERE S.sno = SP.sno
+          AND SP.pno = P.pno
+          AND color = 'RED';
+    - query: |
+        SELECT sname
+        FROM S
+        WHERE sno NOT IN (SELECT sno
+                          FROM SP NATURAL JOIN P
+                          WHERE color = 'RED');
+      why: SP and P share only pno, so this natural join is safe.
+    - query: |
+        SELECT sname FROM S
+        EXCEPT
+        SELECT sname
+        FROM S NATURAL JOIN SP NATURAL JOIN P
+        WHERE color = 'RED';
+      why: The three-way natural join also matches S.city = P.city, so it misses red-part suppliers outside London.
+    - query: |
+        SELECT DISTINCT sname
+        FROM S NATURAL JOIN SP
+        WHERE pno NOT IN (SELECT pno FROM P WHERE color = 'RED');
+      why: This finds suppliers with at least one non-red part, a different question, and a supplier with no shipments drops out in the join.
+    - query: |
+        SELECT sname
+        FROM S
+        WHERE sno NOT IN (SELECT sno FROM SP WHERE pno IN ('P1', 'P4', 'P6'));
+      why: Listing today's red parts by hand stops being right as soon as another red part is added.
+
+- id: w3-q-choices-ra-not-movie-1
+  type: query_choices
+  lang: ra
+  topics: [ra.set-ops]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  multi: true
+  prompt: Which expressions find the names of actors who do **not** work in the movie with mID = 1? **Select all choices that apply.**
+  reference: π aName ((π aID (Artists) − π aID (σ mID = 1 (Roles))) ⋈ Artists)
+  candidates:
+    - query: π aName ((π aID (Artists) − π aID (σ mID = 1 (Roles))) ⋈ Artists)
+    - query: π aName (Artists) − π aName (σ mID = 1 (Roles) ⋈ Artists)
+    - query: π aName (σ mID ≠ 1 (Roles) ⋈ Artists)
+      why: Someone who works in movie 1 and also in another movie still passes this select.
+    - query: π aName (Artists) − π aID (σ mID = 1 (Roles))
+      why: The two sides aren't union compatible.
+    - query: π aName (σ mID = 1 (Artists ⋈ Roles))
+      why: That's the opposite question.
+
+- id: w3-q-choices-ra-division
+  type: query_choices
+  lang: ra
+  topics: [ra.division]
+  difficulty: 3
+  dataset: movies-v2
+  show: { diagram: true, tables: [Movies, Roles] }
+  prompt: Which expression lists the names of actors who play a role in **every** movie?
+  reference: π aName ((π mID, aID (Roles) ÷ π mID (Movies)) ⋈ Artists)
+  candidates:
+    - query: π aName ((π mID, aID (Roles) ÷ π mID (Movies)) ⋈ Artists)
+    - query: π aName ((Roles ÷ π mID (Movies)) ⋈ Artists)
+      why: Roles still has character, which differs in every tuple, so no (aID, character) pair goes with every movie.
+    - query: π aName (π mID, aID (Roles) ⋈ Artists)
+      why: That's every actor with at least one role.
+    - query: π aName ((π mID (Movies) ÷ π mID, aID (Roles)) ⋈ Artists)
+      why: The divisor's attributes must be a subset of the dividend's.

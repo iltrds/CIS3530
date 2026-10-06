@@ -15,6 +15,7 @@ export interface WeekMeta {
   topics: string[];
   readings: string[];
   sources: string[];
+  quizFormat: string;
   counts: { flashcards: number; examples: number; questions: number; byType: Record<string, number> };
 }
 export interface Slot {
@@ -23,11 +24,13 @@ export interface Slot {
   count: number;
   points?: number;
   preferTags: string[];
+  requireTags: string[];
   topics: string[];
 }
 export interface Blueprint {
   id: string;
   title: string;
+  label?: string;
   description: string;
   kind: "quiz" | "exam";
   covers: "one_week" | "released";

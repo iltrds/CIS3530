@@ -1,0 +1,13 @@
+id: in-class-sql
+title: In-class quiz, SQL format
+label: SQL format
+description: Five 2-point questions on one week, all about reading SQL against a given instance. Two ask for the degree and cardinality of a query's result; three ask which queries are valid or equivalent rewrites, one of them select-all-that-apply. Marked when you submit.
+kind: quiz
+covers: one_week
+timeLimitMin: 10
+strictAnswers: true
+feedback: end
+slots:
+  - { name: Reading a query, types: [mcq], requireTags: [query-shape-sql], count: 2, points: 2 }
+  - { name: Valid and equivalent queries, types: [multi], requireTags: [query-choices-sql], count: 1, points: 2 }
+  - { name: Valid and equivalent queries, types: [mcq], requireTags: [query-choices-sql], count: 2, points: 2 }

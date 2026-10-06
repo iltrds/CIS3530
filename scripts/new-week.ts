@@ -21,6 +21,7 @@ const files: Record<string, string> = {
 title: ${JSON.stringify(title)}
 summary: One sentence on what this week covers.
 status: draft   # change to published when it's reviewed
+quizFormat: in-class-sql   # or in-class for a concepts quiz; see CONTENT_SPEC.md
 topics: []      # ids from content/topics.yaml; add new ones there first
 readings: []
 sources: []     # the PDFs this week was built from

@@ -1,6 +1,7 @@
 id: in-class
-title: In-class quiz simulator
-description: Copies the in-class quiz format. 10 points across 5 questions on one week, answers checked at the end, True/False typed exactly.
+title: In-class quiz, concepts format
+label: Concepts format
+description: Three 1-point multiple-choice questions, a 3-point matching question and a 4-point True/False fill-in, on one week. Marked when you submit. True and False must be typed exactly, as CourseLink requires.
 kind: quiz
 covers: one_week
 timeLimitMin: 10          # in-class quizzes are short; adjust if the real limit differs

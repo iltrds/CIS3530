@@ -5,13 +5,6 @@ import { topicLabel } from "../lib/data.ts";
 
 const DAY = 86400000;
 
-function nextLecture(weekday: number): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  const add = (weekday - d.getDay() + 7) % 7;
-  return new Date(d.getTime() + add * DAY);
-}
-
 function fmtDate(d: Date) {
   return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 }
@@ -35,9 +28,9 @@ export function Home({ ctx }: { ctx: Ctx }) {
     .sort((a, b) => a.d.getTime() - b.d.getTime());
   const nextQuiz = upcoming.find((e) => e.kind === "quiz");
   const latest = m.weeks[m.weeks.length - 1]!;
-  const quizDate = nextQuiz?.d ?? nextLecture(m.course.lecture.weekday);
   const quizWeek = nextQuiz?.covers[0] ?? latest.number;
   const quizWeekMeta = m.weeks.find((w) => w.number === quizWeek) ?? latest;
+  const quizFormat = quizWeekMeta.quizFormat;
 
   const allCards = weeks.flatMap((w) => w.flashcards);
   const due = dueQueue(allCards).length;
@@ -52,15 +45,26 @@ export function Home({ ctx }: { ctx: Ctx }) {
   return (
     <div>
       <section className="hero" aria-labelledby="next">
-        <div className="hero-kicker">
-          Next in-class quiz, {fmtDate(quizDate)} ({relDays(quizDate)})
-        </div>
-        <h1 className="hero-title" id="next">
-          Covers <span className="key">Week {quizWeek}</span>: {quizWeekMeta.title}
-        </h1>
+        {nextQuiz ? (
+          <>
+            <div className="hero-kicker">
+              Next in-class quiz, {fmtDate(nextQuiz.d)} ({relDays(nextQuiz.d)})
+            </div>
+            <h1 className="hero-title" id="next">
+              Covers <span className="key">Week {quizWeek}</span>: {quizWeekMeta.title}
+            </h1>
+          </>
+        ) : (
+          <>
+            <div className="hero-kicker">Latest week</div>
+            <h1 className="hero-title" id="next">
+              <span className="key">Week {quizWeek}</span>: {quizWeekMeta.title}
+            </h1>
+          </>
+        )}
         {nextQuiz?.note && <p className="muted">{nextQuiz.note}</p>}
         <div className="row" style={{ marginTop: 16 }}>
-          <a className="btn primary" href={href("/quiz/run", { bp: "in-class", week: quizWeek })}>
+          <a className="btn primary" href={href("/quiz/run", { bp: quizFormat, week: quizWeek })}>
             Take a practice quiz
           </a>
           <a className="btn" href={href("/flashcards", { week: quizWeek })}>
@@ -86,7 +90,7 @@ export function Home({ ctx }: { ctx: Ctx }) {
         <div>
           <div className="stat-label">Last practice quiz</div>
           <div className="stat-num">{lastRun ? `${Math.round((lastRun.score / lastRun.outOf) * 100)}%` : "–"}</div>
-          {lastRun ? <a href="#/quiz">See recent quizzes</a> : <a href={href("/quiz/run", { bp: "in-class", week: quizWeek })}>Take one</a>}
+          {lastRun ? <a href="#/quiz">See recent quizzes</a> : <a href={href("/quiz/run", { bp: quizFormat, week: quizWeek })}>Take one</a>}
         </div>
       </div>
 
