@@ -17,7 +17,20 @@ test("every week has enough questions for its in-class quiz format", async () =>
   for (const w of m.weeks) {
     const bp = m.blueprints.find((b) => b.id === w.quizFormat)!;
     const pool = (out!.weeks[w.number] as { questions: CQuestion[] }).questions;
-    const { shortfalls } = assemble(bp, pool, 1);
+    const { shortfalls, items } = assemble(bp, pool, 1);
+    expect(items.every((it) => it.q.style === "conceptual")).toBe(true);
     expect({ week: w.number, format: bp.id, shortfalls }).toEqual({ week: w.number, format: bp.id, shortfalls: [] });
+  }
+}, 60000);
+
+// The in-class quizzes are conceptual. Each week leans the same way but keeps
+// some direct questions (writing queries, definitions) for rounded practice.
+test("every week is mostly conceptual but keeps some direct questions", async () => {
+  const { out } = await compile();
+  for (const [n, w] of Object.entries(out!.weeks) as [string, { questions: CQuestion[] }][]) {
+    const total = w.questions.length;
+    const direct = w.questions.filter((q) => q.style === "direct").length;
+    const conceptual = total - direct;
+    expect({ week: n, conceptualAtLeastTwoThirds: conceptual / total >= 2 / 3, someDirect: direct >= 5 }).toEqual({ week: n, conceptualAtLeastTwoThirds: true, someDirect: true });
   }
 }, 60000);

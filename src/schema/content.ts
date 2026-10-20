@@ -104,6 +104,12 @@ const QBase = {
   explanation: z.string().default(""),
   hints: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  /**
+   * conceptual: reason, apply, predict, compare, spot the error (what the in-class quizzes ask).
+   * direct: write a query, recall a definition or order, read a value off one table.
+   * Inferred from the type when omitted (sql, ra and short are direct; everything else conceptual).
+   */
+  style: z.enum(["conceptual", "direct"]).optional(),
 };
 
 export const Question = z.discriminatedUnion("type", [
@@ -228,6 +234,8 @@ export const Slot = z.object({
   preferTags: z.array(z.string()).default([]),
   /** Only questions with at least one of these tags fill the slot. */
   requireTags: z.array(z.string()).default([]),
+  /** Only questions of this style fill the slot; defaults to the blueprint's style. */
+  style: z.enum(["conceptual", "direct", "any"]).optional(),
   topics: z.array(z.string()).default([]),
 });
 
@@ -243,6 +251,8 @@ export const Blueprint = z.object({
   timeLimitMin: z.number().positive(),
   strictAnswers: z.boolean().default(false),
   feedback: z.enum(["end", "immediate"]).default("end"),
+  /** Default question style for every slot. */
+  style: z.enum(["conceptual", "direct", "any"]).default("any"),
   slots: z.array(Slot).min(1),
 });
 export type Blueprint = z.infer<typeof Blueprint>;

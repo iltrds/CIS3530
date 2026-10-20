@@ -46,6 +46,7 @@ function QuizRun({ ctx, query }: { ctx: Ctx; query: URLSearchParams }) {
       types: list(query.get("types")),
       difficulty: list(query.get("difficulty")).map(Number),
       count: Number(query.get("count")) || 10,
+      style: (query.get("style") ?? "") as "conceptual" | "direct" | "",
     };
     const items = build(pool, settings, seed);
     const title = settings.topics.length === 1 ? topicLabel(ctx.m, settings.topics[0]!) : settings.weeks.length === 1 ? `Week ${settings.weeks[0]} practice` : "Practice";
@@ -105,10 +106,11 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
   const [types, setTypes] = useState<string[]>([]);
   const [count, setCount] = useState(10);
   const [mode, setMode] = useState<"practice" | "test">("practice");
+  const [style, setStyle] = useState<"conceptual" | "direct" | "">("");
   const toggle = <T,>(xs: T[], x: T) => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
   const pool = ctx.weeks.flatMap((w) => w.questions);
   const available = pool.filter(
-    (q) => (!weeks.length || weeks.includes(q.week)) && (!topics.length || q.topics.some((t) => topics.includes(t))) && (!types.length || types.includes(q.type)),
+    (q) => (!weeks.length || weeks.includes(q.week)) && (!topics.length || q.topics.some((t) => topics.includes(t))) && (!types.length || types.includes(q.type)) && (!style || q.style === style),
   ).length;
   const mistakeIds = Object.keys(p.mistakes).filter((id) => pool.some((q) => q.id === id));
   const allTypes = [...new Set(pool.map((q) => q.type))];
@@ -217,6 +219,24 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
           </fieldset>
           <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
             <legend className="small muted" style={{ marginBottom: 6 }}>
+              Kind of question
+            </legend>
+            <div className="chips">
+              {(
+                [
+                  ["", "Both"],
+                  ["conceptual", "Conceptual, like the quizzes"],
+                  ["direct", "Direct: write queries, recall definitions"],
+                ] as const
+              ).map(([v, label]) => (
+                <button key={v} className="chip" aria-pressed={style === v} onClick={() => setStyle(v)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+            <legend className="small muted" style={{ marginBottom: 6 }}>
               Question types
             </legend>
             <div className="chips">
@@ -256,6 +276,7 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
                       weeks: weeks.join(","),
                       topics: topics.join(","),
                       types: types.join(","),
+                      style: style || undefined,
                       count,
                       time: mode === "test" ? Math.max(5, count * 2) : undefined,
                     })

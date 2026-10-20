@@ -33,6 +33,7 @@
 
 - id: w1-q-synonym-attribute
   type: mcq
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   tags: [terminology, quiz-style, trap]
@@ -48,6 +49,7 @@
 
 - id: w1-q-synonym-relation
   type: mcq
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   tags: [terminology, quiz-style]
@@ -63,6 +65,7 @@
 
 - id: w1-q-synonym-cardinality
   type: mcq
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   tags: [terminology, quiz-style]
@@ -78,6 +81,7 @@
 
 - id: w1-q-degree-s
   type: numeric
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   dataset: supplier-parts-w1
@@ -88,6 +92,7 @@
 
 - id: w1-q-cardinality-sp
   type: numeric
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   dataset: supplier-parts-w1
@@ -98,6 +103,7 @@
 
 - id: w1-q-cardinality-course
   type: numeric
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   dataset: university
@@ -108,6 +114,7 @@
 
 - id: w1-q-degree-lab
   type: numeric
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   dataset: university
@@ -157,6 +164,7 @@
 
 - id: w1-q-candidate-props
   type: multi
+  style: direct
   topics: [keys.candidate]
   difficulty: 1
   prompt: Which properties must a candidate key have? Select all that apply.
@@ -256,6 +264,7 @@
 
 - id: w1-q-entity-integrity
   type: mcq
+  style: direct
   topics: [integrity.entity]
   difficulty: 1
   prompt: Entity integrity says that…
@@ -415,6 +424,7 @@
 
 - id: w1-q-schema-vs-instance
   type: mcq
+  style: direct
   topics: [rm.terminology]
   difficulty: 1
   prompt: Which changes most often?
@@ -428,6 +438,7 @@
 
 - id: w1-q-dbms-def
   type: mcq
+  style: direct
   topics: [rm.definitions]
   difficulty: 1
   prompt: "PostgreSQL is an example of a…"
@@ -441,6 +452,7 @@
 
 - id: w1-q-data-model-parts
   type: multi
+  style: direct
   topics: [rm.definitions]
   difficulty: 1
   prompt: A data model describes which of the following? Select all that apply.
@@ -454,6 +466,7 @@
 
 - id: w1-q-bags
   type: mcq
+  style: direct
   topics: [rm.properties]
   difficulty: 2
   prompt: Commercial DBMSs treat tables as bags rather than sets. What does that mean?
@@ -484,3 +497,156 @@
   prompt: "In one word, what kind of values make up the domain of status in S? (e.g. text, integers, dates)"
   answers: [integers, integer, int, whole numbers, numbers, number]
   explanation: status holds whole numbers (10, 20, 30), so its domain is the integers. HARRY's null means "no value", not a different domain.
+
+# ---------------------------------------------------------------- conceptual reasoning (the in-class quiz style)
+
+- id: w1-q-not-superkey
+  type: mcq
+  topics: [keys.superkey, keys.candidate]
+  difficulty: 2
+  tags: [negated-stem, quiz-style]
+  prompt: "R(A, B, C, D) has two candidate keys, {A} and {B, C}. Which of the following is **not** a superkey of R?"
+  options: ["(A, D)", "(B, C, D)", "(B, D)", "(A, B, C)", None of the given choices]
+  answer: 2
+  explanation: "A superkey must contain a candidate key. (B, D) contains neither {A} nor all of {B, C}."
+
+- id: w1-q-candidate-keys-pick
+  type: multi
+  topics: [keys.candidate, keys.superkey]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "In R(A, B, C, D), {A} is unique on its own and so is the pair {B, C}, but B alone and C alone are not. Select every candidate key."
+  options: ["{A}", "{B, C}", "{A, B}", "{B}", "{A, B, C, D}"]
+  answer: [0, 1]
+  explanation: "A candidate key is a minimal superkey. {A, B} and {A, B, C, D} are superkeys but not minimal, since A alone already works. {B} isn't unique."
+
+- id: w1-q-superset-superkey
+  type: true_false
+  topics: [keys.superkey]
+  difficulty: 1
+  prompt: "If {A, B} is a superkey of R(A, B, C), then {A, B, C} is also a superkey."
+  answer: true
+  explanation: Adding attributes to a set whose values are already unique keeps it unique.
+
+- id: w1-q-candidate-subset
+  type: true_false
+  topics: [keys.candidate]
+  difficulty: 2
+  tags: [trap]
+  prompt: "If {A, B} is a candidate key of R, then {A} on its own cannot be a superkey of R."
+  answer: true
+  explanation: "If {A} were a superkey, {A, B} wouldn't be minimal, so it couldn't be a candidate key (irreducibility)."
+
+- id: w1-q-instance-key
+  type: mcq
+  topics: [keys.candidate, rm.terminology]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts-w1
+  show: { tables: [S] }
+  prompt: In this instance of S, no two suppliers share a name. Can you conclude that sname is a candidate key of S?
+  options:
+    - "No: an instance only shows today's data, and a key is a rule every instance must satisfy"
+    - "Yes: it's unique in the instance"
+    - "Yes, but only if it is also chosen as the primary key"
+    - "No, because a key can't be a text attribute"
+  answer: 0
+  explanation: "An instance can show that a set is *not* a key (by containing duplicates), but never prove that it is. Keys come from what the data means: two suppliers could share a name tomorrow."
+
+- id: w1-q-never-violates-ri
+  type: mcq
+  topics: [integrity.referential]
+  difficulty: 2
+  tags: [quiz-style]
+  dataset: supplier-parts-w1
+  show: { diagram: true }
+  prompt: "SP.sno is a foreign key that references S. Which operation can **never** violate this foreign key?"
+  options:
+    - Inserting a tuple into S
+    - Deleting a tuple from S
+    - Inserting a tuple into SP
+    - Changing the sno of a tuple in SP
+    - None of the given choices
+  answer: 0
+  explanation: "A new supplier can't leave any SP row pointing at nothing. Deleting a supplier can (if it has shipments), and inserting or changing an SP row can (if its sno doesn't exist in S)."
+
+- id: w1-q-why-fk-not-null
+  type: mcq
+  topics: [keys.foreign, integrity.entity]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts-w1
+  show: { diagram: true }
+  prompt: SP.sno is a foreign key, yet it can never be null. Why?
+  options:
+    - "It's also part of SP's primary key, and entity integrity forbids nulls there"
+    - Foreign keys can never be null
+    - Every supplier in S has a non-null sno
+    - Referential integrity forbids null foreign keys
+  answer: 0
+  explanation: "Foreign keys may normally be null. This one can't because (sno, pno) is SP's primary key."
+
+- id: w1-q-match-violations-4
+  type: matching
+  topics: [integrity.entity, integrity.referential]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  dataset: university
+  show: { diagram: true, tables: [course, lab] }
+  prompt: "Using this instance (lab's primary key is labId; (courseCode, dno) in lab references course), match each operation to its outcome."
+  left:
+    - "Delete the course tuple (3530, 60)"
+    - "Insert ⟨9, 1300, 60, 2011W, RH, 13:00, 2, MW, Rey0003⟩ into lab"
+    - "Insert ⟨1, 3210, 60, 2011W, DW, 9:00, 2, F, G125⟩ into lab"
+  right: [No violation, Primary key violation, Foreign key violation]
+  answer: [2, 0, 1]
+  explanation: "Lab 7 is a section of (3530, 60), so deleting that course leaves it dangling. Lab 9 is new and references an existing course and prof. Lab 1 already exists."
+
+- id: w1-q-blanks-keys
+  type: blanks
+  topics: [keys.superkey, keys.candidate, keys.primary]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "Every relation has at least one candidate key.", answer: "True" }
+    - { text: "A relation can have two primary keys.", answer: "False" }
+    - { text: "An alternate key is a candidate key that wasn't chosen as the primary key.", answer: "True" }
+    - { text: "Every superkey is a candidate key.", answer: "False" }
+  explanation: "Tuples are distinct, so the set of all attributes is a superkey and some minimal subset of it is a candidate key. A primary key may be composite, but there is only one. Superkeys need not be minimal."
+
+- id: w1-q-empty-relation
+  type: mcq
+  topics: [rm.terminology, rm.relations-math]
+  difficulty: 1
+  prompt: A relation has degree 4 and cardinality 0. Which is true?
+  options:
+    - It has a schema with four attributes and an empty instance
+    - It isn't a valid relation
+    - It has four tuples and no attributes
+    - Its primary key must be null
+  answer: 0
+  explanation: "The empty set is a subset of any Cartesian product, so an empty instance is still a relation."
+
+- id: w1-q-near-duplicates
+  type: true_false
+  topics: [rm.properties]
+  difficulty: 1
+  prompt: Two tuples that agree on every attribute except one are duplicates.
+  answer: false
+  explanation: Tuples are duplicates only if they agree on every attribute.
+
+- id: w1-q-same-relation-order
+  type: mcq
+  topics: [rm.properties]
+  difficulty: 2
+  prompt: "Relations R and T contain exactly the same tuples, but R lists them in a different order and with its columns in a different order. Are R and T the same relation?"
+  options:
+    - "Yes: neither the order of tuples nor the order of attributes matters"
+    - "No: the order of attributes matters"
+    - "No: the order of tuples matters"
+    - "Only if they have the same primary key"
+  answer: 0
+  explanation: "A relation is a set of tuples, and each value belongs to a named attribute, so neither order carries meaning."

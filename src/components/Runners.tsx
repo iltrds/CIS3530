@@ -25,7 +25,7 @@ function QHead({ n, item, m }: { n?: number; item: QuizItem; m?: Manifest }) {
       <div className="q-num">{n !== undefined ? `Question ${n}` : TYPE_LABELS[q.type]}</div>
       <div className="q-meta">
         {n !== undefined && <>{TYPE_LABELS[q.type]} · </>}
-        Week {q.week}
+        Week {q.week} · {q.style === "direct" ? "Direct" : "Conceptual"}
         {m && <> · {q.topics.map((t) => topicLabel(m, t)).join(", ")}</>} · {item.points} point{item.points === 1 ? "" : "s"}
       </div>
     </div>

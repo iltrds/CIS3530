@@ -1,13 +1,15 @@
 id: final-practice
 title: Final exam practice
-description: Cumulative over every published week. Timed, with results at the end.
+description: Cumulative over every published week. Mostly conceptual questions like the in-class quizzes, plus a short section of direct questions (writing queries, definitions) so nothing is left untested. Timed, with results at the end.
 kind: exam
 covers: released
 timeLimitMin: 120
 feedback: end
+style: conceptual
 slots:
-  - { name: Reading SQL, types: [mcq, multi], requireTags: [query-shape, query-choices], count: 4 }
-  - { name: Concepts, types: [mcq, multi, true_false, numeric, short], count: 12 }
+  - { name: Reading SQL, types: [mcq, multi], requireTags: [query-shape, query-choices], count: 6 }
+  - { name: Concepts, types: [mcq, multi, true_false, numeric, order_steps], count: 10 }
   - { name: Keys, constraints and schemas, types: [matching, blanks, select_attributes], count: 3 }
-  - { name: Relational algebra, types: [ra, predict_table], count: 5 }
-  - { name: SQL, types: [sql], count: 5 }
+  - { name: Predicting results, types: [predict_table], count: 3 }
+  - { name: Writing queries, types: [ra, sql], count: 4, style: direct }
+  - { name: Definitions, types: [mcq, multi, true_false, order_steps, matching, short], count: 2, style: direct }

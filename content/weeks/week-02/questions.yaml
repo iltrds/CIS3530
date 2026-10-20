@@ -370,6 +370,7 @@
 
 - id: w2-q-theta-def
   type: mcq
+  style: direct
   topics: [ra.theta]
   difficulty: 1
   prompt: "R ⋈<sub>c</sub> S (theta join) is equivalent to…"
@@ -383,6 +384,7 @@
 
 - id: w2-q-precedence
   type: mcq
+  style: direct
   topics: [ra.precedence]
   difficulty: 2
   prompt: "Which operator has the **lowest** precedence?"
@@ -422,6 +424,7 @@
 
 - id: w2-q-match-operators
   type: matching
+  style: direct
   topics: [ra.select, ra.project, ra.product, ra.division]
   difficulty: 1
   points: 3
@@ -473,3 +476,210 @@
     - { text: "Two relations with the same degree are always union compatible.", answer: "False" }
     - { text: "A left outer join keeps every tuple of the left operand.", answer: "True" }
   explanation: "Difference isn't commutative. Division requires S's attributes to be a subset of R's. Union compatibility also needs matching domains. Left outer join pads unmatched left tuples rather than dropping them."
+
+# ---------------------------------------------------------------- conceptual reasoning: reading RA (answers computed)
+
+- id: w2-q-shape-directors-long
+  type: query_shape
+  topics: [ra.select, ra.project, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Movies] }
+  ra: π director (σ length > 130 (Movies))
+  distractors: [[1, 5], [5, 5], [1, 4], [2, 3]]
+  explanation: "Five movies run longer than 130 minutes, but projection keeps each director once."
+
+- id: w2-q-shape-natjoin
+  type: query_shape
+  topics: [ra.natjoin, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Movies, Roles] }
+  ra: Movies ⋈ Roles
+  distractors: [[8, 6], [7, 42], [8, 42], [7, 7]]
+  explanation: "They share only mID, so the degree is 5 + 3 − 1. Each role matches exactly one movie."
+
+- id: w2-q-shape-product-select
+  type: query_shape
+  topics: [ra.product, ra.select, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Artists, Roles] }
+  ra: σ nationality = 'American' (Artists) × Roles
+  distractors: [[6, 24], [3, 18], [5, 18], [6, 6]]
+  explanation: "σ binds tighter than ×, so the three American artists are each paired with all six roles."
+
+- id: w2-q-shape-union
+  type: query_shape
+  topics: [ra.set-ops, ra.degree-cardinality]
+  difficulty: 2
+  dataset: movies-v1
+  show: { tables: [Artists, Roles] }
+  ra: π aName (Artists) ∪ π character (Roles)
+  distractors: [[2, 10], [1, 6], [1, 4], [1, 24]]
+  explanation: "Both sides have one text attribute, so they're union compatible. No actor's name is also a character's name, so nothing merges."
+
+- id: w2-q-shape-difference
+  type: query_shape
+  topics: [ra.set-ops, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Movies, Roles] }
+  ra: π mID (Movies) − π mID (Roles)
+  distractors: [[1, 4], [1, 7], [5, 3], [1, 1]]
+  explanation: "The movies with no roles recorded: 2, 4 and 7."
+
+- id: w2-q-shape-self-product
+  type: query_shape
+  topics: [ra.rename-assign, ra.product, ra.degree-cardinality]
+  difficulty: 1
+  dataset: movies-v1
+  show: { tables: [Artists] }
+  ra: ρ A1 (Artists) × ρ A2 (Artists)
+  distractors: [[3, 16], [6, 4], [3, 4], [6, 12]]
+  explanation: "Renaming doesn't change the tuples: 4 × 4 pairs, with 3 + 3 attributes."
+
+- id: w2-q-shape-overmatch
+  type: query_shape
+  topics: [ra.natjoin, ra.rename-assign, ra.degree-cardinality]
+  difficulty: 3
+  tags: [trap]
+  dataset: movies-v1
+  show: { tables: [Artists, Roles] }
+  ra: Artists ⋈ ρ R(mID, aID, nationality) (Roles)
+  distractors: [[5, 6], [4, 6], [6, 0], [6, 24]]
+  explanation: "Renaming character to nationality makes the natural join match on aID and nationality. No character name equals a nationality, so nothing matches; the degree is 3 + 3 − 2."
+
+- id: w2-q-shape-division-lucas
+  type: query_shape
+  topics: [ra.division, ra.degree-cardinality]
+  difficulty: 2
+  dataset: movies-v1
+  show: { tables: [Movies, Roles] }
+  ra: π mID, aID (Roles) ÷ π mID (σ director = 'Lucas' (Movies))
+  distractors: [[1, 2], [2, 1], [1, 0], [2, 2]]
+  explanation: "Lucas directed movies 5 and 6. Only aID 2 (Ford) has a role in both."
+
+- id: w2-q-shape-full-outer
+  type: query_shape
+  topics: [ra.outer, ra.degree-cardinality]
+  difficulty: 2
+  dataset: toy
+  show: { tables: [J1, J2] }
+  ra: J1 ⟗ J2
+  distractors: [[4, 4], [3, 3], [3, 2], [4, 6]]
+  explanation: "Two matches on col1 = 1, plus b from J1 and z from J2, each padded with null."
+
+- id: w2-q-shape-empty-join
+  type: query_shape
+  topics: [ra.natjoin, ra.select, ra.degree-cardinality]
+  difficulty: 2
+  dataset: movies-v1
+  show: { tables: [Movies, Roles] }
+  ra: σ year < 1970 (Movies) ⋈ Roles
+  distractors: [[7, 1], [8, 0], [5, 1], [3, 0]]
+  explanation: "The only movie before 1970 is Repulsion, which has no roles. An empty result still has a degree."
+
+# ---------------------------------------------------------------- conceptual reasoning: equivalent RA expressions
+
+- id: w2-q-choices-no-roles
+  type: query_choices
+  lang: ra
+  topics: [ra.set-ops, ra.natjoin]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  multi: true
+  prompt: Which expressions give the titles of movies with no roles recorded? **Select all choices that apply.**
+  reference: π title ((π mID (Movies) − π mID (Roles)) ⋈ Movies)
+  candidates:
+    - query: π title ((π mID (Movies) − π mID (Roles)) ⋈ Movies)
+    - query: π title (Movies) − π title (Movies ⋈ Roles)
+      why: "Correct as long as no two movies share a title: titles of all movies minus titles of movies with a role."
+    - query: π title (Movies − Roles)
+      why: Movies and Roles aren't union compatible.
+    - query: π title (σ Movies.mID ≠ Roles.mID (Movies × Roles))
+      why: Every movie differs from some role's mID, so every title survives.
+    - query: π title (Movies ⋈ Roles)
+      why: That's the movies that do have roles.
+
+- id: w2-q-choices-pairs
+  type: query_choices
+  lang: ra
+  topics: [ra.rename-assign, ra.product, ra.strategy]
+  difficulty: 3
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: Which expression lists pairs of names of different artists with the same nationality, each pair once?
+  reference: π A1.aName, A2.aName (σ A1.nationality = A2.nationality ∧ A1.aID < A2.aID (ρ A1 (Artists) × ρ A2 (Artists)))
+  candidates:
+    - query: π A1.aName, A2.aName (σ A1.nationality = A2.nationality ∧ A1.aID < A2.aID (ρ A1 (Artists) × ρ A2 (Artists)))
+    - query: π A1.aName, A2.aName (σ A1.nationality = A2.nationality (ρ A1 (Artists) × ρ A2 (Artists)))
+      why: Each artist is paired with themself, and every pair appears in both orders.
+    - query: π A1.aName, A2.aName (σ A1.nationality = A2.nationality ∧ A1.aID ≠ A2.aID (ρ A1 (Artists) × ρ A2 (Artists)))
+      why: "≠ removes the self-pairs but still lists each pair twice, once in each order."
+    - query: Artists ⋈ Artists
+      why: A natural join of a relation with itself matches on every attribute and just returns the relation.
+    - query: π aName (σ nationality = nationality (Artists × Artists))
+      why: Without renaming, the two copies' attributes can't be told apart.
+
+- id: w2-q-choices-theta-vs-natural
+  type: query_choices
+  lang: ra
+  topics: [ra.theta, ra.natjoin, ra.product]
+  difficulty: 2
+  dataset: movies-v1
+  show: { diagram: true }
+  prompt: "Which expression returns exactly the same relation as `Movies ⋈ Roles`?"
+  reference: Movies ⋈ Roles
+  candidates:
+    - query: π Movies.mID, title, director, year, length, aID, character (σ Movies.mID = Roles.mID (Movies × Roles))
+    - query: σ Movies.mID = Roles.mID (Movies × Roles)
+      why: The select keeps the right tuples but both copies of mID remain.
+    - query: Movies ⋈ [Movies.mID = Roles.mID] Roles
+      why: A theta join is a select on the product, so it also keeps both mID columns.
+    - query: Movies × Roles
+      why: Without a condition every movie is paired with every role.
+
+- id: w2-q-choices-outer
+  type: query_choices
+  lang: ra
+  topics: [ra.outer]
+  difficulty: 2
+  dataset: movies-outer
+  show: { tables: [Artists, Roles] }
+  multi: true
+  prompt: Which expressions list every artist's name with the characters they play, keeping artists who play no role? **Select all choices that apply.**
+  reference: π aName, character (Artists ⟕ Roles)
+  candidates:
+    - query: π aName, character (Artists ⟕ Roles)
+    - query: π aName, character (Roles ⟖ Artists)
+      why: A right outer join keeps every tuple of its right operand, here Artists.
+    - query: π aName, character (Roles ⟕ Artists)
+      why: This keeps unmatched roles, and every role has an artist, so Bachchan is lost.
+    - query: π aName, character (Artists ⋈ Roles)
+      why: The natural join drops Bachchan.
+    - query: π aName, character (Artists × Roles)
+      why: Every artist is paired with every character.
+
+- id: w2-q-choices-shared-names
+  type: query_choices
+  lang: ra
+  topics: [ra.set-ops, ra.natjoin]
+  difficulty: 2
+  dataset: set-ops
+  show: { tables: [Student, Instructor] }
+  multi: true
+  prompt: Which expressions list the first names that belong to both an instructor and a student? **Select all choices that apply.**
+  reference: π first_name (Instructor) ∩ π first_name (Student)
+  candidates:
+    - query: π first_name (Student) ∩ π first_name (Instructor)
+      why: Intersection is commutative.
+    - query: π first_name (Instructor ⋈ Student)
+      why: The only attribute they share is first_name, so the natural join keeps exactly the matching names.
+    - query: Instructor ∩ Student
+      why: "Same degree, but the first attributes' domains differ (text and integer), so they aren't union compatible."
+    - query: π first_name (Instructor) − π first_name (Student)
+      why: That's instructor names that no student has.
+    - query: π first_name (Instructor) ∪ π first_name (Student)
+      why: That's every first name in either table.

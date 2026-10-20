@@ -28,6 +28,7 @@ export interface CQuestion {
   explanation: string;
   hints: string[];
   tags: string[];
+  style: "conceptual" | "direct";
   // type-specific
   options?: string[];
   answer?: unknown;

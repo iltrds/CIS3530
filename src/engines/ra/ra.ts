@@ -513,6 +513,10 @@ function resolve(attrs: Attr[], ref: { rel?: string; name: string }): number {
     throw new RAError(`Unknown attribute "${shown}". This relation has: ${avail}`);
   }
   if (hits.length > 1) {
+    const rels = new Set(hits.map((i) => attrs[i]!.rel ?? ""));
+    if (rels.size < hits.length) {
+      throw new RAError(`"${shown}" is ambiguous here: both copies of ${attrs[hits[0]!]!.rel ?? "the relation"} have it. Rename one copy with ρ first, e.g. ρ A1 (${attrs[hits[0]!]!.rel ?? "R"}).`);
+    }
     const opts = hits.map((i) => `${attrs[i]!.rel}.${attrs[i]!.name}`).join(" or ");
     throw new RAError(`"${shown}" is ambiguous here: write ${opts}. If both sides are the same relation, rename one with ρ first.`);
   }

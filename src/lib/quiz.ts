@@ -39,6 +39,8 @@ export function assemble(bp: Blueprint, pool: CQuestion[], seed: number): { item
     let cands = pool.filter((q) => slot.types.includes(q.type) && !used.has(q.id));
     if (slot.topics.length) cands = cands.filter((q) => q.topics.some((t) => slot.topics.includes(t)));
     if (slot.requireTags.length) cands = cands.filter((q) => q.tags.some((t) => slot.requireTags.includes(t)));
+    const style = slot.style ?? bp.style ?? "any";
+    if (style !== "any") cands = cands.filter((q) => q.style === style);
     const shuffled = shuffle(cands, rand);
     const preferred = slot.preferTags.length ? shuffled.filter((q) => q.tags.some((t) => slot.preferTags.includes(t))) : [];
     const rest = shuffled.filter((q) => !preferred.includes(q));
@@ -58,6 +60,8 @@ export interface BuilderSettings {
   types: string[];
   count: number;
   difficulty: number[];
+  /** "" = both */
+  style?: "conceptual" | "direct" | "";
 }
 
 export function build(pool: CQuestion[], s: BuilderSettings, seed: number): QuizItem[] {
@@ -67,7 +71,8 @@ export function build(pool: CQuestion[], s: BuilderSettings, seed: number): Quiz
       (!s.weeks.length || s.weeks.includes(q.week)) &&
       (!s.topics.length || q.topics.some((t) => s.topics.includes(t))) &&
       (!s.types.length || s.types.includes(q.type)) &&
-      (!s.difficulty.length || s.difficulty.includes(q.difficulty)),
+      (!s.difficulty.length || s.difficulty.includes(q.difficulty)) &&
+      (!s.style || q.style === s.style),
   );
   return shuffle(cands, rand)
     .slice(0, s.count)

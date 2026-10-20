@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { gradeLocal, type CQuestion } from "../src/engines/grading.ts";
 
-const base = { id: "t", week: 1, topics: ["x"], difficulty: 1, points: 1, show: { diagram: false, tables: [] }, prompt: "", explanation: "", hints: [], tags: [] };
+const base = { id: "t", week: 1, topics: ["x"], difficulty: 1, points: 1, show: { diagram: false, tables: [] }, prompt: "", explanation: "", hints: [], tags: [], style: "conceptual" as const };
 
 describe("gradeLocal", () => {
   const blanks: CQuestion = { ...base, type: "blanks", strictCase: true, parts: [{ text: "a", answer: "True", accept: [] }, { text: "b", answer: "False", accept: [] }] };

@@ -210,6 +210,7 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
         prompt: md(q.prompt),
         explanation: md(q.explanation),
         hints: q.hints.map(mdi),
+        style: q.style ?? (q.type === "sql" || q.type === "ra" || q.type === "short" ? "direct" : "conceptual"),
       };
 
       switch (q.type) {

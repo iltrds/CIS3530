@@ -7,7 +7,8 @@ covers: one_week
 timeLimitMin: 10          # in-class quizzes are short; adjust if the real limit differs
 strictAnswers: true       # "True", not "TRUE" or "true", as CourseLink requires
 feedback: end
+style: conceptual     # the in-class quizzes never ask direct recall or write-a-query questions
 slots:
-  - { name: Concepts, types: [mcq], count: 3, points: 1, preferTags: [quiz-style, negated-stem, terminology, all-none-option] }
+  - { name: Concepts, types: [mcq], count: 3, points: 1, preferTags: [quiz-style, negated-stem, all-none-option, trap] }
   - { name: Applied, types: [matching], count: 1, points: 3 }
   - { name: Applied, types: [blanks], count: 1, points: 4 }

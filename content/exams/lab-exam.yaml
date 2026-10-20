@@ -5,5 +5,6 @@ kind: exam
 covers: released
 timeLimitMin: 50
 feedback: end
+style: direct
 slots:
   - { name: SQL, types: [sql], count: 8 }

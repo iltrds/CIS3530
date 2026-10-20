@@ -502,24 +502,6 @@
 
 # ---------------------------------------------------------------- writing SQL
 
-- id: w4-q-sql-total-per-part
-  type: sql
-  topics: [sql.group-by]
-  difficulty: 1
-  dataset: supplier-parts
-  show: { diagram: true }
-  prompt: List each part number with the total quantity shipped of that part.
-  reference: SELECT pno, SUM(qty) FROM SP GROUP BY pno;
-
-- id: w4-q-sql-suppliers-per-city
-  type: sql
-  topics: [sql.group-by]
-  difficulty: 1
-  dataset: supplier-parts
-  show: { diagram: true }
-  prompt: For each city, list the city and how many suppliers are in it.
-  reference: SELECT city, COUNT(*) FROM S GROUP BY city;
-
 - id: w4-q-sql-total-over-600
   type: sql
   topics: [sql.having]
@@ -614,16 +596,6 @@
   reference: UPDATE S SET status = status + 5 WHERE city = 'PARIS';
   check: SELECT * FROM S;
 
-- id: w4-q-sql-delete-small
-  type: sql
-  topics: [sql.modify]
-  difficulty: 1
-  dataset: supplier-parts
-  show: { tables: [SP] }
-  prompt: Write a statement that deletes every shipment of fewer than 200 parts. (Checked with `SELECT * FROM SP`.)
-  reference: DELETE FROM SP WHERE qty < 200;
-  check: SELECT * FROM SP;
-
 - id: w4-q-sql-insert
   type: sql
   topics: [sql.modify]
@@ -687,6 +659,7 @@
 
 - id: w4-q-where-having
   type: mcq
+  style: direct
   topics: [sql.having]
   difficulty: 1
   tags: [quiz-style]
@@ -712,6 +685,7 @@
 
 - id: w4-q-order-clauses
   type: order_steps
+  style: direct
   topics: [sql.clause-order]
   difficulty: 1
   prompt: Put the clauses in the order they're written in a query.
@@ -719,6 +693,7 @@
 
 - id: w4-q-order-eval
   type: order_steps
+  style: direct
   topics: [sql.clause-order]
   difficulty: 2
   prompt: Put the clauses in the order they're logically evaluated.
@@ -726,6 +701,7 @@
 
 - id: w4-q-exists-true
   type: mcq
+  style: direct
   topics: [sql.correlated]
   difficulty: 1
   prompt: "`EXISTS (subquery)` is true when…"
@@ -738,6 +714,7 @@
 
 - id: w4-q-correlated-def
   type: mcq
+  style: direct
   topics: [sql.correlated]
   difficulty: 1
   prompt: What makes a subquery correlated?
@@ -763,6 +740,7 @@
 
 - id: w4-q-match-modify
   type: matching
+  style: direct
   topics: [sql.modify]
   difficulty: 1
   points: 3
@@ -809,3 +787,106 @@
   prompt: "How many rows does `UPDATE SP SET qty = 150 WHERE qty = 100;` change on this instance?"
   answer: 2
   explanation: "S2's shipment of P5 and S5's shipment of P1."
+
+- id: w4-q-predict-city-count
+  type: predict_table
+  topics: [sql.group-by]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  prompt: Fill in the result of this query.
+  sql: SELECT city, COUNT(*) FROM S GROUP BY city;
+
+# ---------------------------------------------------------------- conceptual reasoning
+
+- id: w4-q-shape-having-no-group
+  type: query_shape
+  topics: [sql.having, sql.aggregates]
+  difficulty: 3
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  sql: |
+    SELECT COUNT(*)
+    FROM SP
+    HAVING COUNT(*) > 20;
+  distractors: [[1, 1], [0, 0], [1, 12], [2, 1]]
+  explanation: "Without GROUP BY the whole table is one group of 12 rows. HAVING rejects that group, so no row comes back, but the result still has one column."
+
+- id: w4-q-shape-group-empty
+  type: query_shape
+  topics: [sql.group-by]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  sql: |
+    SELECT sno, COUNT(*)
+    FROM SP
+    WHERE pno = 'P9'
+    GROUP BY sno;
+  distractors: [[2, 1], [1, 1], [1, 0], [2, 5]]
+  explanation: "No shipment of P9 exists, so there are no rows to group, and so no groups."
+
+- id: w4-q-shape-count-empty
+  type: query_shape
+  topics: [sql.aggregates]
+  difficulty: 2
+  tags: [trap]
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  sql: |
+    SELECT COUNT(*)
+    FROM SP
+    WHERE pno = 'P9';
+  distractors: [[1, 0], [0, 0], [2, 1], [1, 12]]
+  explanation: "Without GROUP BY an aggregate always returns one row, here with COUNT = 0. Compare with the same query grouped by sno, which returns nothing."
+
+- id: w4-q-why-group-attr
+  type: mcq
+  topics: [sql.group-by]
+  difficulty: 2
+  prompt: "Why must sno be listed in GROUP BY for `SELECT sno, COUNT(*) FROM SP …`?"
+  options:
+    - "Each result row stands for one group, and only a grouping attribute is guaranteed to have one value per group"
+    - "COUNT needs a column to count"
+    - "GROUP BY is what sorts the result by sno"
+    - "Without it COUNT(*) would count null values"
+  answer: 0
+  explanation: "Without GROUP BY the whole table is one group, which contains five different sno values; SQL can't pick one to show."
+
+- id: w4-q-not-in-vs-not-exists
+  type: true_false
+  topics: [sql.correlated, sql.subqueries]
+  difficulty: 3
+  tags: [trap]
+  prompt: "`WHERE sno NOT IN (subquery)` and the matching `WHERE NOT EXISTS (correlated subquery)` always return the same rows."
+  answer: false
+  explanation: "They differ when the subquery returns a null: `x NOT IN (…, null)` is never true, so NOT IN returns nothing, while NOT EXISTS is unaffected."
+
+- id: w4-q-count-method-key
+  type: mcq
+  topics: [sql.division, keys.primary]
+  difficulty: 3
+  prompt: "The COUNT method of division keeps suppliers whose `COUNT(pno)` in SP equals the number of parts in P. Why does it depend on SP's primary key (sno, pno)?"
+  options:
+    - The key stops the same supplier–part pair appearing twice, which would inflate the count
+    - The key makes COUNT ignore null values
+    - The key makes GROUP BY sno legal
+    - It doesn't depend on the key
+  answer: 0
+  explanation: "If S3 could ship P3 twice, its two shipments would count as two parts. COUNT(DISTINCT pno) avoids relying on the key."
+
+- id: w4-q-blanks-empty-groups
+  type: blanks
+  topics: [sql.group-by, sql.having, sql.aggregates, sql.correlated]
+  difficulty: 3
+  points: 4
+  tags: [quiz-style]
+  prompt: "Type **True** or **False** in each box."
+  parts:
+    - { text: "A GROUP BY query over zero rows returns one row.", answer: "False" }
+    - { text: "COUNT(*) without GROUP BY over zero rows returns one row containing 0.", answer: "True" }
+    - { text: "HAVING can be used without GROUP BY.", answer: "True" }
+    - { text: "A correlated subquery is evaluated once for the whole query.", answer: "False" }
+  explanation: "No rows means no groups. Without GROUP BY the table is one group even when empty. HAVING then filters that single group. A correlated subquery runs again for each outer row."

@@ -22,8 +22,11 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
           <a className="btn primary" href={href("/flashcards", { week: n })}>
             Flash cards ({w.flashcards.length})
           </a>
-          <a className="btn" href={href("/quiz/run", { mode: "practice", weeks: n, count: 10 })}>
-            Practise 10 questions
+          <a className="btn" href={href("/quiz/run", { mode: "practice", weeks: n, count: 10, style: "conceptual" })}>
+            Practise 10 quiz-style questions
+          </a>
+          <a className="btn ghost" href={href("/quiz/run", { mode: "practice", weeks: n, count: 10, style: "direct" })}>
+            Direct practice: write and recall
           </a>
           <a className="btn" href={href("/quiz/run", { bp: w.week.quizFormat, week: n })}>
             Quiz simulator

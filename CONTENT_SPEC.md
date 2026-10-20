@@ -28,7 +28,20 @@ Text fields accept Markdown: `**bold**`, `` `code` ``, `<sub>c</sub>`, `<u>key</
 5. `bun run dev`, open http://localhost:3000 and read through it against the slides.
 6. Set `status: published` in `week.yaml`, commit and push. CI tests, builds and deploys.
 
-Targets per week: 25–35 flash cards, 6–10 worked examples, 30–50 questions.
+Targets per week: 25–35 flash cards, 6–10 worked examples, 45–60 questions.
+
+### Conceptual vs direct questions
+
+**The in-class quizzes are conceptual: they never ask a direct question.** They ask you to apply a rule, predict what a query returns, compare queries, or spot why something is wrong. So every question has a `style`:
+
+| `style` | What it asks | Examples |
+|---|---|---|
+| `conceptual` | reason with the material | degree/cardinality of a query, which queries are equivalent, which constraint an operation breaks, True/False about a schema, why a query fails, what a result looks like |
+| `direct` | produce or recall something | write a query or RA expression, state a definition, put clauses in order, read a value straight off one table |
+
+`sql`, `ra` and `short` questions are `direct` automatically; everything else defaults to `conceptual`. Mark recall questions yourself with `style: direct` (e.g. "EXISTS is true when…", "Which term means the same as attribute?").
+
+A test enforces the balance for every week: **at least two thirds conceptual, and at least 5 direct** (kept for rounded practice). The quiz simulator formats only draw conceptual questions; the final-exam practice is mostly conceptual with a short direct section; the lab-exam practice is all direct SQL. The quiz builder can filter by kind.
 
 Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a test checks the week has enough questions to fill it:
 
@@ -41,7 +54,7 @@ New weeks use `in-class-sql` unless `week.yaml` says otherwise. Any week with `s
 
 ### Prompt for generating a week with Claude
 
-> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Set `quizFormat` in `week.yaml` and include enough questions for it (see the table above): for the concepts format, `mcq` (some with a **not true** stem and "All/None of the given choices" options), `matching` and `blanks` tagged `quiz-style`; for the SQL format, at least 6 `query_shape` and 6 `query_choices` (2 or more with `multi: true`), whose distractors use the usual mistakes: a missing join condition, a missing DISTINCT, `SELECT *` after a join, an unqualified shared column, DISTINCT in the wrong place, and natural joins that match an unexpected column. Tag wording traps `trap`. Then run `bun run validate --week N` and fix every problem.
+> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Write mostly conceptual questions (at least two thirds; mark recall questions `style: direct`), keeping a handful of direct ones such as writing a query. Set `quizFormat` in `week.yaml` and include enough conceptual questions for it (see the table above): for the concepts format, `mcq` (some with a **not true** stem and "All/None of the given choices" options), `matching` and `blanks` tagged `quiz-style`; for the SQL format, at least 6 `query_shape` and 6 `query_choices` (2 or more with `multi: true`), whose distractors use the usual mistakes: a missing join condition, a missing DISTINCT, `SELECT *` after a join, an unqualified shared column, DISTINCT in the wrong place, and natural joins that match an unexpected column. Tag wording traps `trap`. Then run `bun run validate --week N` and fix every problem.
 
 ## Datasets
 
@@ -94,7 +107,7 @@ Every dataset is loaded into Postgres with its keys and foreign keys, so the row
 
 ## Questions
 
-Common fields: `id`, `type`, `topics`, `prompt`, optional `difficulty` (1–3), `points` (default 1), `explanation`, `hints`, `tags`, `dataset`, and `show: { diagram: true, tables: [S, SP] }` to display the schema diagram and instance tables next to the question.
+Common fields: `id`, `type`, `topics`, `prompt`, optional `style` (`conceptual` or `direct`, see above), `difficulty` (1–3), `points` (default 1), `explanation`, `hints`, `tags`, `dataset`, and `show: { diagram: true, tables: [S, SP] }` to display the schema diagram and instance tables next to the question.
 
 | type | extra fields | grading |
 |---|---|---|

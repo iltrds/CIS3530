@@ -25,6 +25,7 @@ export interface Slot {
   points?: number;
   preferTags: string[];
   requireTags: string[];
+  style?: "conceptual" | "direct" | "any";
   topics: string[];
 }
 export interface Blueprint {
@@ -37,6 +38,7 @@ export interface Blueprint {
   timeLimitMin: number;
   strictAnswers: boolean;
   feedback: "end" | "immediate";
+  style: "conceptual" | "direct" | "any";
   slots: Slot[];
 }
 export interface CourseEvent {
