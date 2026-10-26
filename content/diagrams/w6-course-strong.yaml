@@ -1,0 +1,31 @@
+id: w6-course-strong
+title: SECTION with its own surrogate key
+caption: "Give SECTION its own key (class_code) and it is no longer weak: it still can't exist without a course (total participation), but its key doesn't borrow COURSE's key."
+width: 900
+height: 290
+entities:
+  - name: COURSE
+    x: 170
+    y: 140
+    attrs:
+      - { name: crs_code, key: true }
+      - { name: description }
+      - { name: credits }
+  - name: SECTION
+    x: 650
+    y: 140
+    attrSide: bottom
+    attrs:
+      - { name: class_code, key: true }
+      - { name: section_no }
+      - { name: year }
+      - { name: sem }
+      - { name: time }
+      - { name: room }
+relationships:
+  - name: Offers
+    x: 405
+    y: 140
+    ends:
+      - { entity: COURSE, card: "1" }
+      - { entity: SECTION, card: N, total: true }

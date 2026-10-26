@@ -1,0 +1,32 @@
+id: w6-course-weak
+title: SECTION as a weak entity
+caption: "A section is identified by its course plus (section_no, year, sem), its partial key (dashed underline). Offers is the identifying relationship (double diamond), and SECTION participates totally."
+width: 860
+height: 290
+entities:
+  - name: COURSE
+    x: 170
+    y: 140
+    attrs:
+      - { name: crs_code, key: true }
+      - { name: description }
+      - { name: credits }
+  - name: SECTION
+    x: 640
+    y: 140
+    weak: true
+    attrSide: bottom
+    attrs:
+      - { name: section_no, partial: true }
+      - { name: year, partial: true }
+      - { name: sem, partial: true }
+      - { name: time }
+      - { name: room }
+relationships:
+  - name: Offers
+    x: 405
+    y: 140
+    identifying: true
+    ends:
+      - { entity: COURSE, card: "1" }
+      - { entity: SECTION, card: N, total: true }

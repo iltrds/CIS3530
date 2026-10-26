@@ -94,6 +94,12 @@ export const TYPE_LABELS: Record<string, string> = {
   sql: "Write SQL",
 };
 
+/** Label for one question: a True/False fill-in that also allows Maybe says so. */
+export function questionLabel(q: CQuestion): string {
+  if (q.type === "blanks" && q.parts?.some((p) => p.answer === "Maybe")) return "Fill in True/False/Maybe";
+  return TYPE_LABELS[q.type] ?? q.type;
+}
+
 export const letter = (i: number) => "abcdefghijklmnopqrstuvwxyz"[i] ?? String(i + 1);
 
 /** Plain-text rendering of the correct answer, for the printable answer key. */

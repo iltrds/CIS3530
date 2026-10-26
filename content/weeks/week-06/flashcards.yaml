@@ -1,0 +1,136 @@
+- id: w6-fc-phases
+  topic: er.design
+  front: The four phases of database design, in order?
+  back: Requirements gathering → conceptual design (ER model) → logical design (relational model) → physical design.
+- id: w6-fc-er-dbms
+  topic: er.design
+  front: Is an ER model tied to a particular DBMS?
+  back: No. It's a conceptual, high-level design; mapping it to relations is the next (logical) phase.
+- id: w6-fc-entity
+  topic: er.entities
+  front: What is an entity?
+  back: A real-world object with an independent existence that can be told apart from other objects. It can be physical (a car) or conceptual (a course).
+- id: w6-fc-type-set
+  topic: er.entities
+  front: Entity type vs entity set?
+  back: "The type is the shared description (STUDENT with its attributes) and is what you design with; the set is all the entities of that type stored at one moment."
+  tags: [trap]
+- id: w6-fc-composite
+  topic: er.attributes
+  front: Composite attribute? How is it drawn?
+  back: "An attribute made of parts that each mean something on their own (address: number, street, city, postal code). Its parts' ovals hang off its oval."
+- id: w6-fc-multivalued
+  topic: er.attributes
+  front: Multivalued attribute? How is it drawn?
+  back: "One that can hold several values for one entity (a department's locations). A double oval, or {location} in text."
+- id: w6-fc-derived
+  topic: er.attributes
+  front: Derived attribute? How is it drawn in this course?
+  back: "One computable from other data (age from date of birth). The course uses no special notation for it; the textbook draws a dashed oval."
+  tags: [trap]
+- id: w6-fc-key-attr
+  topic: er.keys
+  front: Key attribute, and its notation?
+  back: An attribute whose value is different for every entity of the type. Its name is underlined.
+- id: w6-fc-independent-classes
+  topic: er.attributes
+  front: Can an attribute be both composite and multivalued?
+  back: Yes. Simple/composite, single/multivalued and stored/derived are independent classifications (e.g. several addresses, each with parts).
+- id: w6-fc-relationship
+  topic: er.relationships
+  front: Relationship instance vs relationship type?
+  back: "An instance is one association (Ritu works for SoCS); the type is the kind of association between entity types (WORKS_FOR between EMPLOYEE and DEPARTMENT), drawn as a diamond."
+- id: w6-fc-degree
+  topic: er.relationships
+  front: Degree of a relationship type?
+  back: The number of participating entity types. Two is binary, three ternary.
+- id: w6-fc-rel-attr
+  topic: er.relationships
+  front: When does an attribute belong on a relationship rather than an entity?
+  back: When its value depends on the pairing, not on either entity alone. Hours an employee volunteers on a particular activity goes on Volunteers.
+  tags: [trap]
+- id: w6-fc-recursive
+  topic: er.recursive
+  front: Recursive relationship?
+  back: "One where the same entity type participates more than once, in different roles (an EMPLOYEE as supervisor and as subordinate in Supervision)."
+- id: w6-fc-roles
+  topic: er.recursive
+  front: Are role names required?
+  back: No, they're optional in general, but they clarify the meaning and are what make a recursive relationship readable.
+- id: w6-fc-recursive-degree
+  topic: er.recursive
+  front: What is the degree of a recursive relationship like Supervision?
+  back: Two (binary). Two roles take part, both filled by EMPLOYEE.
+  tags: [trap]
+- id: w6-fc-cardinality
+  topic: er.cardinality
+  front: Cardinality ratio?
+  back: "The maximum number of relationship instances an entity can take part in: 1:1, 1:N or M:N, written as numbers on the lines."
+- id: w6-fc-read-number
+  topic: er.cardinality
+  front: "DEPARTMENT —1— WORKS_FOR —N— EMPLOYEE. How many departments can one employee work for?"
+  back: "One. The number next to an entity counts that entity: the 1 next to DEPARTMENT says each employee works for at most one department; the N next to EMPLOYEE says a department has many employees."
+  tags: [trap]
+- id: w6-fc-participation
+  topic: er.participation
+  front: Total vs partial participation, and the notation?
+  back: "Total: every entity of the type must take part (double line; also called existence dependency). Partial: some may not (single line)."
+- id: w6-fc-min-max
+  topic: er.participation
+  front: Which constraint gives the minimum and which the maximum?
+  back: "Participation gives the minimum (0 if partial, 1 if total); the cardinality ratio gives the maximum (1 or many)."
+  tags: [trap]
+- id: w6-fc-weak
+  topic: er.weak
+  front: The two conditions for a weak entity type?
+  back: "1. It's existence dependent on another entity. 2. Its key is partly or wholly derived from that entity's key."
+- id: w6-fc-weak-notation
+  topic: er.weak
+  front: How are a weak entity type, its identifying relationship and its partial key drawn?
+  back: "Double rectangle, double diamond, and a dashed underline. The weak side's line to the double diamond is always a double line."
+- id: w6-fc-partial-key
+  topic: er.weak
+  front: What does a partial key (discriminator) identify?
+  back: "A weak entity among those belonging to the same owner. Together with the owner's key it identifies the weak entity."
+- id: w6-fc-existence-not-weak
+  topic: er.weak
+  front: SECTION(CLASS_CODE, CRS_CODE NOT NULL, …) with CLASS_CODE as key. Weak?
+  back: "No. It's existence dependent on COURSE (total participation), but its key doesn't include COURSE's key."
+  tags: [trap]
+- id: w6-fc-maybe
+  topic: er.reading
+  front: When is a statement about a diagram "Maybe"?
+  back: When the diagram doesn't show it is true but nothing in it proves it false, such as whether a non-key attribute happens to be unique.
+- id: w6-fc-map-1n
+  topic: er.mapping
+  front: Mapping a binary 1:N relationship (step 4)?
+  back: Add the 1-side's primary key as a foreign key in the N-side's relation, along with the relationship's attributes.
+  tags: [trap]
+- id: w6-fc-map-11
+  topic: er.mapping
+  front: Mapping a binary 1:1 relationship (step 3)?
+  back: Add one side's key as a FK in the other, preferably in the relation whose entity has total participation, together with the relationship's attributes.
+- id: w6-fc-map-mn
+  topic: er.mapping
+  front: Mapping a binary M:N relationship (step 5)?
+  back: A new relation holding both sides' keys as FKs (together its primary key) plus the relationship's attributes.
+- id: w6-fc-map-weak
+  topic: er.mapping
+  front: Mapping a weak entity type (step 2)? Its primary key?
+  back: A relation with its simple attributes plus the owner's key as a FK. Primary key = owner's key + partial key.
+- id: w6-fc-map-mva
+  topic: er.mapping
+  front: Mapping a multivalued attribute (step 6)?
+  back: "A new relation with the attribute plus the owner's key as a FK; the primary key is both together (e.g. DEP_LOCATION(dnumber, location))."
+- id: w6-fc-map-composite
+  topic: er.mapping
+  front: What happens to a composite attribute when mapping?
+  back: Only its simple parts become columns (name → fname, lname).
+- id: w6-fc-map-recursive
+  topic: er.mapping
+  front: How is the recursive 1:N Supervision mapped?
+  back: "Like any 1:N: a FK in EMPLOYEE (s_sin) that references EMPLOYEE itself."
+- id: w6-fc-reverse-mn
+  topic: er.reverse
+  front: In a relational schema, what does a relation whose key is two foreign keys usually come from?
+  back: An M:N relationship; any other columns are that relationship's attributes.

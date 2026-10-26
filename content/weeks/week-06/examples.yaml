@@ -1,0 +1,264 @@
+- id: w6-ex-requirements
+  title: From requirements to an ER diagram (library)
+  topics: [er.modeling, er.entities, er.attributes, er.weak, er.recursive]
+  question: |
+    Design an ER diagram for these requirements.
+
+    > A library records **books** (ISBN, title, year of publication). It may own several **copies** of a book, or none yet; copies are numbered 1, 2, 3… *within each book* and each has a condition. **Members** have a member number, a name (first and last), a date of birth and any number of phone numbers; the system also shows each member's age. A member can borrow copies; a copy is out to at most one member at a time, with a due date. Every book is written by one or more **authors** (author id, name), and an author may have written several books. A member may have been referred to the library by another member.
+  steps:
+    - title: Find the entity types
+      body: "Nouns that exist independently and have their own facts: **BOOK**, **COPY**, **MEMBER**, **AUTHOR**. ISBN, title, condition, phone number and due date are facts *about* those, so they're attributes, not entities."
+    - title: Classify the attributes
+      body: |
+        - member_no, isbn and author_id are unique: **key attributes** (underlined).
+        - name is **composite** (first, last).
+        - phone is **multivalued** ("any number of"): double oval.
+        - age is **derived** from birth_date (the course draws it as a plain oval).
+    - title: Is any entity weak?
+      body: "A copy is numbered *within its book*: copy 1 of one book and copy 1 of another are different copies. So copy_no alone doesn't identify a copy; isbn + copy_no does, and a copy can't exist without its book. COPY is **weak**, copy_no is its **partial key**, and its identifying relationship to BOOK (Holds) is a double diamond with a **double line** on COPY's side."
+    - title: Find the relationships and their cardinality ratios
+      body: |
+        - **Holds** BOOK–COPY: a book has many copies, a copy belongs to one book → 1:N.
+        - **Borrows** MEMBER–COPY: a member can have many copies out; a copy is out to *at most one* member → 1:N. **due_date** depends on the pairing, so it's an attribute of Borrows.
+        - **Writes** AUTHOR–BOOK: many authors per book and many books per author → M:N.
+        - **Refers** MEMBER–MEMBER: recursive, roles *referrer* (1) and *referred* (N).
+    - title: Decide participation
+      body: |
+        - "Every book is written by one or more authors" → BOOK is **total** in Writes.
+        - "May own several copies… or none" → BOOK is **partial** in Holds; COPY is total (weak).
+        - Not every member borrows, not every copy is out, not every member was referred → partial.
+    - title: The diagram
+      body: "{{er:w6-library}}"
+  pitfalls:
+    - "Don't give COPY an underlined key of copy_no: it isn't unique on its own, which is exactly why COPY is weak."
+    - "due_date isn't a property of a copy or of a member; it belongs to the borrowing."
+    - "Two members can't both have the same copy out, so Borrows is 1:N, not M:N."
+
+- id: w6-ex-read-staff
+  title: Reading the University Staff diagram
+  topics: [er.reading, er.cardinality, er.participation, er.attributes]
+  question: |
+    Using the lecture's diagram, decide whether each statement is **True**, **False** or **Maybe** (not shown, but not contradicted).
+
+    {{er:w6-staff}}
+
+    1. An employee may work for two departments.
+    2. Every activity is hosted by some department.
+    3. A department must host at least one activity.
+    4. An employee's address is a composite attribute.
+    5. No two activities are held in the same location.
+    6. An employee can volunteer for several activities, for a different number of hours on each.
+  steps:
+    - title: "1. Two departments? False"
+      body: "Look at WORKS_FOR's number **next to DEPARTMENT**: it's 1. Each employee works for at most one department."
+    - title: "2. Every activity hosted? True"
+      body: "The line between ACTIVITY and Hosts is **double**: ACTIVITY participates totally."
+    - title: "3. Must a department host an activity? False"
+      body: "DEPARTMENT's line to Hosts is **single** (partial). Nothing forces a department to host anything, so \"must\" is false."
+    - title: "4. Address composite? False"
+      body: "address is a plain oval with no parts hanging off it. (name is the composite one.)"
+    - title: "5. Locations unique? Maybe"
+      body: "ACTIVITY.location isn't underlined, so the design doesn't *require* different locations, but nothing says two activities actually share one. The diagram can't prove it either way."
+    - title: "6. Different hours per activity? True"
+      body: "Volunteers is M:N and **hours** hangs off the diamond, so there's one hours value per employee–activity pair."
+  pitfalls:
+    - "\"May\" statements are true unless something forbids them; \"must\" statements need a double line (or a key) to be true."
+    - "Read the cardinality next to the entity being counted: \"how many departments per employee\" is the number next to DEPARTMENT."
+
+- id: w6-ex-instances
+  title: Working out constraints from instances
+  topics: [er.cardinality, er.participation, er.relationships]
+  question: |
+    A bus company records which driver drives which bus. Here is a snapshot of the relationship instances (every driver and every bus currently stored is listed on the left or right):
+
+    | Driver | Drives | Bus |
+    |---|---|---|
+    | d1 | r1 | b1 |
+    | d1 | r2 | b2 |
+    | d2 | r3 | b3 |
+    | d3 | r4 | b3 |
+    | d4 | — | — |
+    | — | — | b4 |
+
+    What cardinality ratio and participation does it suggest for DRIVER —Drives— BUS?
+  steps:
+    - title: How many buses per driver?
+      body: "d1 drives two buses (b1, b2), so a driver can drive **more than one** bus: the number next to BUS can't be 1."
+    - title: How many drivers per bus?
+      body: "b3 is driven by d2 and d3, so a bus can have **more than one** driver: the number next to DRIVER can't be 1 either. Together: **M:N**."
+    - title: Participation
+      body: "d4 drives no bus and b4 has no driver, so neither side can be total: both are **partial**."
+    - title: What an instance can and can't prove
+      body: "A snapshot can **rule out** a constraint (one counterexample is enough: d1's two buses rule out \"at most one bus\"). It can't **prove** one: if no bus happened to have two drivers today, the requirements might still allow it. When the question gives an instance, read off what it rules out, and check the wording for the rest."
+  pitfalls:
+    - "Don't count the relationship instances (r1–r4); count, for one entity, how many entities on the other side it pairs with."
+
+- id: w6-ex-weak
+  title: Weak or not? COURSE and SECTION
+  topics: [er.weak, er.reverse, er.participation]
+  question: |
+    The lecture gives two relational schemas for courses and their sections. Which ER design does each come from?
+
+    - (a) COURSE(<u>CRS_CODE</u>, CRS_DESCRIPTION, CRS_CREDIT), SECTION(<u>CRS_CODE, SECTION#, YEAR, SEM</u>, CLASS_TIME, ROOM_CODE, PROF_NUM)
+    - (b) COURSE(<u>CRS_CODE</u>, CRS_DESCRIPTION, CRS_CREDIT), SECTION(<u>CLASS_CODE</u>, CRS_CODE, SECTION#, CLASS_TIME, ROOM_CODE, PROF_NUM), with CRS_CODE NOT NULL
+  steps:
+    - title: "(a): the key borrows COURSE's key"
+      body: "SECTION's key is CRS_CODE (COURSE's key) **plus** SECTION#, YEAR, SEM. Both weak-entity conditions hold: a section can't exist without its course, and its key includes the course's key. So SECTION is **weak**, with partial key (section_no, year, sem) and an identifying relationship to COURSE."
+    - title: The diagram for (a)
+      body: "{{er:w6-course-weak}}"
+    - title: "(b): a key of its own"
+      body: "CLASS_CODE is a surrogate key: SECTION can be identified without COURSE. CRS_CODE is a non-key FK, so COURSE–SECTION is 1:N with the N on SECTION's side. Because the FK is NOT NULL, every section must have a course: SECTION's participation is **total**, i.e. it's existence dependent. But its key doesn't borrow COURSE's key, so it is **not weak**."
+    - title: The diagram for (b)
+      body: "{{er:w6-course-strong}}"
+  pitfalls:
+    - "Existence dependency (total participation) is only one of the two conditions. A weak entity also needs its key to include the owner's key."
+    - "In the ER diagram, don't draw the FK (crs_code) as an attribute of SECTION: the relationship already represents it."
+
+- id: w6-ex-map-staff
+  title: "Mapping University Staff, step by step"
+  topics: [er.mapping]
+  dataset: university-staff
+  question: |
+    Map the lecture's University Staff diagram (above, in the notes) to relations. Each step's query shows the resulting relation, loaded into Postgres with its keys and foreign keys.
+  steps:
+    - title: "Step 1: strong entities"
+      body: "DEPARTMENT, EMPLOYEE and ACTIVITY each become a relation with their **simple** attributes. EMPLOYEE's composite name contributes its parts, fname and lname. DEPARTMENT's multivalued location is left for step 6."
+      sql: SELECT SIN, fname, lname, gender, address, salary, dob FROM EMPLOYEE;
+    - title: "Step 2: the weak entity"
+      body: "DEPENDENT gets its own attributes plus its owner's key, SIN, as a foreign key. Its key is **(SIN, fname)**: owner's key + partial key. Two employees can each have a dependant named Sam."
+      sql: SELECT * FROM DEPENDENT;
+    - title: "...so a second Sam for employee 111 is rejected"
+      body: "That's the partial key at work: fname only needs to be unique per employee."
+      sql: INSERT INTO DEPENDENT VALUES ('111', 'Sam', 'F', '2018-01-01');
+      expectError: true
+    - title: "Step 3: Manages (1:1)"
+      body: "Every department has a manager (total), but most employees manage nothing (partial). So the FK goes in **DEPARTMENT**: mgr_sin references EMPLOYEE, and Manages' attribute **stDate** goes with it. In EMPLOYEE it would be null for almost everyone."
+      sql: SELECT * FROM DEPARTMENT;
+    - title: "Step 4: the 1:N relationships"
+      body: "Each FK goes to the **N side**: WORKS_FOR adds dnumber to EMPLOYEE; Hosts adds dnumber to ACTIVITY; the recursive Supervision adds s_sin to EMPLOYEE, referencing EMPLOYEE itself."
+      sql: SELECT SIN, fname, dnumber, s_sin FROM EMPLOYEE;
+    - title: "Step 5: Volunteers (M:N)"
+      body: "A new relation with both keys as FKs, which together form its key, plus the relationship's attribute hours."
+      sql: SELECT * FROM VOLUNTEER;
+    - title: "Step 6: the multivalued location"
+      body: "A new relation pairing dnumber with each location; the key is both columns."
+      sql: SELECT * FROM DEP_LOCATION;
+    - title: "Step 7: n-ary relationships"
+      body: "There are none here (every relationship is binary), so the mapping is complete: six relations."
+    - title: The relationships still work as joins
+      body: "Who supervises whom, and in which department? The recursive FK is joined back to the same table."
+      sql: |
+        SELECT e.fname AS employee, s.fname AS supervisor, d.dname
+        FROM EMPLOYEE e
+        JOIN EMPLOYEE s ON e.s_sin = s.SIN
+        JOIN DEPARTMENT d ON e.dnumber = d.dnumber;
+  pitfalls:
+    - "Putting the WORKS_FOR FK in DEPARTMENT would need one column per employee: 1:N always puts the FK on the N side."
+    - "The lecture's summary shows DEPARTMENT(dnumber, dname, SIN); by step 3 stDate belongs there too."
+
+- id: w6-ex-map-library
+  title: Mapping the library design
+  topics: [er.mapping, er.weak]
+  dataset: library
+  question: |
+    Map the library ER diagram from the first example to relations.
+
+    {{er:w6-library}}
+  steps:
+    - title: "Step 1: MEMBER, BOOK, AUTHOR"
+      body: "Simple attributes only: name becomes first and last, and the derived age isn't stored (compute it from birth_date when needed)."
+      sql: SELECT * FROM MEMBER;
+    - title: "Step 2: COPY is weak"
+      body: "COPY gets BOOK's key isbn as a FK; its key is (isbn, copy_no)."
+      sql: SELECT isbn, copy_no, condition FROM COPY;
+    - title: "Step 4: Borrows and Refers (1:N)"
+      body: "Borrows puts the 1-side's key in the N side: **borrower_no** in COPY, with Borrows' attribute **due_date**. Both are null for copies on the shelf, because COPY's participation in Borrows is partial. Refers adds **referred_by** to MEMBER, referencing MEMBER."
+      sql: SELECT * FROM COPY;
+    - title: "Step 5: Writes (M:N)"
+      body: "A new relation of (author_id, isbn) pairs. B101 has two authors, and author A2 wrote two books."
+      sql: SELECT * FROM WRITES;
+    - title: "Step 6: the multivalued phone"
+      body: "MEMBER_PHONE(member_no, phone), key both columns."
+      sql: SELECT * FROM MEMBER_PHONE;
+    - title: Use it
+      body: "Which copies are out, to whom, and when are they due?"
+      sql: |
+        SELECT m.first, b.title, c.copy_no, c.due_date
+        FROM COPY c
+        JOIN BOOK b ON c.isbn = b.isbn
+        JOIN MEMBER m ON c.borrower_no = m.member_no
+        ORDER BY c.due_date;
+  pitfalls:
+    - "The holds relationship needs no extra column: the identifying relationship is already represented by isbn inside COPY's key."
+    - "Total participation of BOOK in Writes (every book has an author) can't be enforced by the keys alone; the relational schema can't say \"every isbn appears in WRITES\"."
+
+- id: w6-ex-map-11
+  title: "Where does the foreign key go in a 1:1?"
+  topics: [er.mapping, er.participation, er.cardinality]
+  question: |
+    Map this 1:1 relationship. Every country has a capital; most cities aren't capitals.
+
+    {{er:w6-capital}}
+  steps:
+    - title: Both options are legal
+      body: "For a 1:1, either relation can hold the other's key: COUNTRY(code, name, capital_city_id) or CITY(city_id, name, population, capital_of_code). Either way each value appears at most once, matching the 1:1."
+    - title: Prefer the side with total participation
+      body: "COUNTRY participates totally (double line), so **capital_city_id in COUNTRY** is never null. The other choice puts capital_of_code in CITY, where it's null for almost every city."
+    - title: Result
+      body: |
+        - COUNTRY(<u>code</u>, name, capital_city_id), capital_city_id → CITY (and NOT NULL, from the total participation; UNIQUE, because a city is the capital of at most one country)
+        - CITY(<u>city_id</u>, name, population)
+    - title: And if Capital had an attribute?
+      body: "Say *since* (the year it became the capital). A 1:1 relationship's attributes go into the same relation as the FK: COUNTRY(code, name, capital_city_id, since)."
+  pitfalls:
+    - "1:1 doesn't mean you need a new relation; that's only for M:N (and n-ary)."
+
+- id: w6-ex-reverse-gym
+  title: From relations back to ER (gym)
+  topics: [er.reverse, er.weak, er.cardinality, er.participation]
+  dataset: gym
+  question: "The gym dataset (see this week's **Data** tab for its schema diagram with keys, foreign keys, NOT NULL and UNIQUE) was mapped from an ER design. Recover it."
+  steps:
+    - title: Relations with their own keys are entity types
+      body: "MEMBER(mid), TRAINER(tid), CLASS(cid) and LOCKER(lno) have keys of their own: four regular entity types."
+    - title: A key that borrows another key means a weak entity
+      body: "PLAN's key is (mid, start_date) and mid references MEMBER: PLAN is **weak**, owned by MEMBER, with partial key start_date. A member can have one plan per start date."
+      sql: SELECT * FROM PLAN;
+    - title: A key made of two FKs means M:N
+      body: "ENROLMENT's key is (mid, cid), two FKs: an **M:N** relationship between MEMBER and CLASS, with attribute **since**."
+      sql: SELECT * FROM ENROLMENT;
+    - title: "(key, value) pairs only: a multivalued attribute"
+      body: "MEMBER_EMAIL is just (mid, email), both in the key: MEMBER's **multivalued** email."
+    - title: Non-key FKs mean 1:N; NOT NULL means total
+      body: "CLASS.tid is a non-key FK to TRAINER: TRAINER–CLASS is **1:N** (a trainer teaches many classes). It's NOT NULL, so every class has a trainer: CLASS is **total**. TRAINER.mentor_tid references TRAINER: a **recursive** 1:N."
+      sql: SELECT cid, title, tid FROM CLASS;
+    - title: A UNIQUE FK means 1:1
+      body: "LOCKER.mid is a FK that is also UNIQUE, so a member has at most one locker and a locker at most one member: **1:1**. It's nullable, so lockers can be unassigned (partial)."
+      sql: SELECT * FROM LOCKER;
+    - title: The recovered design
+      body: "{{er:w6-gym}}"
+  pitfalls:
+    - "Relationship names (Buys, Teaches…) aren't in the relational schema; any sensible name is fine."
+    - "Participation that the schema doesn't enforce (e.g. whether every member has a plan) can't be recovered; draw it partial unless a constraint says otherwise."
+
+- id: w6-ex-critique
+  title: Fixing a draft design (music streaming)
+  topics: [er.modeling, er.recursive, er.attributes, er.relationships]
+  question: |
+    Requirements: *listeners (id, name, email) can follow other listeners; a listener creates playlists, and can also save playlists created by others, recording when; a playlist is an ordered list of tracks (id, title, length), and the same track can be on many playlists.* A first draft:
+
+    {{er:w6-stream-draft}}
+
+    What's wrong, and how should it be fixed?
+  steps:
+    - title: "{followers} should be a relationship"
+      body: "The followers are themselves listeners. A multivalued attribute only stores values (say, names); it can't link to the follower's own data or let us ask who someone follows. Model it as a **recursive** relationship **Follows** on LISTENER with roles *follower* and *followed*. A listener can follow many and be followed by many: **M:N**."
+    - title: "{tracks} should be an entity"
+      body: "Tracks have their own attributes (title, length) and appear on many playlists, so TRACK is an **entity type**. Playlist–track is **M:N** (Contains). The track's place in a playlist depends on the pair, so **position** is an attribute of Contains."
+    - title: Saving is a second relationship
+      body: "Creating and saving are different associations between the same two entity types, so they're two relationships: **Creates** (1:N, every playlist has exactly one creator: total on PLAYLIST) and **Saves** (M:N, with attribute **saved_on**)."
+    - title: The revised design
+      body: "{{er:w6-stream}}"
+  pitfalls:
+    - "Two entity types can be linked by more than one relationship type; each one means something different."
+    - "When the \"values\" of an attribute are things with their own data, they're entities."

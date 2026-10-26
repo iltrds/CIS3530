@@ -5,7 +5,7 @@ import { Html } from "./Relations.tsx";
 import { Feedback, Hints, initialAnswer, QuestionContext, QuestionInput, type Answer } from "./Question.tsx";
 import { grade } from "../lib/grade.ts";
 import { recordAttempt, recordRun } from "../lib/store.ts";
-import { TYPE_LABELS, type QuizItem } from "../lib/quiz.ts";
+import { questionLabel, type QuizItem } from "../lib/quiz.ts";
 import { onSqlStatus, sqlStatus, sqlErrorReason } from "../lib/sql.ts";
 import type { Manifest } from "../lib/data.ts";
 import { topicLabel } from "../lib/data.ts";
@@ -22,9 +22,9 @@ function QHead({ n, item, m }: { n?: number; item: QuizItem; m?: Manifest }) {
   const q = item.q;
   return (
     <div className="q-head">
-      <div className="q-num">{n !== undefined ? `Question ${n}` : TYPE_LABELS[q.type]}</div>
+      <div className="q-num">{n !== undefined ? `Question ${n}` : questionLabel(q)}</div>
       <div className="q-meta">
-        {n !== undefined && <>{TYPE_LABELS[q.type]} · </>}
+        {n !== undefined && <>{questionLabel(q)} · </>}
         Week {q.week} · {q.style === "direct" ? "Direct" : "Conceptual"}
         {m && <> · {q.topics.map((t) => topicLabel(m, t)).join(", ")}</>} · {item.points} point{item.points === 1 ? "" : "s"}
       </div>

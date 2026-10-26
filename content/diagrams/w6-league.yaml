@@ -1,0 +1,42 @@
+id: w6-league
+title: Hockey league
+width: 960
+height: 520
+entities:
+  - name: TEAM
+    x: 170
+    y: 200
+    attrs:
+      - { name: team_id, key: true }
+      - { name: name }
+      - { name: city }
+  - name: PLAYER
+    x: 720
+    y: 200
+    attrSide: right
+    attrs:
+      - { name: player_id, key: true }
+      - { name: name }
+      - { name: position }
+      - { name: nickname, multi: true }
+relationships:
+  - name: Captains
+    x: 445
+    y: 115
+    ends:
+      - { entity: TEAM, card: "1", total: true }
+      - { entity: PLAYER, card: "1" }
+  - name: Plays_for
+    x: 445
+    y: 285
+    ends:
+      - { entity: TEAM, card: "1" }
+      - { entity: PLAYER, card: N }
+  - name: Mentors
+    x: 720
+    y: 420
+    attrSide: right
+    attrs: [{ name: since }]
+    ends:
+      - { entity: PLAYER, role: mentor, card: "1", from: left, to: bottom, offset: -30, bend: false, flip: true }
+      - { entity: PLAYER, role: mentee, card: N, from: right, to: bottom, offset: 30, bend: false }

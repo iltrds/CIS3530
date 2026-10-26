@@ -1,0 +1,76 @@
+id: w6-gym
+title: Gym, recovered from its relations
+width: 1000
+height: 800
+entities:
+  - name: MEMBER
+    x: 230
+    y: 230
+    attrs:
+      - { name: mid, key: true }
+      - { name: name }
+      - { name: joined }
+      - { name: email, multi: true }
+  - name: PLAN
+    x: 230
+    y: 590
+    weak: true
+    attrSide: bottom
+    attrs:
+      - { name: start_date, partial: true }
+      - { name: price }
+  - name: LOCKER
+    x: 500
+    y: 590
+    attrSide: bottom
+    attrs:
+      - { name: lno, key: true }
+      - { name: floor }
+  - name: CLASS
+    x: 770
+    y: 230
+    attrs:
+      - { name: cid, key: true }
+      - { name: title }
+      - { name: room }
+  - name: TRAINER
+    x: 770
+    y: 560
+    attrSide: right
+    attrs:
+      - { name: tid, key: true }
+      - { name: name }
+relationships:
+  - name: Enrols
+    x: 500
+    y: 230
+    attrSide: top
+    attrs: [{ name: since }]
+    ends:
+      - { entity: MEMBER, card: M }
+      - { entity: CLASS, card: N }
+  - name: Buys
+    x: 230
+    y: 415
+    identifying: true
+    ends:
+      - { entity: MEMBER, card: "1" }
+      - { entity: PLAN, card: N, total: true }
+  - name: Assigned
+    x: 500
+    y: 415
+    ends:
+      - { entity: MEMBER, card: "1" }
+      - { entity: LOCKER, card: "1" }
+  - name: Teaches
+    x: 770
+    y: 395
+    ends:
+      - { entity: TRAINER, card: "1" }
+      - { entity: CLASS, card: N, total: true }
+  - name: Mentors
+    x: 770
+    y: 720
+    ends:
+      - { entity: TRAINER, role: mentor, card: "1", from: left, to: bottom, offset: -30, bend: false, flip: true }
+      - { entity: TRAINER, role: mentee, card: N, from: right, to: bottom, offset: 30, bend: false }

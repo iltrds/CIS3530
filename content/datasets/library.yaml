@@ -1,0 +1,78 @@
+id: library
+title: Library, mapped to relations (Week 6)
+description: >
+  The Week 6 library ER design after mapping. COPY is a weak entity (key isbn + copy_no); Borrows (1:N) became
+  borrower_no and due_date in COPY; Writes (M:N) became WRITES; the multivalued phone became MEMBER_PHONE;
+  the recursive Refers became referred_by. The derived age isn't stored.
+source: Practice design written for this site
+tables:
+  - name: MEMBER
+    columns:
+      - { name: member_no, pk: true }
+      - { name: first }
+      - { name: last }
+      - { name: birth_date, type: date }
+      - { name: referred_by }
+    foreignKeys:
+      - { columns: [referred_by], references: { table: MEMBER, columns: [member_no] } }
+    rows:
+      - [M1, Iris, Chen, "1999-02-11", null]
+      - [M2, Jonah, Bell, "2001-07-23", M1]
+      - [M3, Kemi, Adeyemi, "1987-10-05", M1]
+      - [M4, Luca, Romano, "2004-12-30", M3]
+  - name: MEMBER_PHONE
+    columns:
+      - { name: member_no, pk: true }
+      - { name: phone, pk: true }
+    foreignKeys:
+      - { columns: [member_no], references: { table: MEMBER, columns: [member_no] } }
+    rows:
+      - [M1, 519-555-0101]
+      - [M1, 519-555-0177]
+      - [M2, 226-555-0142]
+      - [M3, 519-555-0190]
+  - name: BOOK
+    columns:
+      - { name: isbn, pk: true }
+      - { name: title }
+      - { name: year, type: int }
+    rows:
+      - [B101, Tables and Tuples, 2019]
+      - [B102, The Indexed Garden, 2022]
+      - [B103, Normal Forms for Everyone, 2016]
+  - name: COPY
+    columns:
+      - { name: isbn, pk: true }
+      - { name: copy_no, type: int, pk: true }
+      - { name: condition }
+      - { name: borrower_no }
+      - { name: due_date, type: date }
+    foreignKeys:
+      - { columns: [isbn], references: { table: BOOK, columns: [isbn] } }
+      - { columns: [borrower_no], references: { table: MEMBER, columns: [member_no] } }
+    rows:
+      - [B101, 1, good, M2, "2026-11-02"]
+      - [B101, 2, worn, null, null]
+      - [B102, 1, new, M2, "2026-11-09"]
+      - [B103, 1, good, M4, "2026-10-30"]
+      - [B103, 2, good, null, null]
+  - name: AUTHOR
+    columns:
+      - { name: author_id, pk: true }
+      - { name: name }
+    rows:
+      - [A1, P. Nakamura]
+      - [A2, R. Osei]
+      - [A3, D. Laurent]
+  - name: WRITES
+    columns:
+      - { name: author_id, pk: true }
+      - { name: isbn, pk: true }
+    foreignKeys:
+      - { columns: [author_id], references: { table: AUTHOR, columns: [author_id] } }
+      - { columns: [isbn], references: { table: BOOK, columns: [isbn] } }
+    rows:
+      - [A1, B101]
+      - [A2, B101]
+      - [A2, B102]
+      - [A3, B103]

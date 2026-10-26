@@ -7,6 +7,7 @@ content/
   course.yaml          term info, grade weights, dates (quizzes, labs…)
   topics.yaml          every topic id, its label and the week it belongs to
   datasets/*.yaml      relations with their rows, keys and foreign keys
+  diagrams/*.yaml      ER diagrams (Chen notation), drawn at build time
   weeks/week-NN/
     week.yaml          title, summary, topics, readings, status: draft | published
     notes.md           the week's notes, in your own words (Markdown)
@@ -50,11 +51,11 @@ Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a te
 | `in-class` (concepts) | the Week 1 quiz | 3 `mcq`, 1 `matching`, 1 `blanks` |
 | `in-class-sql` (SQL) | the Week 3 quiz | 2 `query_shape`, 1 `query_choices` with `multi: true`, 2 single-answer `query_choices` |
 
-New weeks use `in-class-sql` unless `week.yaml` says otherwise. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
+New weeks use `in-class-sql` unless `week.yaml` says otherwise; design weeks with no SQL (Week 6, ER) use `in-class`, with True/False/Maybe statements about a diagram as the `blanks` questions. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
 
 ### Prompt for generating a week with Claude
 
-> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Write mostly conceptual questions (at least two thirds; mark recall questions `style: direct`), keeping a handful of direct ones such as writing a query. Set `quizFormat` in `week.yaml` and include enough conceptual questions for it (see the table above): for the concepts format, `mcq` (some with a **not true** stem and "All/None of the given choices" options), `matching` and `blanks` tagged `quiz-style`; for the SQL format, at least 6 `query_shape` and 6 `query_choices` (2 or more with `multi: true`), whose distractors use the usual mistakes: a missing join condition, a missing DISTINCT, `SELECT *` after a join, an unqualified shared column, DISTINCT in the wrong place, and natural joins that match an unexpected column. Tag wording traps `trap`. Then run `bun run validate --week N` and fix every problem.
+> Attached are the Week N slides (and worksheet, if any) for CIS3530. Following CONTENT_SPEC.md in this repo, write `content/weeks/week-0N/` (`week.yaml`, `notes.md`, `flashcards.yaml`, `examples.yaml`, `questions.yaml`) and any new topic ids for `topics.yaml`. Use existing datasets where the slides do (check `content/datasets/`); if the slides use a new table instance, add it as a new dataset copied exactly from the slides, and add a hidden grading instance with different rows. Write the notes and questions in your own words; don't copy slide text, worksheet questions or quiz questions verbatim. Make quiz-style variants of each worksheet question. Write mostly conceptual questions (at least two thirds; mark recall questions `style: direct`), keeping a handful of direct ones such as writing a query. Set `quizFormat` in `week.yaml` and include enough conceptual questions for it (see the table above): for the concepts format, `mcq` (some with a **not true** stem and "All/None of the given choices" options), `matching` and `blanks` tagged `quiz-style`; for the SQL format, at least 6 `query_shape` and 6 `query_choices` (2 or more with `multi: true`), whose distractors use the usual mistakes: a missing join condition, a missing DISTINCT, `SELECT *` after a join, an unqualified shared column, DISTINCT in the wrong place, and natural joins that match an unexpected column. Tag wording traps `trap`. For design weeks, draw the slides' diagrams and your own practice designs in `content/diagrams/` (see ER diagrams below) and ask about them. Then run `bun run validate --week N` and fix every problem.
 
 ## Datasets
 
@@ -76,6 +77,48 @@ tables:
 ```
 
 Every dataset is loaded into Postgres with its keys and foreign keys, so the rows must satisfy them. A **hidden** dataset (`hidden: true`, `alternateOf: [supplier-parts]`) is a second instance with the same schema; RA and SQL answers are also checked against it, which catches answers that only work by coincidence (hard-coded values, `>` instead of `>=`).
+
+## ER diagrams
+
+Put `{{er:diagram-id}}` on a line of its own in any notes, example or question text, and the build draws `content/diagrams/diagram-id.yaml` there as an SVG in Chen notation, with a "Read the diagram as text" summary underneath. You give positions; the attribute ovals are laid out automatically around their owner.
+
+```yaml
+id: w6-clinic                 # must match the file name
+title: Walk-in clinic
+caption: Optional note under the diagram.
+width: 820                    # canvas size in px
+height: 500
+entities:
+  - name: PATIENT
+    x: 170                    # centre of the rectangle
+    y: 150
+    attrSide: top             # where its attributes go by default: top | bottom | left | right
+    attrs:
+      - { name: health_no, key: true }          # underlined
+      - { name: name, parts: [first, last] }    # composite
+      - { name: allergy, multi: true }          # double oval
+      - { name: age, derived: true, side: right }  # dashed oval, on the right
+  - name: VISIT
+    x: 600
+    y: 150
+    weak: true                # double rectangle
+    attrs:
+      - { name: visit_date, partial: true }     # dashed underline
+      - { name: reason, at: [700, 60] }         # fixed position instead of the automatic one
+relationships:
+  - name: Makes
+    x: 385
+    y: 150
+    identifying: true         # double diamond
+    attrs: []                 # relationship attributes (e.g. hours), attrSide defaults to bottom
+    ends:
+      - { entity: PATIENT, card: "1" }            # number written next to that entity
+      - { entity: VISIT, card: N, total: true }   # total participation: double line
+```
+
+Links run straight from the diamond to the entity. For a recursive relationship, give each end a role and route it from a corner of the diamond to a side of the entity: `{ entity: EMPLOYEE, role: supervisor, card: "1", from: left, to: top, offset: -30, bend: false }` (`bend: true` makes one right-angle bend; `via: [[x, y], …]` sets bend points by hand; `flip: true` moves the number to the other side of the line). `bun scripts/er-preview.ts` writes every diagram to `dist/er-preview.html` for checking, and a test fails if any shape falls outside its canvas.
+
+Datasets can carry `notNull: true` on a column and `unique: [[col]]` on a table; the schema diagram shows both, which matters for turning relations back into ER.
 
 ## Flash cards
 

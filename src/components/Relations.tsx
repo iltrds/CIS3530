@@ -144,6 +144,7 @@ export function SchemaDiagram({ ds, tables }: { ds: Dataset; tables?: string[] }
             ))}
             )
             </span>
+            {constraintNote(t) && <span className="schema-cons">{constraintNote(t)}</span>}
           </div>
         ))}
         <svg aria-hidden="true">
@@ -160,12 +161,20 @@ export function SchemaDiagram({ ds, tables }: { ds: Dataset; tables?: string[] }
   );
 }
 
+/** NOT NULL (outside the key) and UNIQUE constraints, e.g. "tid NOT NULL · UNIQUE (mid)". */
+function constraintNote(t: Dataset["tables"][number]): string {
+  const nn = t.columns.filter((c) => c.notNull && !c.pk).map((c) => `${c.name} NOT NULL`);
+  const uq = t.unique.map((u) => `UNIQUE (${u.join(", ")})`);
+  return [...nn, ...uq].join(" · ");
+}
+
 function describeSchema(tables: Dataset["tables"]): string {
   return tables
     .map((t) => {
       const pk = t.columns.filter((c) => c.pk).map((c) => c.name);
       const fk = t.foreignKeys.map((f) => `${f.columns.join(", ")} references ${f.references.table}`);
-      return `${t.name}(${t.columns.map((c) => c.name).join(", ")}), primary key ${pk.join(", ") || "none"}${fk.length ? "; " + fk.join("; ") : ""}`;
+      const cons = constraintNote(t);
+      return `${t.name}(${t.columns.map((c) => c.name).join(", ")}), primary key ${pk.join(", ") || "none"}${fk.length ? "; " + fk.join("; ") : ""}${cons ? "; " + cons : ""}`;
     })
     .join(". ");
 }

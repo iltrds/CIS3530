@@ -43,3 +43,17 @@
 - { id: sql.correlated, label: "Correlated subqueries: EXISTS and NOT EXISTS", week: 4 }
 - { id: sql.division, label: "Division in SQL", week: 4 }
 - { id: sql.modify, label: "INSERT, UPDATE and DELETE", week: 4 }
+
+- { id: er.design, label: "Phases of database design", week: 6 }
+- { id: er.entities, label: "Entities, entity types and entity sets", week: 6 }
+- { id: er.attributes, label: "Kinds of attributes", week: 6 }
+- { id: er.keys, label: "Key attributes", week: 6 }
+- { id: er.relationships, label: "Relationship types, degree and relationship attributes", week: 6 }
+- { id: er.recursive, label: "Recursive relationships and roles", week: 6 }
+- { id: er.cardinality, label: "Cardinality ratios (1:1, 1:N, M:N)", week: 6 }
+- { id: er.participation, label: "Participation (total and partial)", week: 6 }
+- { id: er.weak, label: "Weak entity types and identifying relationships", week: 6 }
+- { id: er.reading, label: "Reading an ER diagram (True / False / Maybe)", week: 6 }
+- { id: er.modeling, label: "From requirements to an ER design", week: 6 }
+- { id: er.mapping, label: "Mapping ER to relations (steps 1–7)", week: 6 }
+- { id: er.reverse, label: "From relations back to ER", week: 6 }

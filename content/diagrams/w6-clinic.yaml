@@ -1,0 +1,41 @@
+id: w6-clinic
+title: Walk-in clinic
+width: 820
+height: 500
+entities:
+  - name: PATIENT
+    x: 170
+    y: 150
+    attrs:
+      - { name: health_no, key: true }
+      - { name: name }
+      - { name: allergy, multi: true }
+  - name: VISIT
+    x: 600
+    y: 150
+    weak: true
+    attrs:
+      - { name: visit_date, partial: true }
+      - { name: reason }
+  - name: DOCTOR
+    x: 600
+    y: 400
+    attrSide: bottom
+    attrs:
+      - { name: doc_id, key: true }
+      - { name: name }
+      - { name: specialty }
+relationships:
+  - name: Makes
+    x: 385
+    y: 150
+    identifying: true
+    ends:
+      - { entity: PATIENT, card: "1" }
+      - { entity: VISIT, card: N, total: true }
+  - name: Attends
+    x: 600
+    y: 275
+    ends:
+      - { entity: DOCTOR, card: "1" }
+      - { entity: VISIT, card: N, total: true }

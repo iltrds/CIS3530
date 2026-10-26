@@ -46,6 +46,80 @@ export const Dataset = z.object({
 export type Dataset = z.infer<typeof Dataset>;
 export type Table = z.infer<typeof Table>;
 
+// ---------------------------------------------------------------- ER diagrams (Chen notation)
+
+const Side = z.enum(["top", "bottom", "left", "right"]);
+const Point = z.tuple([z.number(), z.number()]);
+
+export const ErAttribute = z.object({
+  name: z.string(),
+  key: z.boolean().default(false),
+  /** Partial key (discriminator) of a weak entity: dashed underline. */
+  partial: z.boolean().default(false),
+  /** Multivalued: double oval. */
+  multi: z.boolean().default(false),
+  /** Derived: dashed oval (the textbook's notation; the course draws it like any attribute). */
+  derived: z.boolean().default(false),
+  /** Composite: its simple components, drawn as ovals hanging off this one. */
+  parts: z.array(z.string()).default([]),
+  /** Which side of its owner it hangs off (defaults to the owner's attrSide). */
+  side: Side.optional(),
+  /** Absolute position, overriding the automatic layout. */
+  at: Point.optional(),
+});
+
+export const ErEntity = z.object({
+  name: z.string(),
+  x: z.number(),
+  y: z.number(),
+  weak: z.boolean().default(false),
+  attrs: z.array(ErAttribute).default([]),
+  attrSide: Side.default("top"),
+});
+
+export const ErEnd = z.object({
+  entity: z.string(),
+  /** Cardinality written on the link: 1, N, M… */
+  card: z.string().optional(),
+  /** Total participation: double line. */
+  total: z.boolean().default(false),
+  role: z.string().optional(),
+  /** Leave the diamond from this corner… */
+  from: Side.optional(),
+  /** …and enter the entity on this side (with `offset` along that side), bending once. */
+  to: Side.optional(),
+  offset: z.number().default(0),
+  /** With from/to: bend once (default) or run straight between the two points. */
+  bend: z.boolean().default(true),
+  /** Explicit bend points, for awkward routes. */
+  via: z.array(Point).default([]),
+  /** Put the cardinality on the other side of the line from where it would go. */
+  flip: z.boolean().default(false),
+});
+
+export const ErRelationship = z.object({
+  name: z.string(),
+  x: z.number(),
+  y: z.number(),
+  /** Identifying relationship of a weak entity: double diamond. */
+  identifying: z.boolean().default(false),
+  ends: z.array(ErEnd).min(2),
+  attrs: z.array(ErAttribute).default([]),
+  attrSide: Side.default("bottom"),
+});
+
+export const ErDiagram = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),
+  title: z.string(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+  caption: z.string().default(""),
+  entities: z.array(ErEntity).min(1),
+  relationships: z.array(ErRelationship).default([]),
+});
+export type ErDiagram = z.infer<typeof ErDiagram>;
+export type ErAttribute = z.infer<typeof ErAttribute>;
+
 // ---------------------------------------------------------------- weeks
 
 export const Week = z.object({

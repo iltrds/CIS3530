@@ -1,0 +1,54 @@
+id: w6-stream
+title: Music streaming, revised
+width: 1000
+height: 690
+entities:
+  - name: LISTENER
+    x: 200
+    y: 225
+    attrs:
+      - { name: listener_id, key: true }
+      - { name: name }
+      - { name: email }
+  - name: PLAYLIST
+    x: 760
+    y: 225
+    attrs:
+      - { name: playlist_id, key: true }
+      - { name: title }
+  - name: TRACK
+    x: 760
+    y: 580
+    attrSide: left
+    attrs:
+      - { name: track_id, key: true }
+      - { name: title }
+      - { name: seconds }
+relationships:
+  - name: Creates
+    x: 480
+    y: 150
+    ends:
+      - { entity: LISTENER, card: "1" }
+      - { entity: PLAYLIST, card: N, total: true }
+  - name: Saves
+    x: 480
+    y: 300
+    attrs: [{ name: saved_on }]
+    ends:
+      - { entity: LISTENER, card: M }
+      - { entity: PLAYLIST, card: N }
+  - name: Contains
+    x: 760
+    y: 405
+    attrSide: right
+    attrs: [{ name: position }]
+    ends:
+      - { entity: PLAYLIST, card: M }
+      - { entity: TRACK, card: N }
+  - name: Follows
+    x: 175
+    y: 450
+    ends:
+      - { entity: LISTENER, role: follower, card: M, from: left, to: bottom, offset: -50, bend: false }
+      - { entity: LISTENER, role: followed, card: N, from: right, to: bottom, offset: 10, bend: false, flip: true }

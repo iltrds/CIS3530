@@ -12,6 +12,7 @@ import { toEnv, toRelax } from "../../src/engines/datasets.ts";
 import { run as runRA, relationToTable } from "../../src/engines/ra/ra.ts";
 import { SqlEngine } from "../../src/engines/sql/engine.ts";
 import type { CQuestion, TableData } from "../../src/engines/grading.ts";
+import { figureHtml, renderEr } from "./er.ts";
 import { buildChoices, buildShape, choicesExplanation, codeBlock, judgeCandidate, shapeExplanation, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
@@ -31,9 +32,14 @@ export interface Compiled {
   stats: { weeks: number; flashcards: number; examples: number; questions: number; datasets: number };
 }
 
-const md = (s: string) => (marked.parse(s, { async: false, gfm: true }) as string).trim();
-const mdi = (s: string) => (marked.parseInline(s, { async: false, gfm: true }) as string).trim();
-const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim();
+/** Rendered ER diagrams by id; {{er:id}} in any text is replaced with the figure. */
+const figures = new Map<string, string>();
+const ER_REF = /\{\{er:([a-z0-9-]+)\}\}/g;
+const expand = (html: string) =>
+  html.replace(/<p>\s*\{\{er:([a-z0-9-]+)\}\}\s*<\/p>/g, (m, id: string) => figures.get(id) ?? m).replace(ER_REF, (m, id: string) => figures.get(id) ?? m);
+const md = (s: string) => expand((marked.parse(s, { async: false, gfm: true }) as string).trim());
+const mdi = (s: string) => expand((marked.parseInline(s, { async: false, gfm: true }) as string).trim());
+const text = (html: string) => html.replace(/<figure class="er-figure"[\s\S]*?<\/figure>/g, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ").trim();
 
 /** Runs `first`, then `then`, as one script (used for INSERT/UPDATE/DELETE followed by a SELECT). */
 export function withCheck(first: string | undefined, then: string): string {
@@ -98,6 +104,20 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
     }
   }
 
+  // ---------------------------------------------------------------- ER diagrams
+  figures.clear();
+  const diagramIds = new Set<string>();
+  for (const f of files("*.yaml", C + "diagrams")) {
+    const d = parse(S.ErDiagram, await readYaml(C + "diagrams/" + f), `diagrams/${f}`);
+    if (!d) continue;
+    if (diagramIds.has(d.id)) fail(`diagrams/${f}`, "id", `Duplicate diagram id ${d.id}`);
+    if (f !== `${d.id}.yaml`) fail(`diagrams/${f}`, "id", `The file should be called ${d.id}.yaml`);
+    diagramIds.add(d.id);
+    const r = renderEr(d);
+    r.problems.forEach((m) => fail(`diagrams/${f}`, d.id, m));
+    figures.set(d.id, figureHtml(d, r, d.caption ? mdi(d.caption) : ""));
+  }
+
   // ---------------------------------------------------------------- topics, course, blueprints
   const topics = parse(S.Topics, await readYaml(C + "topics.yaml"), "topics.yaml") ?? [];
   const topicIds = new Set(topics.map((t) => t.id));
@@ -134,6 +154,13 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
     if (opts.onlyWeek && week.number !== opts.onlyWeek) continue;
     if (week.status === "draft" && !opts.includeDrafts) continue;
     for (const t of week.topics) if (!topicIds.has(t)) fail(rel("week.yaml"), "topics", `Unknown topic ${t}. Add it to topics.yaml.`);
+
+    // every {{er:id}} must name a diagram in content/diagrams/
+    for (const name of ["notes.md", "flashcards.yaml", "examples.yaml", "questions.yaml"]) {
+      const f = Bun.file(base + name);
+      if (!(await f.exists())) continue;
+      for (const m of (await f.text()).matchAll(ER_REF)) if (!figures.has(m[1]!)) fail(rel(name), `{{er:${m[1]}}}`, `No diagram called ${m[1]} in content/diagrams/`);
+    }
 
     const load = async <T>(name: string, schema: z.ZodType<T[]>): Promise<T[]> => {
       const f = Bun.file(base + name);

@@ -1,0 +1,83 @@
+id: w6-staff
+title: University Staff database (Week 6 lecture)
+caption: "Redrawn from the lecture's diagram. DEPARTMENT's participation in Manages is drawn total because requirement 1 says every department has a manager."
+width: 1010
+height: 660
+entities:
+  - name: DEPARTMENT
+    x: 190
+    y: 250
+    attrs:
+      - { name: dname }
+      - { name: dnumber, key: true }
+      - { name: location, multi: true }
+  - name: EMPLOYEE
+    x: 690
+    y: 250
+    attrSide: right
+    attrs:
+      - { name: SIN, key: true, at: [870, 190] }
+      - { name: gender, at: [880, 232] }
+      - { name: name, parts: [fname, lname], at: [880, 274] }
+      - { name: address, at: [872, 316] }
+      - { name: salary, at: [855, 358] }
+      - { name: dob, at: [820, 398] }
+  - name: ACTIVITY
+    x: 190
+    y: 545
+    attrSide: bottom
+    attrs:
+      - { name: aname }
+      - { name: anumber, key: true }
+      - { name: location }
+  - name: DEPENDENT
+    x: 690
+    y: 545
+    weak: true
+    attrSide: bottom
+    attrs:
+      - { name: fname, partial: true }
+      - { name: gender }
+      - { name: dob }
+relationships:
+  - name: Manages
+    x: 440
+    y: 195
+    attrSide: top
+    attrs: [{ name: stDate }]
+    ends:
+      - { entity: DEPARTMENT, card: "1", total: true }
+      - { entity: EMPLOYEE, card: "1" }
+  - name: WORKS_FOR
+    x: 440
+    y: 305
+    ends:
+      - { entity: DEPARTMENT, card: "1" }
+      - { entity: EMPLOYEE, card: N, total: true }
+  - name: Hosts
+    x: 190
+    y: 400
+    attrs: []
+    ends:
+      - { entity: DEPARTMENT, card: "1" }
+      - { entity: ACTIVITY, card: N, total: true }
+  - name: Volunteers
+    x: 440
+    y: 495
+    attrs: [{ name: hours }]
+    ends:
+      - { entity: EMPLOYEE, card: M }
+      - { entity: ACTIVITY, card: N }
+  - name: Has
+    x: 690
+    y: 400
+    identifying: true
+    ends:
+      - { entity: EMPLOYEE, card: "1" }
+      - { entity: DEPENDENT, card: N, total: true }
+  - name: Supervision
+    x: 690
+    y: 62
+    ends:
+      - { entity: EMPLOYEE, role: supervisor, card: "1", from: left, to: top, offset: -30, bend: false, flip: true }
+      - { entity: EMPLOYEE, role: subordinate, card: N, from: right, to: top, offset: 40, bend: false }

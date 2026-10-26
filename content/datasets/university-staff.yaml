@@ -1,0 +1,95 @@
+id: university-staff
+title: University Staff, mapped to relations (Week 6)
+description: >
+  The Week 6 lecture's University Staff ER design after the seven mapping steps. Keys and foreign keys
+  follow the mapping; the rows are practice data. Note employees 111 and 222 both have a dependant called Sam:
+  a dependant's key is (SIN, fname), so fname only has to be unique per employee.
+source: Week 6 lecture (ER diagram and mapped relations); rows invented for practice
+tables:
+  - name: DEPARTMENT
+    columns:
+      - { name: dnumber, type: int, pk: true }
+      - { name: dname, notNull: true }
+      - { name: mgr_sin, notNull: true }
+      - { name: stDate, type: date }
+    foreignKeys:
+      - { columns: [mgr_sin], references: { table: EMPLOYEE, columns: [SIN] } }
+    unique: [[dname]]
+    rows:
+      - [1, Computer Science, "111", "2021-07-01"]
+      - [2, Physics, "222", "2019-01-15"]
+      - [3, Library Services, "333", "2023-09-01"]
+  - name: EMPLOYEE
+    columns:
+      - { name: SIN, pk: true }
+      - { name: fname }
+      - { name: lname }
+      - { name: gender }
+      - { name: address }
+      - { name: salary, type: int }
+      - { name: dob, type: date }
+      - { name: dnumber, type: int, notNull: true }
+      - { name: s_sin }
+    foreignKeys:
+      - { columns: [dnumber], references: { table: DEPARTMENT, columns: [dnumber] } }
+      - { columns: [s_sin], references: { table: EMPLOYEE, columns: [SIN] } }
+    rows:
+      - ["111", Amara, Okafor, F, 12 Gordon St, 98000, "1980-03-12", 1, null]
+      - ["222", Ben, Tran, M, 4 Stone Rd, 91000, "1975-11-02", 2, "111"]
+      - ["333", Chloe, Martin, F, 88 Edinburgh Rd, 87000, "1985-06-30", 3, "111"]
+      - ["444", Dev, Patel, M, 7 College Ave, 64000, "1992-01-19", 1, "111"]
+      - ["555", Elena, Rossi, F, 31 Victoria Rd, 59000, "1995-08-08", 1, "444"]
+      - ["666", Farid, Haddad, M, 19 Norfolk St, 61000, "1990-12-01", 2, "222"]
+      - ["777", Grace, Liu, F, 2 Woolwich St, 52000, "1998-04-25", 3, "333"]
+  - name: ACTIVITY
+    columns:
+      - { name: anumber, type: int, pk: true }
+      - { name: aname }
+      - { name: location }
+      - { name: dnumber, type: int, notNull: true }
+    foreignKeys:
+      - { columns: [dnumber], references: { table: DEPARTMENT, columns: [dnumber] } }
+    rows:
+      - [10, Coding Club, Reynolds 0010, 1]
+      - [20, Star Night, MacNaughton roof, 2]
+      - [30, Book Swap, Library foyer, 3]
+      - [40, Peer Tutoring, Reynolds 1101, 1]
+  - name: DEPENDENT
+    columns:
+      - { name: SIN, pk: true }
+      - { name: fname, pk: true }
+      - { name: gender }
+      - { name: dob, type: date }
+    foreignKeys:
+      - { columns: [SIN], references: { table: EMPLOYEE, columns: [SIN] } }
+    rows:
+      - ["111", Sam, M, "2012-05-04"]
+      - ["111", Lina, F, "2015-09-10"]
+      - ["222", Sam, F, "2009-02-14"]
+      - ["666", Noor, F, "2020-07-07"]
+  - name: VOLUNTEER
+    columns:
+      - { name: SIN, pk: true }
+      - { name: anumber, type: int, pk: true }
+      - { name: hours, type: int }
+    foreignKeys:
+      - { columns: [SIN], references: { table: EMPLOYEE, columns: [SIN] } }
+      - { columns: [anumber], references: { table: ACTIVITY, columns: [anumber] } }
+    rows:
+      - ["444", 10, 3]
+      - ["444", 40, 2]
+      - ["555", 10, 4]
+      - ["666", 20, 2]
+      - ["777", 30, 5]
+      - ["111", 40, 1]
+  - name: DEP_LOCATION
+    columns:
+      - { name: dnumber, type: int, pk: true }
+      - { name: location, pk: true }
+    foreignKeys:
+      - { columns: [dnumber], references: { table: DEPARTMENT, columns: [dnumber] } }
+    rows:
+      - [1, Reynolds]
+      - [1, Thornbrough]
+      - [2, MacNaughton]
+      - [3, McLaughlin Library]

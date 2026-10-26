@@ -1,0 +1,8 @@
+number: 6
+title: The Entity–Relationship model
+summary: Designing before building. Entities, attributes and keys, relationships with their cardinality and participation, recursive relationships, weak entities, and the seven steps that turn an ER diagram into relations.
+status: published
+quizFormat: in-class
+topics: [er.design, er.entities, er.attributes, er.keys, er.relationships, er.recursive, er.cardinality, er.participation, er.weak, er.reading, er.modeling, er.mapping, er.reverse]
+readings: ["Elmasri & Navathe 3.1–3.7 (ER model) and 9.1 (ER-to-relational mapping)"]
+sources: [Week6_ERModel.pdf, Worksheet6.pdf]

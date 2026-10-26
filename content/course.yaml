@@ -13,3 +13,4 @@ weights:
 # Add dates here as they're announced. The home page shows the next few.
 events:
   - { date: "2026-10-06", kind: quiz, title: In-class quiz on Week 3, covers: [3] }
+  - { date: "2026-10-27", kind: quiz, title: In-class quiz on Week 6, covers: [6], note: "Expected at the start of the Oct 27 lecture (each lecture opens with a quiz on the previous week)." }

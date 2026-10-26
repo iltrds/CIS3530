@@ -3,7 +3,7 @@ import type { Ctx } from "../App.tsx";
 import { TestRunner } from "../components/Runners.tsx";
 import { Html } from "../components/Relations.tsx";
 import { QuestionContext } from "../components/Question.tsx";
-import { answerText, assemble, newSeed, TYPE_LABELS } from "../lib/quiz.ts";
+import { answerText, assemble, newSeed, questionLabel, TYPE_LABELS } from "../lib/quiz.ts";
 import { href, navigate } from "../lib/router.ts";
 
 export function ExamsPage({ ctx, path, query }: { ctx: Ctx; path: string[]; query: URLSearchParams }) {
@@ -106,7 +106,7 @@ function ExamPrint({ ctx, id, seed }: { ctx: Ctx; id: string; seed: number }) {
           <div className="q-head">
             <div className="q-num">Question {k + 1}</div>
             <div className="q-meta">
-              {TYPE_LABELS[it.q.type]} · {it.points} point{it.points === 1 ? "" : "s"}
+              {questionLabel(it.q)} · {it.points} point{it.points === 1 ? "" : "s"}
             </div>
           </div>
           <Html className="q-prompt" html={it.q.prompt} />

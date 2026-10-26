@@ -1,0 +1,65 @@
+id: w6-library
+title: Library
+width: 1080
+height: 640
+entities:
+  - name: MEMBER
+    x: 210
+    y: 210
+    attrs:
+      - { name: member_no, key: true }
+      - { name: name, parts: [first, last] }
+      - { name: phone, multi: true }
+      - { name: birth_date, side: left }
+      - { name: age, derived: true, side: left }
+  - name: COPY
+    x: 700
+    y: 210
+    weak: true
+    attrSide: right
+    attrs:
+      - { name: copy_no, partial: true }
+      - { name: condition }
+  - name: BOOK
+    x: 700
+    y: 520
+    attrSide: bottom
+    attrs:
+      - { name: isbn, key: true }
+      - { name: title }
+      - { name: year }
+  - name: AUTHOR
+    x: 950
+    y: 370
+    attrSide: top
+    attrs:
+      - { name: author_id, key: true }
+      - { name: name }
+relationships:
+  - name: Borrows
+    x: 445
+    y: 210
+    attrSide: top
+    attrs: [{ name: due_date }]
+    ends:
+      - { entity: MEMBER, card: "1" }
+      - { entity: COPY, card: N }
+  - name: Holds
+    x: 700
+    y: 365
+    identifying: true
+    ends:
+      - { entity: BOOK, card: "1" }
+      - { entity: COPY, card: N, total: true }
+  - name: Writes
+    x: 950
+    y: 520
+    ends:
+      - { entity: AUTHOR, card: M }
+      - { entity: BOOK, card: N, total: true }
+  - name: Refers
+    x: 210
+    y: 420
+    ends:
+      - { entity: MEMBER, role: referrer, card: "1", from: left, to: bottom, offset: -35, bend: false, flip: true }
+      - { entity: MEMBER, role: referred, card: N, from: right, to: bottom, offset: 35, bend: false }

@@ -1,0 +1,964 @@
+# ---------------------------------------------------------------- True / False / Maybe on a diagram (worksheet-style, own diagrams)
+
+- id: w6-q-tfm-repair-1
+  type: blanks
+  topics: [er.reading, er.cardinality, er.participation, er.keys]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box. Maybe means the diagram doesn't show the statement is true, but nothing in it proves the statement false.
+
+    {{er:w6-repair}}
+  parts:
+    - { text: "A vehicle may have been repaired by several mechanics.", answer: "True" }
+    - { text: "A mechanic must have repaired at least one vehicle.", answer: "True" }
+    - { text: "A vehicle must be repaired by at least one mechanic.", answer: "False" }
+    - { text: "No two vehicles have the same plate.", answer: "Maybe" }
+  explanation: "The M next to MECHANIC says a vehicle can be linked to many mechanics. MECHANIC's line to Repairs is double (total), VEHICLE's is single (partial), so only the mechanic \"must\". plate isn't underlined, so the design doesn't require it to be unique, but nothing says two vehicles share one either."
+
+- id: w6-q-tfm-repair-2
+  type: blanks
+  topics: [er.reading, er.attributes, er.relationships]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-repair}}
+  parts:
+    - { text: "name in MECHANIC is a composite attribute.", answer: "True" }
+    - { text: "A mechanic can have more than one phone number.", answer: "True" }
+    - { text: "make in VEHICLE is a composite attribute.", answer: "False" }
+    - { text: "Repairs records one hours value for each mechanic–vehicle pair.", answer: "True" }
+  explanation: "name has parts (first, last) hanging off it; phone is a double oval (multivalued); make is a plain oval with no parts. hours is drawn on the Repairs diamond, so it belongs to each mechanic–vehicle pairing."
+
+- id: w6-q-tfm-clinic-1
+  type: blanks
+  topics: [er.reading, er.weak, er.cardinality, er.participation]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-clinic}}
+  parts:
+    - { text: "A visit can exist without a patient.", answer: "False" }
+    - { text: "A doctor must attend at least one visit.", answer: "False" }
+    - { text: "A visit can be attended by two doctors.", answer: "False" }
+    - { text: "Visits of two different patients can have the same visit_date.", answer: "True" }
+  explanation: "VISIT is weak (double rectangle) with a double line to its identifying relationship Makes: no patient, no visit. DOCTOR's line to Attends is single, so attending isn't required. The 1 next to DOCTOR means a visit has at most one doctor. visit_date is a partial key: it only has to be unique among one patient's visits."
+
+- id: w6-q-tfm-clinic-2
+  type: blanks
+  topics: [er.reading, er.weak, er.attributes, er.keys]
+  difficulty: 3
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-clinic}}
+  parts:
+    - { text: "Two visits of the same patient can have the same visit_date.", answer: "False" }
+    - { text: "A patient can have several allergies.", answer: "True" }
+    - { text: "A patient must have made at least one visit.", answer: "False" }
+    - { text: "No two doctors have the same specialty.", answer: "Maybe" }
+  explanation: "The partial key (dashed underline) tells apart one owner's weak entities, so one patient can't have two visits with the same visit_date. allergy is a double oval. PATIENT's line to Makes is single (partial). specialty isn't underlined, so uniqueness isn't required, but the diagram can't show it's false."
+
+- id: w6-q-tfm-league-1
+  type: blanks
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-league}}
+  parts:
+    - { text: "Every team has a captain.", answer: "True" }
+    - { text: "A player can captain two teams.", answer: "False" }
+    - { text: "A player may not belong to any team.", answer: "True" }
+    - { text: "A team's captain must be one of that team's players.", answer: "Maybe" }
+  explanation: "TEAM's line to Captains is double. The 1 next to TEAM on Captains means a player captains at most one team. PLAYER's line to Plays_for is single, so a player can be teamless. Captains and Plays_for are separate relationships; the diagram can't express (or rule out) a rule linking them, so the last one is Maybe."
+
+- id: w6-q-tfm-league-2
+  type: blanks
+  topics: [er.reading, er.recursive, er.attributes, er.relationships]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: |
+    In context with this diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-league}}
+  parts:
+    - { text: "A player can have more than one mentor.", answer: "False" }
+    - { text: "A player can mentor several players.", answer: "True" }
+    - { text: "Mentors is a ternary relationship.", answer: "False" }
+    - { text: "nickname is a multivalued attribute.", answer: "True" }
+  explanation: "On Mentors, the 1 is on the mentor's line: a mentee has at most one mentor, and the N on the mentee's line lets one mentor have many mentees. A recursive relationship has two roles, so it's binary. nickname is a double oval."
+
+- id: w6-q-tfm-staff-1
+  type: blanks
+  topics: [er.reading, er.weak, er.cardinality, er.attributes]
+  difficulty: 2
+  points: 4
+  tags: [quiz-style]
+  prompt: |
+    In context with the lecture's University Staff diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-staff}}
+  parts:
+    - { text: "A department can have only one location.", answer: "False" }
+    - { text: "An employee can manage two departments.", answer: "False" }
+    - { text: "A dependant can exist without an employee.", answer: "False" }
+    - { text: "An activity can have volunteers who work in different departments.", answer: "True" }
+  explanation: "location is multivalued (double oval). On Manages the 1 next to DEPARTMENT means an employee manages at most one. DEPENDENT is weak. Volunteers is M:N and nothing ties it to WORKS_FOR, so volunteers can come from any department."
+
+- id: w6-q-tfm-staff-2
+  type: blanks
+  topics: [er.reading, er.relationships, er.recursive, er.weak]
+  difficulty: 3
+  points: 4
+  tags: [quiz-style, trap]
+  prompt: |
+    In context with the lecture's University Staff diagram, type **True**, **False** or **Maybe** in each box.
+
+    {{er:w6-staff}}
+  parts:
+    - { text: "The diagram records the date an employee started managing a department.", answer: "True" }
+    - { text: "Every employee must have a supervisor.", answer: "False" }
+    - { text: "Two employees can have the same name.", answer: "True" }
+    - { text: "fname alone identifies a dependant.", answer: "False" }
+  explanation: "stDate hangs off Manages. Both Supervision lines are single (partial), so having a supervisor isn't required as drawn (someone is at the top). Only SIN is a key, so names may repeat. fname is a partial key: it identifies a dependant only together with the employee's SIN."
+
+# ---------------------------------------------------------------- matching
+
+- id: w6-q-match-notation
+  type: matching
+  topics: [er.attributes, er.weak, er.participation]
+  difficulty: 1
+  points: 3
+  style: direct
+  prompt: Match each Chen-notation symbol to what it means.
+  left:
+    - Double oval
+    - Double rectangle
+    - Double line between an entity and a diamond
+    - Dashed underline
+  right: [A partial key, Total participation, A multivalued attribute, A weak entity type, A derived attribute]
+  answer: [2, 3, 1, 0]
+  explanation: "A double diamond would be an identifying relationship. The course draws derived attributes like any other (the textbook dashes the oval itself, not the underline)."
+
+- id: w6-q-match-ratios
+  type: matching
+  topics: [er.cardinality, er.modeling]
+  difficulty: 1
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each requirement to the cardinality ratio of the relationship it describes.
+  left:
+    - "A person holds at most one passport, and a passport belongs to one person."
+    - "A playlist belongs to one listener; a listener can create many playlists."
+    - "A student can join many clubs, and a club has many students."
+  right: ["1:1", "1:N", "M:N"]
+  answer: [0, 1, 2]
+  explanation: "Ask the question both ways: how many of B can one A have, and how many of A can one B have? \"One\" both ways is 1:1, one way only is 1:N, many both ways is M:N."
+
+- id: w6-q-match-map-clinic
+  type: matching
+  topics: [er.mapping, er.weak]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: |
+    The clinic design is mapped to relations. Match each part of the diagram to what it becomes.
+
+    {{er:w6-clinic}}
+  left:
+    - The identifying relationship Makes
+    - The relationship Attends
+    - The attribute allergy
+  right:
+    - "A doc_id foreign key column in VISIT"
+    - "A new relation ATTENDS(doc_id, health_no, visit_date)"
+    - "A new relation (health_no, allergy) with both as its key"
+    - "health_no inside VISIT's primary key, so nothing else is needed"
+  answer: [3, 0, 2]
+  explanation: "Mapping the weak entity VISIT (step 2) already puts the owner's key health_no into VISIT's key, which represents Makes. Attends is 1:N with VISIT on the N side, so VISIT gets a doc_id FK (step 4); a new relation is only for M:N. A multivalued attribute becomes its own relation (step 6)."
+
+- id: w6-q-match-map-repair
+  type: matching
+  topics: [er.mapping]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: |
+    The garage design is mapped to relations. Match each part of the diagram to what it becomes.
+
+    {{er:w6-repair}}
+  left:
+    - Repairs, with its attribute hours
+    - The attribute phone
+    - The attribute name
+  right:
+    - "Two columns, first and last, in MECHANIC"
+    - "A new relation (mech_id, vin, hours) keyed on (mech_id, vin)"
+    - "A vin column in MECHANIC"
+    - "A new relation (mech_id, phone) keyed on both"
+  answer: [1, 3, 0]
+  explanation: "M:N relationships become new relations keyed on both FKs, carrying their attributes. A multivalued attribute becomes a relation of (owner key, value). A composite attribute contributes only its simple parts. A single vin column couldn't hold the many vehicles one mechanic repairs."
+
+- id: w6-q-match-reverse
+  type: matching
+  topics: [er.reverse]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each feature of a relational schema to the ER construct it most likely came from.
+  left:
+    - "R's primary key is a foreign key to S plus one attribute of R's own"
+    - "R's primary key is made of two foreign keys, to S and to T"
+    - "R has a non-key foreign key to S declared NOT NULL"
+  right:
+    - "R is a weak entity type owned by S"
+    - "An M:N relationship between S and T"
+    - "A 1:N relationship (S on the 1 side) in which R participates totally"
+    - "A composite attribute of S"
+  answer: [0, 1, 2]
+  explanation: "Borrowing the owner's key into the primary key is the mark of a weak entity (step 2 backwards). A key of two FKs is an M:N relationship's relation (step 5). A non-key FK is a 1:N with the FK on the N side, and NOT NULL means every R must be related: total participation."
+
+- id: w6-q-match-symbols-league
+  type: matching
+  topics: [er.modeling, er.participation, er.cardinality, er.attributes]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each requirement for the hockey league to the symbol you'd draw for it.
+  left:
+    - "Every team must have a captain."
+    - "A player can be known by several nicknames."
+    - "A player has at most one mentor."
+  right:
+    - "A double line between TEAM and Captains"
+    - "A double oval"
+    - "A 1 written on the mentor's line of Mentors"
+    - "A double diamond"
+  answer: [0, 1, 2]
+  explanation: "\"Must\" for every team is TEAM's total participation. Several values of one attribute is a multivalued attribute. The number on a role's line counts that role: a 1 on the mentor's line means each mentee relates to at most one mentor. A double diamond is only for identifying relationships."
+
+- id: w6-q-match-requirements-staff
+  type: matching
+  topics: [er.modeling, er.relationships, er.recursive, er.weak]
+  difficulty: 2
+  points: 3
+  tags: [quiz-style]
+  prompt: Match each requirement to the ER construct that captures it.
+  left:
+    - "We record how many hours a week each employee volunteers on each activity."
+    - "Each employee's supervisor is also an employee."
+    - "A dependant is identified by their first name, which is unique only among one employee's dependants."
+  right: [A recursive relationship, An attribute of a relationship, A partial key of a weak entity, A derived attribute]
+  answer: [1, 0, 2]
+  explanation: "Hours depends on both the employee and the activity, so it's an attribute of Volunteers. The same entity type in two roles is a recursive relationship. A name unique only per owner is a partial key."
+
+# ---------------------------------------------------------------- multiple choice: reading diagrams and cardinality
+
+- id: w6-q-read-hosts
+  type: mcq
+  topics: [er.cardinality]
+  difficulty: 1
+  tags: [quiz-style, trap]
+  prompt: "In the lecture's design, DEPARTMENT —1— Hosts —N— ACTIVITY. Which statement does this say?"
+  options:
+    - Each activity is hosted by at most one department.
+    - Each department hosts at most one activity.
+    - Each activity must be hosted by several departments.
+    - None of the given choices
+  answer: 0
+  explanation: "The number next to an entity counts that entity: the 1 next to DEPARTMENT says how many departments one activity has. The N next to ACTIVITY lets a department host many."
+
+- id: w6-q-read-copy
+  type: mcq
+  topics: [er.cardinality, er.modeling]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "\"A copy is out to at most one member at a time; a member can have many copies out.\" Drawn as MEMBER — Borrows — COPY, which numbers go on the lines?"
+  options:
+    - "1 next to MEMBER, N next to COPY"
+    - "N next to MEMBER, 1 next to COPY"
+    - "M next to MEMBER, N next to COPY"
+    - "1 next to both"
+  answer: 0
+  explanation: "How many members per copy? At most one, so 1 goes next to MEMBER. How many copies per member? Many, so N goes next to COPY."
+
+- id: w6-q-read-min-max
+  type: mcq
+  topics: [er.cardinality, er.participation]
+  difficulty: 2
+  tags: [quiz-style, all-none-option]
+  prompt: Which of the following is true?
+  options:
+    - The cardinality ratio limits the maximum number of relationship instances an entity takes part in.
+    - Participation says whether the minimum is zero (partial) or at least one (total).
+    - Total participation is drawn as a double line between the entity and the relationship.
+    - All of the given choices
+    - None of the given choices
+  answer: 3
+  explanation: "Each statement is true: together the two constraints give a minimum and a maximum for every entity."
+
+- id: w6-q-exactly-one
+  type: mcq
+  topics: [er.cardinality, er.participation]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "In EMPLOYEE — WORKS_FOR — DEPARTMENT, which combination says \"every employee works for exactly one department\"?"
+  options:
+    - "A 1 next to DEPARTMENT, and a double line between EMPLOYEE and WORKS_FOR"
+    - "A 1 next to EMPLOYEE, and a double line between DEPARTMENT and WORKS_FOR"
+    - "A 1 next to DEPARTMENT only; the 1 already means exactly one"
+    - "A double line between EMPLOYEE and WORKS_FOR only"
+  answer: 0
+  explanation: "\"At most one\" is the 1 next to DEPARTMENT (it counts departments). \"At least one\" is EMPLOYEE's total participation. A cardinality of 1 alone still allows zero."
+
+- id: w6-q-staff-not-true
+  type: mcq
+  topics: [er.reading]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: |
+    Which statement is **not** true for this diagram?
+
+    {{er:w6-staff}}
+  options:
+    - Every activity is hosted by exactly one department.
+    - An employee can volunteer on several activities.
+    - A department's manager must also work for that department.
+    - DEPENDENT has no key of its own.
+  answer: 2
+  explanation: "Manages and WORKS_FOR are separate relationships, so nothing requires the manager to work for the department they manage. Hosts gives ACTIVITY a 1 and a double line (exactly one). Volunteers is M:N. DEPENDENT is weak, with only a partial key."
+
+- id: w6-q-instance-mn
+  type: mcq
+  topics: [er.cardinality, er.relationships]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    A snapshot of PROFESSOR —Advises— STUDENT instances:
+
+    | Professor | Student |
+    |---|---|
+    | p1 | s1 |
+    | p1 | s2 |
+    | p2 | s3 |
+    | p3 | s3 |
+
+    Which cardinality ratio is the only one consistent with it?
+  options:
+    - "1:1"
+    - "1:N (a professor advises many students; a student has one adviser)"
+    - "N:1 (a student has many advisers; a professor advises one student)"
+    - "M:N"
+  answer: 3
+  explanation: "p1 advises two students, ruling out \"at most one student per professor\". s3 has two advisers, ruling out \"at most one professor per student\". Only M:N allows both."
+
+- id: w6-q-instance-ruled-out
+  type: multi
+  topics: [er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  prompt: |
+    Every pilot and every aircraft stored is listed in this snapshot of PILOT —Flies— AIRCRAFT:
+
+    | Pilot | Aircraft |
+    |---|---|
+    | k1 | a1 |
+    | k2 | a1 |
+    | k3 | a2 |
+    | k4 | — |
+
+    Which constraints does this snapshot rule out? Select all that apply.
+  options:
+    - Each aircraft is flown by at most one pilot.
+    - Each pilot flies at most one aircraft.
+    - Every pilot flies at least one aircraft (total participation of PILOT).
+    - Every aircraft is flown by at least one pilot (total participation of AIRCRAFT).
+  answer: [0, 2]
+  explanation: "a1 has two pilots (rules out the first) and k4 flies nothing (rules out the third). No pilot flies two aircraft and every aircraft has a pilot, but a snapshot can't prove those are rules, only fail to break them."
+
+- id: w6-q-participation-instance
+  type: mcq
+  topics: [er.participation]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In a snapshot of EMPLOYEE —Uses— PARKING_SPOT, one parking spot appears in no relationship instance. What does that tell you?"
+  options:
+    - PARKING_SPOT's participation in Uses can't be total.
+    - PARKING_SPOT's participation in Uses must be total.
+    - Uses must be 1:1.
+    - PARKING_SPOT must be a weak entity type.
+  answer: 0
+  explanation: "Total participation means every parking spot takes part. One that doesn't is a counterexample, so the participation must be partial."
+
+# ---------------------------------------------------------------- attributes, entities and modelling
+
+- id: w6-q-entity-vs-attr
+  type: mcq
+  topics: [er.entities, er.modeling]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "A library also wants to record each book's publisher, and for each publisher its name, address and phone number. Publishers publish many books. How should *publisher* be modelled?"
+  options:
+    - As an entity type related to BOOK by a 1:N relationship
+    - As a composite attribute of BOOK
+    - As a multivalued attribute of BOOK
+    - As a derived attribute of BOOK
+  answer: 0
+  explanation: "A publisher has facts of its own and is shared by many books. As an attribute of BOOK, its address and phone would be repeated for every book it publishes."
+
+- id: w6-q-grade
+  type: mcq
+  topics: [er.relationships, er.attributes]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: STUDENT —Takes— COURSE is M:N. Where does the grade a student earned in a course belong?
+  options:
+    - On Takes, as an attribute of the relationship
+    - On STUDENT, as a multivalued attribute
+    - On COURSE, as a simple attribute
+    - On STUDENT, as a derived attribute
+  answer: 0
+  explanation: "A grade depends on both the student and the course. On STUDENT, a multivalued grade couldn't say which course each grade was for; on COURSE, there'd be one grade per course for everyone."
+
+- id: w6-q-composite-multi
+  type: mcq
+  topics: [er.attributes]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "\"A customer may have several shipping addresses, each made up of street, city and postal code.\" How is shipping address drawn on CUSTOMER?"
+  options:
+    - A double oval, with street, city and postal code as ovals hanging off it
+    - A single oval with street, city and postal code hanging off it
+    - A double oval with no parts
+    - Three separate double ovals, one each for street, city and postal code
+  answer: 0
+  explanation: "It's both multivalued (several per customer: double oval) and composite (has parts). The classifications are independent. Three separate multivalued attributes would lose which street goes with which city."
+
+- id: w6-q-derived
+  type: mcq
+  topics: [er.attributes, er.mapping]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: EMPLOYEE has a stored date_of_birth and an age. Which statement is correct?
+  options:
+    - age is a derived attribute, and it's normally not stored when mapping to relations.
+    - age is a composite attribute made of date_of_birth.
+    - age is multivalued, because it changes every year.
+    - age must be underlined, because every employee has one.
+  answer: 0
+  explanation: "age can be computed from date_of_birth, so it's derived. Storing it would mean updating it every birthday."
+
+- id: w6-q-key-what
+  type: mcq
+  topics: [er.keys]
+  difficulty: 1
+  tags: [quiz-style, negated-stem]
+  prompt: Which statement about key attributes in an ER diagram is **not** true?
+  options:
+    - A key attribute's value is different for every entity of its type.
+    - A key attribute is shown by underlining its name.
+    - An entity type can have only one attribute whose values are unique.
+    - A key can be a composite attribute, whose parts together identify the entity.
+  answer: 2
+  explanation: "An entity type can have several unique attributes (say a student number and an email); you underline the one chosen as the key."
+
+- id: w6-q-entity-type-set
+  type: mcq
+  topics: [er.entities]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "\"All the STUDENT entities stored in the database right now\" is…"
+  options:
+    - the STUDENT entity set
+    - the STUDENT entity type
+    - a STUDENT relationship type
+    - a STUDENT key attribute
+  answer: 0
+  explanation: "The entity type is the description (STUDENT with its attributes); the entity set is the current collection of entities of that type, like a relation's instance."
+
+- id: w6-q-followers
+  type: mcq
+  topics: [er.modeling, er.recursive, er.attributes]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Listeners can follow other listeners. What's the best criticism of how this draft models it?
+
+    {{er:w6-stream-draft}}
+  options:
+    - "Followers are listeners, so following should be a recursive M:N relationship on LISTENER, not a multivalued attribute."
+    - "followers should be a composite attribute instead of a multivalued one."
+    - "followers should be the key of LISTENER."
+    - "Nothing: a multivalued attribute is the right way to store several followers."
+  answer: 0
+  explanation: "A multivalued attribute only holds values; it can't link to the followers' own data or show who someone follows. Since follower and followed are both listeners, it's a recursive relationship, M:N because both directions can be many."
+
+- id: w6-q-two-relationships
+  type: mcq
+  topics: [er.modeling, er.relationships]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "Listeners *create* playlists (each playlist has exactly one creator) and can also *save* any playlist (many listeners can save the same playlist). How many relationship types between LISTENER and PLAYLIST should the design have?"
+  options:
+    - "Two: a 1:N Creates and an M:N Saves"
+    - "One M:N relationship, since it covers both"
+    - "One 1:N relationship, since a playlist has one creator"
+    - "None: store the creator's id as an attribute of PLAYLIST"
+  answer: 0
+  explanation: "They're different associations with different constraints. One M:N relationship couldn't say who the creator is; one 1:N couldn't hold saves. Storing a FK-like attribute is a relational idea, not an ER one."
+
+- id: w6-q-recursive-degree
+  type: mcq
+  topics: [er.recursive, er.relationships]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: Supervision relates EMPLOYEE to EMPLOYEE. What is its degree?
+  options: ["1", "2", "3", "It depends on how many employees there are"]
+  answer: 1
+  explanation: "Degree counts the participating roles. Supervision has two, supervisor and subordinate, both played by EMPLOYEE, so it's binary."
+
+- id: w6-q-recursive-examples
+  type: multi
+  topics: [er.recursive]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: Which of these are recursive relationships? Select all that apply.
+  options:
+    - A course is a prerequisite of other courses.
+    - A person is the parent of other people.
+    - A student is enrolled in courses.
+    - A student is another student's buddy.
+    - An employee works for a department.
+  answer: [0, 1, 3]
+  explanation: "A recursive relationship relates an entity type to itself. Enrolment and WORKS_FOR each relate two different entity types."
+
+# ---------------------------------------------------------------- weak entities
+
+- id: w6-q-weak-not-true
+  type: mcq
+  topics: [er.weak]
+  difficulty: 2
+  tags: [quiz-style, negated-stem, trap]
+  prompt: Which statement about weak entity types is **not** true?
+  options:
+    - A weak entity type always participates totally in its identifying relationship.
+    - A weak entity type has a partial key that distinguishes the entities of one owner.
+    - Any entity type with total participation in some relationship is weak.
+    - When mapped, a weak entity's primary key includes its owner's primary key.
+    - None of the given choices
+  answer: 2
+  explanation: "Total participation (existence dependency) is necessary but not enough: the key must also borrow the owner's key. A SECTION with its own class_code can be total in Offers and still be a regular entity type."
+
+- id: w6-q-weak-identify
+  type: mcq
+  topics: [er.weak, er.modeling]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Hotel rooms are numbered 101, 102, … in every hotel, so two hotels both have a room 101. A room can't exist without its hotel. How should ROOM be modelled?"
+  options:
+    - As a weak entity type owned by HOTEL, with room_no as its partial key
+    - As a regular entity type with room_no as its key
+    - As a multivalued attribute of HOTEL
+    - As a regular entity type with no key
+  answer: 0
+  explanation: "room_no repeats across hotels, so it only identifies a room together with the hotel: a partial key. Existence depends on the hotel too. Both conditions for a weak entity hold. (A multivalued attribute couldn't carry the room's own attributes.)"
+
+- id: w6-q-weak-cardinality
+  type: mcq
+  topics: [er.weak, er.participation]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: In the identifying relationship between an owner and its weak entity type, what do you expect on the weak entity's side?
+  options:
+    - A double line, since every weak entity must have an owner
+    - A single line, since participation is partial
+    - Either; it depends on the requirements
+    - A dashed line
+  answer: 0
+  explanation: "A weak entity can't exist without its owner, so its participation in the identifying relationship is always total."
+
+- id: w6-q-section-surrogate
+  type: mcq
+  topics: [er.weak, er.reverse]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  prompt: "SECTION(<u>CLASS_CODE</u>, CRS_CODE, SECTION_NO, CLASS_TIME, ROOM), where CRS_CODE is a NOT NULL foreign key to COURSE. In the ER model, SECTION is…"
+  options:
+    - a regular entity type that participates totally in a 1:N relationship with COURSE
+    - a weak entity type, because it can't exist without a course
+    - a weak entity type, because CRS_CODE is a foreign key
+    - a multivalued attribute of COURSE
+  answer: 0
+  explanation: "SECTION is existence dependent (NOT NULL FK: total participation), but its key CLASS_CODE is its own. A weak entity also needs its key to include the owner's key."
+
+# ---------------------------------------------------------------- mapping
+
+- id: w6-q-map-1n
+  type: mcq
+  topics: [er.mapping]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "Hosts is 1:N from DEPARTMENT to ACTIVITY. How is it mapped?"
+  options:
+    - "Add dnumber to ACTIVITY as a foreign key to DEPARTMENT"
+    - "Add anumber to DEPARTMENT as a foreign key to ACTIVITY"
+    - "A new relation HOSTS(dnumber, anumber) keyed on (dnumber, anumber)"
+    - "Merge DEPARTMENT and ACTIVITY into one relation"
+  answer: 0
+  explanation: "Step 4: the N side (ACTIVITY) holds the 1 side's key. One anumber column in DEPARTMENT can't hold many activities, and a HOSTS relation keyed on both columns would allow an activity to have several departments."
+
+- id: w6-q-map-mn-why
+  type: mcq
+  topics: [er.mapping]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: Why can't the M:N relationship Volunteers be mapped by adding anumber to EMPLOYEE?
+  options:
+    - An employee can volunteer on many activities, and one anumber column holds only one.
+    - anumber isn't a key of ACTIVITY.
+    - Foreign keys can't refer to a relation created in step 1.
+    - It can; that's step 5.
+  answer: 0
+  explanation: "A foreign key column works for the side that's related to at most one entity. In an M:N neither side is, so step 5 creates VOLUNTEER(SIN, anumber, hours)."
+
+- id: w6-q-map-11
+  type: mcq
+  topics: [er.mapping, er.participation]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Which mapping of this relationship does step 3 prefer?
+
+    {{er:w6-capital}}
+  options:
+    - "COUNTRY(code, name, capital_city_id), with capital_city_id → CITY"
+    - "CITY(city_id, name, population, country_code), with country_code → COUNTRY"
+    - "A new relation CAPITAL(code, city_id) keyed on (code, city_id)"
+    - "No foreign key is needed for a 1:1 relationship"
+  answer: 0
+  explanation: "Either side could hold the FK, but COUNTRY participates totally, so capital_city_id is never null there. In CITY the column would be null for nearly every city."
+
+- id: w6-q-map-stdate
+  type: mcq
+  topics: [er.mapping, er.relationships]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Manages (1:1, total on DEPARTMENT's side) has the attribute stDate. After mapping, where is stDate?"
+  options:
+    - In DEPARTMENT, next to the manager's SIN
+    - In EMPLOYEE
+    - In a new relation MANAGES(dnumber, SIN, stDate)
+    - Nowhere; relationship attributes aren't mapped
+  answer: 0
+  explanation: "A 1:1 or 1:N relationship's attributes go into the relation that receives the foreign key. The FK goes in DEPARTMENT (total side), so stDate does too."
+
+- id: w6-q-map-mva-key
+  type: mcq
+  topics: [er.mapping, er.attributes]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "The multivalued location becomes DEP_LOCATION(dnumber, location). Why is its primary key (dnumber, location) rather than dnumber?"
+  options:
+    - A department has several locations, so dnumber repeats in DEP_LOCATION.
+    - Every relation needs a composite key.
+    - location is a key attribute of DEPARTMENT.
+    - So that two departments can't share a location.
+  answer: 0
+  explanation: "One row per (department, location) pair; dnumber alone repeats for a department with several locations. The key does allow two departments to share a location."
+
+- id: w6-q-map-new-relations
+  type: multi
+  topics: [er.mapping]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: Which of these get a new relation of their own when mapped (beyond the relations for the entity types)? Select all that apply.
+  options:
+    - A binary M:N relationship
+    - A multivalued attribute
+    - A ternary relationship
+    - A binary 1:N relationship
+    - A composite attribute
+    - A binary 1:1 relationship
+  answer: [0, 1, 2]
+  explanation: "Steps 5, 6 and 7 create new relations. 1:N and 1:1 become foreign keys in an existing relation, and a composite attribute just contributes its parts as columns."
+
+- id: w6-q-map-recursive
+  type: mcq
+  topics: [er.mapping, er.recursive]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Mentors is a recursive 1:N relationship on PLAYER (a mentee has at most one mentor). How is it mapped?"
+  options:
+    - "A column mentor_id in PLAYER, a foreign key referencing PLAYER"
+    - "A new relation MENTORS(mentor_id, mentee_id) keyed on both"
+    - "A column mentee_id in PLAYER, which must hold every mentee"
+    - "It can't be mapped, because a relation can't reference itself"
+  answer: 0
+  explanation: "Like any 1:N: the N side (the mentee) stores the 1 side's key. Both are PLAYER, so the FK references the same relation, as s_sin does in EMPLOYEE."
+
+- id: w6-q-map-composite
+  type: mcq
+  topics: [er.mapping, er.attributes]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "EMPLOYEE's composite attribute name has parts fname and lname. What appears in the EMPLOYEE relation?"
+  options:
+    - "Two columns, fname and lname"
+    - "One column, name"
+    - "Three columns: name, fname and lname"
+    - "A new relation EMP_NAME(SIN, fname, lname)"
+  answer: 0
+  explanation: "Steps 1 and 2 include only the simple components of a composite attribute. A separate relation is for multivalued attributes."
+
+- id: w6-q-map-schema-enforces
+  type: mcq
+  topics: [er.mapping, er.cardinality]
+  difficulty: 3
+  dataset: university-staff
+  show: { diagram: true }
+  tags: [quiz-style, trap]
+  prompt: "These relations are the mapped University Staff design. Which rule does this relational schema enforce on its own (through keys, foreign keys and NOT NULL)?"
+  options:
+    - An employee works for at most one department.
+    - Every department has at least one employee.
+    - Every activity has at least one volunteer.
+    - A department's manager works for that department.
+  answer: 0
+  explanation: "EMPLOYEE has one dnumber column and SIN is its key, so each employee has one department. Nothing forces a department's dnumber to appear in EMPLOYEE, an activity to appear in VOLUNTEER, or mgr_sin's employee to have the same dnumber."
+
+- id: w6-q-dependent-key
+  type: select_attributes
+  topics: [er.mapping, er.weak]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Map this design. Which attributes make up the primary key of the relation for VISIT?
+
+    {{er:w6-clinic}}
+  attributes: [health_no, visit_date, reason, doc_id, name]
+  answer: [health_no, visit_date]
+  explanation: "A weak entity's key is its owner's key plus its partial key. doc_id is in VISIT too (from Attends), but only as a foreign key."
+
+- id: w6-q-visit-columns
+  type: select_attributes
+  topics: [er.mapping]
+  difficulty: 3
+  tags: [quiz-style]
+  prompt: |
+    Map this design. Which attributes are columns of the relation for VISIT?
+
+    {{er:w6-clinic}}
+  attributes: [health_no, visit_date, reason, doc_id, specialty, allergy]
+  answer: [health_no, visit_date, reason, doc_id]
+  explanation: "VISIT keeps its own attributes, gets its owner's key health_no (step 2) and the 1-side key doc_id from Attends (step 4). specialty stays in DOCTOR; allergy gets its own relation."
+
+- id: w6-q-repairs-columns
+  type: select_attributes
+  topics: [er.mapping]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Map this design. Which attributes are columns of the new relation for Repairs?
+
+    {{er:w6-repair}}
+  attributes: [mech_id, vin, hours, plate, phone, first]
+  answer: [mech_id, vin, hours]
+  explanation: "An M:N relationship's relation has both sides' keys (together its primary key) plus the relationship's own attributes."
+
+# ---------------------------------------------------------------- reverse mapping (gym)
+
+- id: w6-q-gym-locker
+  type: mcq
+  topics: [er.reverse, er.cardinality, er.participation]
+  difficulty: 3
+  dataset: gym
+  show: { diagram: true }
+  tags: [quiz-style, trap]
+  prompt: "This schema was mapped from an ER design. LOCKER.mid is a foreign key to MEMBER, declared UNIQUE and allowed to be null. What relationship between MEMBER and LOCKER does it come from?"
+  options:
+    - "1:1, with LOCKER's participation partial"
+    - "1:N, with a member having many lockers"
+    - "1:1, with LOCKER's participation total"
+    - "M:N"
+  answer: 0
+  explanation: "A FK alone gives 1:N (many lockers per member); UNIQUE caps it at one locker per member, so 1:1. Null is allowed, so a locker needn't be assigned: partial."
+
+- id: w6-q-gym-plan
+  type: mcq
+  topics: [er.reverse, er.weak]
+  difficulty: 2
+  dataset: gym
+  show: { diagram: true, tables: [MEMBER, PLAN] }
+  tags: [quiz-style]
+  prompt: "PLAN's primary key is (mid, start_date), and mid references MEMBER. In the ER design, PLAN is…"
+  options:
+    - a weak entity type owned by MEMBER, with partial key start_date
+    - an M:N relationship between MEMBER and a date
+    - a multivalued attribute of MEMBER
+    - a regular entity type with key start_date
+  answer: 0
+  explanation: "Its key is the owner's key plus an attribute of its own: step 2 run backwards. It has a non-key attribute (price), so it isn't just a multivalued attribute."
+
+- id: w6-q-gym-enrolment
+  type: mcq
+  topics: [er.reverse]
+  difficulty: 2
+  dataset: gym
+  show: { diagram: true, tables: [MEMBER, CLASS, ENROLMENT] }
+  tags: [quiz-style]
+  prompt: "ENROLMENT(mid, cid, since) has primary key (mid, cid), two foreign keys. What does it come from?"
+  options:
+    - An M:N relationship between MEMBER and CLASS with the attribute since
+    - A weak entity type ENROLMENT owned by MEMBER
+    - A 1:N relationship from MEMBER to CLASS
+    - A multivalued attribute since of CLASS
+  answer: 0
+  explanation: "A relation whose key is two foreign keys is the step 5 relation of an M:N relationship; its other columns are the relationship's attributes."
+
+- id: w6-q-gym-class
+  type: mcq
+  topics: [er.reverse, er.participation]
+  difficulty: 2
+  dataset: gym
+  show: { diagram: true, tables: [TRAINER, CLASS] }
+  tags: [quiz-style, negated-stem]
+  prompt: "CLASS.tid is a non-key foreign key to TRAINER, declared NOT NULL. Which conclusion is **not** justified?"
+  options:
+    - TRAINER and CLASS are in a 1:N relationship, a trainer teaching many classes.
+    - Every class has a trainer.
+    - Every trainer teaches at least one class.
+    - A class has at most one trainer.
+  answer: 2
+  explanation: "NOT NULL makes CLASS total; nothing forces every tid to appear in CLASS, so TRAINER's participation is partial. One tid column means at most one trainer per class."
+
+# ---------------------------------------------------------------- design phases and definitions
+
+- id: w6-q-phase-er
+  type: mcq
+  topics: [er.design]
+  difficulty: 1
+  style: direct
+  prompt: In which phase of database design is the ER model produced?
+  options: [Conceptual design, Requirements gathering, Logical design, Physical design]
+  answer: 0
+  explanation: "Requirements → conceptual (ER) → logical (relational) → physical."
+
+- id: w6-q-phase-mapping
+  type: mcq
+  topics: [er.design, er.mapping]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: Turning an ER diagram into relations with keys and foreign keys moves the design from…
+  options:
+    - the conceptual model to the logical model
+    - the logical model to the physical model
+    - requirements to the conceptual model
+    - the physical model to the logical model
+  answer: 0
+  explanation: "The ER model is conceptual and DBMS-independent; the relational model is the logical design. Physical design (storage, indexes) comes after."
+
+- id: w6-q-tf-weak-existence
+  type: true_false
+  topics: [er.weak]
+  difficulty: 2
+  tags: [trap]
+  prompt: "If every section must belong to a course, SECTION has to be a weak entity type."
+  answer: false
+  explanation: "That's existence dependency only. SECTION is weak only if its key also borrows COURSE's key."
+
+- id: w6-q-tf-er-dbms
+  type: true_false
+  topics: [er.design]
+  difficulty: 1
+  prompt: "An ER diagram already fixes which DBMS the database will be built on."
+  answer: false
+  explanation: "The ER model is conceptual and has no link to any DBMS."
+
+- id: w6-q-order-phases
+  type: order_steps
+  topics: [er.design]
+  difficulty: 1
+  style: direct
+  prompt: Put the phases of database design in order.
+  items: [Requirements gathering, Conceptual design (ER model), Logical design (relational model), Physical design]
+  explanation: "Each phase refines the previous one, from what users need to how the data is stored."
+
+- id: w6-q-order-mapping
+  type: order_steps
+  topics: [er.mapping]
+  difficulty: 2
+  style: direct
+  prompt: Put the ER-to-relational mapping steps in the textbook's order.
+  items:
+    - Regular (strong) entity types
+    - Weak entity types
+    - Binary 1:1 relationships
+    - Binary 1:N relationships
+    - Binary M:N relationships
+    - Multivalued attributes
+    - N-ary relationships
+  explanation: "Entities first (strong, then weak, since a weak entity needs its owner's key), then relationships from 1:1 to M:N, then multivalued attributes and n-ary relationships."
+
+- id: w6-q-short-partial-key
+  type: short
+  topics: [er.weak]
+  difficulty: 1
+  prompt: What is the name for the attribute of a weak entity type that tells apart the weak entities belonging to the same owner? (Either name is accepted.)
+  answers: [partial key, discriminator, a partial key, a discriminator]
+  explanation: "It's drawn with a dashed underline, e.g. a dependant's first name."
+
+- id: w6-q-short-double-line
+  type: short
+  topics: [er.participation]
+  difficulty: 1
+  prompt: In Chen notation, which kind of participation does a double line between an entity type and a relationship show?
+  answers: [total, total participation]
+  explanation: "Total participation (existence dependency): every entity of that type takes part."
+
+- id: w6-q-short-recursive
+  type: short
+  topics: [er.recursive]
+  difficulty: 1
+  prompt: What do we call a relationship type in which the same entity type participates more than once, in different roles?
+  answers: [recursive, recursive relationship, a recursive relationship, unary, self-referencing]
+  explanation: "Supervision (supervisor and subordinate, both EMPLOYEE) is the lecture's example."
+
+- id: w6-q-sql-supervisor
+  type: sql
+  topics: [er.mapping, er.recursive]
+  difficulty: 2
+  dataset: university-staff
+  show: { diagram: true, tables: [EMPLOYEE] }
+  prompt: "The recursive Supervision relationship became s_sin in EMPLOYEE. Write a query listing each supervised employee's fname together with their supervisor's fname (two columns, employee first)."
+  reference: |
+    SELECT e.fname, s.fname
+    FROM EMPLOYEE e JOIN EMPLOYEE s ON e.s_sin = s.SIN;
+  hints: ["Join EMPLOYEE to a second copy of itself, renamed."]
+  explanation: "A recursive FK is followed with a self-join: one copy plays the subordinate, the other the supervisor. Employee 111 has no supervisor, so the inner join leaves her out."
+
+- id: w6-q-sql-locations
+  type: sql
+  topics: [er.mapping, er.attributes]
+  difficulty: 2
+  dataset: university-staff
+  show: { diagram: true, tables: [DEPARTMENT, DEP_LOCATION] }
+  prompt: "The multivalued location became DEP_LOCATION. Write a query giving each department's dname and how many locations it has."
+  reference: |
+    SELECT dname, COUNT(location)
+    FROM DEPARTMENT NATURAL JOIN DEP_LOCATION
+    GROUP BY dnumber, dname;
+  explanation: "Join each department to its location rows and count them per department. Group by dnumber too, in case two departments ever shared a name."

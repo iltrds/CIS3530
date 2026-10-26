@@ -1,0 +1,26 @@
+id: w6-stream-draft
+title: A first draft of a music-streaming design
+width: 900
+height: 230
+entities:
+  - name: LISTENER
+    x: 200
+    y: 160
+    attrs:
+      - { name: listener_id, key: true }
+      - { name: name }
+      - { name: followers, multi: true }
+  - name: PLAYLIST
+    x: 700
+    y: 160
+    attrs:
+      - { name: playlist_id, key: true }
+      - { name: title }
+      - { name: tracks, multi: true }
+relationships:
+  - name: Creates
+    x: 450
+    y: 160
+    ends:
+      - { entity: LISTENER, card: "1" }
+      - { entity: PLAYLIST, card: N, total: true }

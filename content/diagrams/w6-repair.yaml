@@ -1,0 +1,28 @@
+id: w6-repair
+title: Garage
+width: 900
+height: 330
+entities:
+  - name: MECHANIC
+    x: 170
+    y: 190
+    attrs:
+      - { name: mech_id, key: true }
+      - { name: name, parts: [first, last] }
+      - { name: phone, multi: true }
+  - name: VEHICLE
+    x: 720
+    y: 190
+    attrs:
+      - { name: vin, key: true }
+      - { name: plate }
+      - { name: make }
+      - { name: year }
+relationships:
+  - name: Repairs
+    x: 445
+    y: 190
+    attrs: [{ name: hours }]
+    ends:
+      - { entity: MECHANIC, card: M, total: true }
+      - { entity: VEHICLE, card: N }

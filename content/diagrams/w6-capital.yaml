@@ -1,0 +1,25 @@
+id: w6-capital
+title: Countries and capitals
+width: 780
+height: 200
+entities:
+  - name: COUNTRY
+    x: 150
+    y: 130
+    attrs:
+      - { name: code, key: true }
+      - { name: name }
+  - name: CITY
+    x: 610
+    y: 130
+    attrs:
+      - { name: city_id, key: true }
+      - { name: name }
+      - { name: population }
+relationships:
+  - name: Capital
+    x: 380
+    y: 130
+    ends:
+      - { entity: COUNTRY, card: "1", total: true }
+      - { entity: CITY, card: "1" }

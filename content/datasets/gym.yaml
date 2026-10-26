@@ -1,0 +1,84 @@
+id: gym
+title: Gym (a schema to turn back into ER)
+description: >
+  A relational schema for reverse-engineering practice. Read the keys, foreign keys, NOT NULL and UNIQUE
+  constraints to recover the ER design: CLASS.tid is NOT NULL, LOCKER.mid is UNIQUE, and PLAN's key includes mid.
+source: Practice schema written for this site
+tables:
+  - name: MEMBER
+    columns:
+      - { name: mid, pk: true }
+      - { name: name }
+      - { name: joined, type: date }
+    rows:
+      - [G1, Ava Moreau, "2025-01-06"]
+      - [G2, Kofi Mensah, "2025-09-15"]
+      - [G3, Mei Tanaka, "2026-02-01"]
+  - name: MEMBER_EMAIL
+    columns:
+      - { name: mid, pk: true }
+      - { name: email, pk: true }
+    foreignKeys:
+      - { columns: [mid], references: { table: MEMBER, columns: [mid] } }
+    rows:
+      - [G1, ava@example.com]
+      - [G1, ava.m@example.org]
+      - [G2, kofi@example.com]
+  - name: TRAINER
+    columns:
+      - { name: tid, pk: true }
+      - { name: name }
+      - { name: mentor_tid }
+    foreignKeys:
+      - { columns: [mentor_tid], references: { table: TRAINER, columns: [tid] } }
+    rows:
+      - [T1, Rosa Diaz, null]
+      - [T2, Sven Berg, T1]
+      - [T3, Aisha Khan, T1]
+  - name: CLASS
+    columns:
+      - { name: cid, pk: true }
+      - { name: title }
+      - { name: room }
+      - { name: tid, notNull: true }
+    foreignKeys:
+      - { columns: [tid], references: { table: TRAINER, columns: [tid] } }
+    rows:
+      - [C1, Spin, Studio A, T2]
+      - [C2, Yoga, Studio B, T3]
+      - [C3, Boxing, Studio A, T2]
+  - name: ENROLMENT
+    columns:
+      - { name: mid, pk: true }
+      - { name: cid, pk: true }
+      - { name: since, type: date }
+    foreignKeys:
+      - { columns: [mid], references: { table: MEMBER, columns: [mid] } }
+      - { columns: [cid], references: { table: CLASS, columns: [cid] } }
+    rows:
+      - [G1, C1, "2025-02-01"]
+      - [G1, C2, "2025-03-10"]
+      - [G2, C1, "2025-09-20"]
+  - name: PLAN
+    columns:
+      - { name: mid, pk: true }
+      - { name: start_date, type: date, pk: true }
+      - { name: price, type: numeric }
+    foreignKeys:
+      - { columns: [mid], references: { table: MEMBER, columns: [mid] } }
+    rows:
+      - [G1, "2025-01-06", 49.99]
+      - [G1, "2026-01-06", 54.99]
+      - [G2, "2025-09-15", 39.99]
+  - name: LOCKER
+    columns:
+      - { name: lno, type: int, pk: true }
+      - { name: floor, type: int }
+      - { name: mid }
+    unique: [[mid]]
+    foreignKeys:
+      - { columns: [mid], references: { table: MEMBER, columns: [mid] } }
+    rows:
+      - [1, 1, G1]
+      - [2, 1, null]
+      - [3, 2, G3]

@@ -1,0 +1,15 @@
+id: w6-attr-kinds
+title: One entity type, every kind of attribute
+caption: "student_id is the key (underlined); name is composite; email is multivalued (double oval); age is derived from dob (dashed here, as in the textbook; the course draws it like any other attribute)."
+width: 660
+height: 270
+entities:
+  - name: STUDENT
+    x: 300
+    y: 200
+    attrs:
+      - { name: student_id, key: true }
+      - { name: name, parts: [first, last] }
+      - { name: email, multi: true }
+      - { name: dob, side: right }
+      - { name: age, derived: true, side: right }
