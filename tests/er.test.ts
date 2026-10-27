@@ -53,3 +53,34 @@ describe("ER diagrams", () => {
     expect(renderEr(d).problems).toEqual(["relationship R links to unknown entity B"]);
   });
 });
+
+describe("relationship instances", () => {
+  test("the Week 6 quiz's instance question: only the third choice is possible", async () => {
+    const { judgeInstance } = await import("../scripts/lib/instances.ts");
+    const d = ErDiagram.parse(Bun.YAML.parse(await Bun.file(dir + "w6-abc-1.yaml").text()));
+    const sets = { A: ["a1", "a2"], B: ["b1", "b2"], C: ["c1", "c2"] };
+    const choices: Record<string, [string, string][]>[] = [
+      {},
+      { R: [["a2", "b1"], ["a2", "b2"]], S: [["b1", "c1"], ["b2", "c2"]] },
+      { R: [["a1", "b1"]], S: [["b1", "c1"], ["b2", "c2"]] },
+      { R: [["a1", "b1"], ["a2", "b2"]], S: [["b1", "c1"], ["b1", "c2"]] },
+    ];
+    const problems: string[] = [];
+    const verdicts = choices.map((c) => judgeInstance(d, ["R", "S"], sets, c, problems));
+    expect(problems).toEqual([]);
+    expect(verdicts.map((v) => v.possible)).toEqual([false, false, true, false]);
+    expect(verdicts[0]!.reasons[0]).toContain("c1 and c2 take part in no S instance");
+    expect(verdicts[1]!.reasons[0]).toContain("a2 is related to b1 and b2 through R");
+    expect(verdicts[3]!.reasons[0]).toContain("b1 is related to c1 and c2 through S");
+  });
+
+  test("authoring mistakes are reported", async () => {
+    const { judgeInstance } = await import("../scripts/lib/instances.ts");
+    const d = ErDiagram.parse(Bun.YAML.parse(await Bun.file(dir + "w6-abc-1.yaml").text()));
+    const problems: string[] = [];
+    judgeInstance(d, ["R"], { A: ["a1"], B: ["b1"] }, { R: [["a1", "b9"], ["a1", "b9"]], T: [] }, problems);
+    expect(problems).toContain("R instance (a1, b9): b9 isn't in the set for B");
+    expect(problems).toContain("R lists (a1, b9) twice");
+    expect(problems).toContain("instances for T, which isn't one of the question's relationships");
+  });
+});

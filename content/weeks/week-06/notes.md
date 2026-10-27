@@ -61,7 +61,15 @@ When the **same entity type takes part twice** in one relationship type, the rel
 - Supervision: an EMPLOYEE in the role *supervisor* supervises EMPLOYEEs in the role *subordinate*.
 - A course is a prerequisite of other courses; a person is the parent of other people; a student is another student's buddy.
 
-A recursive relationship is still **binary**: it has two participating *roles*, both filled by the same entity type.
+A recursive relationship is still **binary**: it has two participating *roles*, both filled by the same entity type. Being recursive says nothing about its cardinality ratio; work it out from the roles as for any relationship:
+
+| Recursive relationship | Ratio | Why |
+|---|---|---|
+| Supervision | 1:N | a supervisor has many subordinates; each subordinate has one supervisor |
+| Course and prerequisite | M:N | a course can need several prerequisites, and be a prerequisite for several courses |
+| User follows user (X, Instagram) | M:N | you follow many accounts and many follow you |
+| Person and biological mother | 1:N | a mother can have many children; each person has one mother |
+| Person and current spouse | 1:1 | at most one in each direction |
 
 ## Structural constraints
 
@@ -115,6 +123,23 @@ Examples: a section of a course; a driver's licence; an employee's dependants. I
 **Existence-dependent is not the same as weak.** Give SECTION a key of its own (a surrogate `class_code`) and it is a regular entity type, even if every section must still belong to a course: its participation is total, but its key doesn't borrow COURSE's key.
 
 {{er:w6-course-strong}}
+
+## Relationship instance diagrams
+
+An **instance diagram** draws a snapshot instead of the design: an oval per entity set (a1, a2, …) and per relationship set (r1, r2, …), with each relationship instance joining one entity from each side. A quiz question gives a model and several snapshots and asks **which are possible**. Check each line of the model in turn:
+
+1. **A 1 next to entity type E**: no entity on the other side may be linked to two different Es.
+2. **A double line from E**: every entity in E's set must appear in at least one instance.
+3. **N, M and single lines** never rule anything out: "many" and "none" are both allowed.
+
+For A —N— R —1— B —N— S —1— C with C total (the Week 6 quiz's model):
+
+- a snapshot with no instances at all fails rule 2 (every C needs a B),
+- a2 linked to both b1 and b2 fails rule 1 for R (one B per A),
+- b1 linked to both c1 and c2 fails rule 1 for S (one C per B),
+- a1–b1, b1–c1, b2–c2 is possible: a2 and nothing else is unlinked, and that's allowed because A's line is single.
+
+Read statements about a model the same way. "A professor teaches **1 or more** students" needs both an N (many allowed) **and** a double line on the professor's side; an N alone means "any number, including zero".
 
 ## The whole picture: University Staff
 
@@ -203,6 +228,9 @@ The lecture's COURSE/SECTION example shows the weak-vs-strong line. With SECTION
 ## Common mistakes
 
 - Reading the cardinality from the wrong end. The number next to an entity counts **that** entity.
+- Reading N as "one or more". N is a maximum (many); the minimum comes from the line: single means zero is fine.
+- Giving a data type (string, integer) when asked what *type of attribute* something is. The answer is simple, composite, multivalued, derived, key…
+- Assuming a recursive relationship is 1:N. Followers and prerequisites are M:N.
 - Treating "must" as true without a double line.
 - Putting a relationship attribute (hours, start date) on an entity.
 - Making something that has its own attributes, or that relates to other things, a multivalued attribute instead of an entity (e.g. `{followers}` instead of a recursive relationship).

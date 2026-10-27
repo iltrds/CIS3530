@@ -159,7 +159,7 @@
   topics: [er.cardinality, er.modeling]
   difficulty: 1
   points: 3
-  tags: [quiz-style]
+  tags: [quiz-style, ratio-match]
   prompt: Match each requirement to the cardinality ratio of the relationship it describes.
   left:
     - "A person holds at most one passport, and a passport belongs to one person."
@@ -917,6 +917,7 @@
   type: short
   topics: [er.weak]
   difficulty: 1
+  tags: [term]
   prompt: What is the name for the attribute of a weak entity type that tells apart the weak entities belonging to the same owner? (Either name is accepted.)
   answers: [partial key, discriminator, a partial key, a discriminator]
   explanation: "It's drawn with a dashed underline, e.g. a dependant's first name."
@@ -925,6 +926,7 @@
   type: short
   topics: [er.participation]
   difficulty: 1
+  tags: [term]
   prompt: In Chen notation, which kind of participation does a double line between an entity type and a relationship show?
   answers: [total, total participation]
   explanation: "Total participation (existence dependency): every entity of that type takes part."
@@ -933,6 +935,7 @@
   type: short
   topics: [er.recursive]
   difficulty: 1
+  tags: [term]
   prompt: What do we call a relationship type in which the same entity type participates more than once, in different roles?
   answers: [recursive, recursive relationship, a recursive relationship, unary, self-referencing]
   explanation: "Supervision (supervisor and subordinate, both EMPLOYEE) is the lecture's example."
@@ -962,3 +965,585 @@
     FROM DEPARTMENT NATURAL JOIN DEP_LOCATION
     GROUP BY dnumber, dname;
   explanation: "Join each department to its location rows and count them per department. Group by dnumber too, in case two departments ever shared a name."
+
+# ---------------------------------------------------------------- Quiz 5 style, Section I: one abstract model (A, B, C; R, S), statements that give it a meaning
+
+- id: w6-q-abc1-tf-1
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If A represents CARS and B represents OWNERS, then this ER model states that a car can have two owners. True or false?
+  answer: false
+  explanation: "The 1 next to B on R counts owners per car: at most one."
+
+- id: w6-q-abc1-tf-2
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 1
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If A represents CARS and B represents OWNERS, then this ER model states that an owner can own several cars. True or false?
+  answer: true
+  explanation: "The N next to A counts cars per owner: many are allowed."
+
+- id: w6-q-abc1-tf-3
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style, trap]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If A represents CARS and B represents OWNERS, then this ER model states that every car must have an owner. True or false?
+  answer: false
+  explanation: "A's line to R is single (partial participation), so a car can have no owner. The 1 only caps it at one."
+
+- id: w6-q-abc1-tf-4
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If B represents OWNERS and C represents CITIES they live in, then this ER model states that every city in the database has at least one owner living in it. True or false?
+  answer: true
+  explanation: "C's line to S is double: total participation, so every city takes part in S at least once."
+
+- id: w6-q-abc1-tf-5
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If B represents OWNERS and C represents CITIES they live in, then this ER model states that an owner can't be stored without a city. True or false?
+  answer: false
+  explanation: "B's line to S is single (partial), so an owner may be in no S instance at all."
+
+- id: w6-q-abc1-tf-6
+  type: true_false
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [er-abc, quiz-style, trap]
+  prompt: |
+    {{er:w6-abc-1}}
+
+    If B represents OWNERS and C represents CITIES they live in, then this ER model states that an owner lives in at most one city, or in none. True or false?
+  answer: true
+  explanation: "The 1 next to C gives at most one city per owner, and B's single line lets an owner have none."
+
+- id: w6-q-abc2-tf-1
+  type: true_false
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If A represents COUNTRIES and B represents CITIES (R: "has as its capital"), then this ER model states that every country has exactly one capital. True or false?
+  answer: true
+  explanation: "At most one: the 1 next to B. At least one: A's double line to R. Together, exactly one."
+
+- id: w6-q-abc2-tf-2
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If A represents COUNTRIES and B represents CITIES (R: "has as its capital"), then this ER model states that a city can be the capital of two countries. True or false?
+  answer: false
+  explanation: "The 1 next to A counts countries per city: at most one."
+
+- id: w6-q-abc2-tf-3
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 1
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If A represents COUNTRIES and B represents CITIES (R: "has as its capital"), then this ER model states that every city must be a capital. True or false?
+  answer: false
+  explanation: "B's line to R is single, so most cities can be in no R instance."
+
+- id: w6-q-abc2-tf-4
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 2
+  tags: [er-abc, quiz-style, trap]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If B represents CITIES and C represents AIRLINES that serve them, then this ER model states that an airline can serve several cities. True or false?
+  answer: true
+  explanation: "Cities per airline is the number next to B, which is M: many."
+
+- id: w6-q-abc2-tf-5
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If B represents CITIES and C represents AIRLINES that serve them, then this ER model states that every airline in the database serves at least one city. True or false?
+  answer: false
+  explanation: "C's line to S is single (partial). It's B whose line is double: every city is served by at least one airline."
+
+- id: w6-q-abc2-tf-6
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-2}}
+
+    If B represents CITIES and C represents AIRLINES that serve them, then this ER model states that a city can't exist in this database unless some airline serves it. True or false?
+  answer: true
+  explanation: "B's line to S is double: total participation (existence dependency)."
+
+- id: w6-q-abc3-tf-1
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 1
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-3}}
+
+    If A represents STUDENTS and B represents CLUBS, then this ER model states that a student can join several clubs. True or false?
+  answer: true
+  explanation: "Clubs per student is the number next to B: N, many."
+
+- id: w6-q-abc3-tf-2
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-3}}
+
+    If A represents STUDENTS and B represents CLUBS, then this ER model states that a club must have at least one student. True or false?
+  answer: false
+  explanation: "B's line to R is single (partial): a club can have no members."
+
+- id: w6-q-abc3-tf-3
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-3}}
+
+    If B represents CLUBS and C represents EVENTS the clubs host, then this ER model states that an event can be hosted by two clubs. True or false?
+  answer: false
+  explanation: "Clubs per event is the number next to B on S: 1."
+
+- id: w6-q-abc3-tf-4
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-3}}
+
+    If B represents CLUBS and C represents EVENTS the clubs host, then this ER model states that an event cannot exist in this database without a host club. True or false?
+  answer: true
+  explanation: "C's line to S is double: total participation."
+
+- id: w6-q-abc3-tf-5
+  type: true_false
+  topics: [er.reading, er.participation, er.cardinality]
+  difficulty: 3
+  tags: [er-abc, quiz-style, trap]
+  prompt: |
+    {{er:w6-abc-3}}
+
+    If B represents CLUBS and C represents EVENTS the clubs host, then this ER model states that every club hosts one or more events. True or false?
+  answer: false
+  explanation: "The N lets a club host many events, but B's line to S is single, so a club may host none. \"One or more\" needs a double line."
+
+- id: w6-q-abc4-tf-1
+  type: true_false
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-4}}
+
+    If A represents CUSTOMERS and B represents ORDERS, then this ER model states that every order belongs to exactly one customer. True or false?
+  answer: true
+  explanation: "The 1 next to A gives at most one customer per order; B's double line to R gives at least one."
+
+- id: w6-q-abc4-tf-2
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-4}}
+
+    If A represents CUSTOMERS and B represents ORDERS, then this ER model allows a customer to be stored without having placed any order. True or false?
+  answer: false
+  explanation: "A's line to R is double: every customer takes part in at least one R instance."
+
+- id: w6-q-abc4-tf-3
+  type: true_false
+  topics: [er.reading, er.participation]
+  difficulty: 2
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-4}}
+
+    If B represents ORDERS and C represents INVOICES, then this ER model states that every order must have an invoice. True or false?
+  answer: false
+  explanation: "B's line to S is single (partial). C's is double: every invoice is for an order."
+
+- id: w6-q-abc4-tf-4
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 1
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-4}}
+
+    If B represents ORDERS and C represents INVOICES, then this ER model states that an invoice can cover two orders. True or false?
+  answer: false
+  explanation: "Orders per invoice is the number next to B on S: 1."
+
+- id: w6-q-abc4-tf-5
+  type: true_false
+  topics: [er.reading, er.cardinality]
+  difficulty: 1
+  tags: [er-abc, quiz-style]
+  prompt: |
+    {{er:w6-abc-4}}
+
+    If A represents CUSTOMERS and B represents ORDERS, then this ER model states that a customer can place several orders. True or false?
+  answer: true
+  explanation: "Orders per customer is the number next to B on R: N."
+
+# ---------------------------------------------------------------- Quiz 5 style, Section I: which relationship instances are possible
+
+- id: w6-q-inst-abc1-1
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 2
+  tags: [quiz-style]
+  diagram: w6-abc-1
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a2, b1]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1], [a1, b2]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1]], S: [[b1, c1]] }
+    - instances: { R: [[a2, b2]], S: [[b1, c1], [b1, c2]] }
+  explanation: "Check each line of the model: the 1 next to B (one B per A), the 1 next to C (one C per B), and C's double line (every C appears in S). Partial participation never rules an instance out."
+
+- id: w6-q-inst-abc1-2
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style, all-none-option]
+  diagram: w6-abc-1
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2], C: [c1, c2] }
+  candidates:
+    - instances: { S: [[b1, c1]] }
+    - instances: { R: [[a1, b1], [a2, b2]], S: [[b1, c1], [b2, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1], [a1, b2]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b2]], S: [[b2, c2]] }
+
+- id: w6-q-inst-abc2-1
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style]
+  diagram: w6-abc-2
+  relationships: [R, S]
+  multi: true
+  sets: { A: [a1, a2], B: [b1, b2, b3], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a2, b2]], S: [[b1, c1], [b2, c1], [b3, c2]] }
+    - instances: { R: [[a1, b1], [a2, b1]], S: [[b1, c1], [b2, c1], [b3, c1]] }
+    - instances: { R: [[a1, b3], [a2, b1]], S: [[b1, c1], [b1, c2], [b2, c2], [b3, c1], [b3, c2]] }
+    - instances: { R: [[a1, b1]], S: [[b1, c1], [b2, c2], [b3, c2]] }
+  explanation: "R is 1:1 with A total: every A has exactly one B and no B has two As. S is M:N, so any pairs are fine as long as every B appears (B's double line)."
+
+- id: w6-q-inst-abc2-2
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 2
+  tags: [quiz-style]
+  diagram: w6-abc-2
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2, b3], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a2, b2]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b2], [a2, b3]], S: [[b1, c2], [b2, c2], [b3, c1], [b3, c2]] }
+    - instances: { R: [[a1, b1], [a1, b2], [a2, b3]], S: [[b1, c1], [b2, c1], [b3, c1]] }
+    - instances: { R: [[a2, b2]], S: [[b1, c1], [b2, c1], [b3, c2]] }
+
+- id: w6-q-inst-abc3-1
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 2
+  tags: [quiz-style]
+  diagram: w6-abc-3
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a1, b2], [a2, b1]], S: [[b1, c1], [b1, c2]] }
+    - instances: { R: [[a1, b1]], S: [[b1, c1], [b2, c1], [b2, c2]] }
+    - instances: { S: [[b2, c2]] }
+    - instances: { R: [[a1, b2], [a2, b2]], S: [[b1, c1]] }
+
+- id: w6-q-inst-abc3-2
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  diagram: w6-abc-3
+  relationships: [R, S]
+  multi: true
+  sets: { A: [a1, a2], B: [b1, b2], C: [c1, c2] }
+  candidates:
+    - instances: { S: [[b1, c1], [b2, c2]] }
+      why: "R having no instances at all is fine: both sides of R are partial."
+    - instances: { R: [[a1, b1], [a2, b1], [a2, b2]], S: [[b2, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1]], S: [[b1, c1], [b2, c1], [b2, c2]] }
+    - instances: { R: [[a1, b2]], S: [[b1, c2]] }
+
+- id: w6-q-inst-abc4-1
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style]
+  diagram: w6-abc-4
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2, b3], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a1, b2], [a2, b3]], S: [[b1, c1], [b3, c2]] }
+    - instances: { R: [[a1, b1], [a2, b1], [a2, b2], [a2, b3]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1], [a1, b2], [a1, b3]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1], [a2, b2], [a2, b3]], S: [[b1, c1], [b1, c2]] }
+    - instances: { R: [[a1, b1], [a2, b2]], S: [[b1, c1], [b2, c2]] }
+
+- id: w6-q-inst-abc4-2
+  type: instance_choices
+  topics: [er.reading, er.cardinality, er.participation]
+  difficulty: 3
+  tags: [quiz-style, all-none-option]
+  diagram: w6-abc-4
+  relationships: [R, S]
+  sets: { A: [a1, a2], B: [b1, b2, b3], C: [c1, c2] }
+  candidates:
+    - instances: { R: [[a1, b1], [a2, b2], [a2, b3]], S: [[b1, c1]] }
+    - instances: { R: [[a1, b1], [a1, b2], [a1, b3]], S: [[b1, c1], [b2, c2]] }
+    - instances: { R: [[a1, b1], [a2, b2], [a1, b3]], S: [[b2, c1], [b3, c1], [b1, c2]] }
+    - instances: { R: [[a1, b1], [a2, b1], [a2, b2], [a1, b3]], S: [[b1, c1], [b2, c2]] }
+
+# ---------------------------------------------------------------- Quiz 5 style, Section II: name the kind of attribute
+
+- id: w6-q-kind-skills
+  type: short
+  style: conceptual
+  topics: [er.attributes]
+  difficulty: 1
+  tags: [attr-kind, quiz-style]
+  prompt: "Assume an employee has a SIN, a name, and may list one or more skills, e.g. 'SQL', 'Excel' and 'Spanish'. What type of attribute is skills?"
+  answers: [multivalued, multi-valued, multivalued attribute, multi-valued attribute, multi valued]
+  explanation: "Several values for one entity: multivalued, drawn as a double oval. (Its data type might be text, but the question is about the ER classification.)"
+
+- id: w6-q-kind-address
+  type: short
+  style: conceptual
+  topics: [er.attributes]
+  difficulty: 1
+  tags: [attr-kind, quiz-style]
+  prompt: "Assume each customer has exactly one mailing address, recorded as a street, a city and a postal code, each of which we may search on separately. What type of attribute is mailing address?"
+  answers: [composite, composite attribute]
+  explanation: "One value made of meaningful parts: composite, drawn as an oval with its parts' ovals hanging off it."
+
+- id: w6-q-kind-age
+  type: short
+  style: conceptual
+  topics: [er.attributes]
+  difficulty: 1
+  tags: [attr-kind, quiz-style]
+  prompt: "Assume a patient's date of birth is stored, and the system shows each patient's age, worked out from it. What type of attribute is age?"
+  answers: [derived, derived attribute]
+  explanation: "Computable from another attribute: derived (the course draws it with no special notation; the textbook uses a dashed oval)."
+
+- id: w6-q-kind-studentno
+  type: short
+  style: conceptual
+  topics: [er.keys, er.attributes]
+  difficulty: 1
+  tags: [attr-kind, quiz-style]
+  prompt: "Assume every student has a student number, and no two students ever share one. What type of attribute is student number?"
+  answers: [key, key attribute, a key attribute, identifier]
+  explanation: "Its value is different for every entity: a key attribute, underlined in the diagram."
+
+- id: w6-q-kind-seat
+  type: short
+  style: conceptual
+  topics: [er.weak, er.keys]
+  difficulty: 2
+  tags: [attr-kind, quiz-style, trap]
+  prompt: "Assume a theatre's seats are labelled A1, A2, … in every theatre, so only a theatre plus a seat label identifies a seat, and a seat can't exist without its theatre. In the SEAT entity type, what type of attribute is the seat label?"
+  answers: [partial key, a partial key, discriminator, a discriminator]
+  explanation: "SEAT is a weak entity type; the label distinguishes the seats of one theatre, so it's a partial key (dashed underline)."
+
+- id: w6-q-kind-price
+  type: short
+  style: conceptual
+  topics: [er.attributes]
+  difficulty: 1
+  tags: [attr-kind, quiz-style]
+  prompt: "Assume a product stores a base price and a tax rate, and its total price is always the base price plus tax. What type of attribute is total price?"
+  answers: [derived, derived attribute]
+  explanation: "It's computed from other stored attributes, so it's derived."
+
+- id: w6-q-kind-phones
+  type: short
+  style: conceptual
+  topics: [er.attributes]
+  difficulty: 3
+  tags: [attr-kind, quiz-style, trap]
+  prompt: "Assume a contact can have several phone numbers, and each phone number is stored as an area code plus a local number. Phone number is both of which two types of attribute? (e.g. answer: *X and Y*)"
+  answers: [multivalued and composite, composite and multivalued, multi-valued and composite, composite and multi-valued, composite multivalued, multivalued composite]
+  explanation: "Several per contact (multivalued) and each made of parts (composite): a double oval with its parts hanging off it. The two classifications are independent."
+
+# ---------------------------------------------------------------- Quiz 5 style, Section II: complete the term (recall)
+
+- id: w6-q-term-existence
+  type: short
+  topics: [er.participation]
+  difficulty: 1
+  tags: [term]
+  prompt: "Total participation is also known as ______."
+  answers: [existence dependency, existence-dependency, existence dependence]
+  explanation: "And the other way round: existence dependency is total participation, drawn as a double line."
+
+- id: w6-q-term-discriminator
+  type: short
+  topics: [er.weak]
+  difficulty: 1
+  tags: [term]
+  prompt: "The partial key of a weak entity type is also called its ______."
+  answers: [discriminator]
+  explanation: "It's drawn with a dashed underline."
+
+- id: w6-q-term-degree
+  type: short
+  topics: [er.relationships]
+  difficulty: 1
+  tags: [term]
+  prompt: "The number of entity types that participate in a relationship type is its ______."
+  answers: [degree, degree of the relationship]
+  explanation: "Two makes a binary relationship; a recursive relationship is also binary (two roles)."
+
+- id: w6-q-term-cardinality
+  type: short
+  topics: [er.cardinality]
+  difficulty: 1
+  tags: [term]
+  prompt: "The structural constraint written as 1:1, 1:N or M:N is the relationship's ______."
+  answers: [cardinality ratio, cardinality, multiplicity, relationship multiplicity, cardinality ratio constraint]
+  explanation: "The cardinality ratio (also called relationship multiplicity). The other structural constraint is participation."
+
+- id: w6-q-term-identifying
+  type: short
+  topics: [er.weak]
+  difficulty: 1
+  tags: [term]
+  prompt: "The relationship type that links a weak entity type to its owner is called its ______ relationship."
+  answers: [identifying, identifying relationship]
+  explanation: "Drawn as a double diamond; the weak entity's participation in it is always total."
+
+# ---------------------------------------------------------------- Quiz 5 style, Section II: cardinality ratios of real relationships
+
+- id: w6-q-ratio-2
+  type: matching
+  topics: [er.cardinality, er.recursive, er.modeling]
+  difficulty: 2
+  points: 2
+  tags: [ratio-match, quiz-style, trap]
+  prompt: "Match the cardinality ratio of each relationship. Cardinality ratios can be 1:1, 1:N or M:N."
+  left:
+    - "Person and (biological) mother, both PERSON"
+    - "Reddit user and the subreddits they join"
+    - "Country and its capital city"
+  right: ["1:1", "1:N", "M:N"]
+  answer: [1, 2, 0]
+  explanation: "A mother can have many children, but each person has one biological mother: 1:N, even though it's recursive. Users join many subreddits and subreddits have many users. A country has one capital and a city is the capital of at most one country."
+
+- id: w6-q-ratio-3
+  type: matching
+  topics: [er.cardinality, er.recursive, er.modeling]
+  difficulty: 2
+  points: 2
+  tags: [ratio-match, quiz-style, trap]
+  prompt: "Match the cardinality ratio of each relationship. Cardinality ratios can be 1:1, 1:N or M:N."
+  left:
+    - "Song and the songs it samples, both SONG"
+    - "YouTube channel and the videos uploaded to it"
+    - "Person and their current spouse, both PERSON"
+  right: ["1:1", "1:N", "M:N"]
+  answer: [2, 1, 0]
+  explanation: "A song can sample many songs and be sampled by many: M:N, recursive. A channel has many videos; a video is on one channel. A person has at most one current spouse, in both directions."
+
+- id: w6-q-ratio-4
+  type: matching
+  topics: [er.cardinality, er.recursive, er.modeling]
+  difficulty: 2
+  points: 2
+  tags: [ratio-match, quiz-style]
+  prompt: "Match the cardinality ratio of each relationship. Cardinality ratios can be 1:1, 1:N or M:N."
+  left:
+    - "Employee and the employee who supervises them"
+    - "Actor and the movies they appear in"
+    - "Car and the licence plate currently on it"
+  right: ["1:1", "1:N", "M:N"]
+  answer: [1, 2, 0]
+  explanation: "A supervisor has many subordinates, each with one supervisor (Supervision, from the lecture). Actors appear in many movies with many actors. A car carries one plate at a time and a plate is on one car."
+
+- id: w6-q-ratio-5
+  type: matching
+  topics: [er.cardinality, er.recursive, er.modeling]
+  difficulty: 2
+  points: 2
+  tags: [ratio-match, quiz-style, trap]
+  prompt: "Match the cardinality ratio of each relationship. Cardinality ratios can be 1:1, 1:N or M:N."
+  left:
+    - "Instagram account and the accounts it follows"
+    - "Instagram account and the posts it publishes"
+    - "Hospital patient and the bed they're in right now"
+  right: ["1:1", "1:N", "M:N"]
+  answer: [2, 1, 0]
+  explanation: "Following is recursive and many in both directions: you follow many accounts and many follow you. A post is published by one account; an account publishes many. One bed per patient, one patient per bed."
+
+- id: w6-q-ratio-6
+  type: matching
+  topics: [er.cardinality, er.recursive, er.modeling]
+  difficulty: 2
+  points: 2
+  tags: [ratio-match, quiz-style, trap]
+  prompt: "Match the cardinality ratio of each relationship. Cardinality ratios can be 1:1, 1:N or M:N."
+  left:
+    - "Program and the programs it was forked from, both GITHUB_REPO (a fork has one parent)"
+    - "Student and the classmates they have studied with, both STUDENT"
+    - "Department and its current head"
+  right: ["1:1", "1:N", "M:N"]
+  answer: [1, 2, 0]
+  explanation: "A repo can be forked many times, but each fork has one parent: recursive 1:N. Studying together is recursive and many in both directions. A department has one head and a person heads at most one department."

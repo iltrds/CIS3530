@@ -35,12 +35,38 @@ export function assemble(bp: Blueprint, pool: CQuestion[], seed: number): { item
   const used = new Set<string>();
   const items: QuizItem[] = [];
   const shortfalls: string[] = [];
-  for (const slot of bp.slots) {
-    let cands = pool.filter((q) => slot.types.includes(q.type) && !used.has(q.id));
+  const base = (slot: Blueprint["slots"][number]) => {
+    let cands = pool.filter((q) => slot.types.includes(q.type));
     if (slot.topics.length) cands = cands.filter((q) => q.topics.some((t) => slot.topics.includes(t)));
     if (slot.requireTags.length) cands = cands.filter((q) => q.tags.some((t) => slot.requireTags.includes(t)));
     const style = slot.style ?? bp.style ?? "any";
     if (style !== "any") cands = cands.filter((q) => q.style === style);
+    return cands;
+  };
+  // a diagram group's slots share one ER diagram: pick one that can fill every slot in the group
+  const groupDiagram = new Map<string, string | null>();
+  const diagramOf = (group: string) => {
+    if (!groupDiagram.has(group)) {
+      const slots = bp.slots.filter((s) => s.diagramGroup === group);
+      const ids = [...new Set(pool.flatMap((q) => q.tags.filter((t) => t.startsWith("diagram:"))))].sort();
+      const fits = ids.filter((id) => {
+        const taken = new Set<string>();
+        return slots.every((s) => {
+          const c = base(s).filter((q) => q.tags.includes(id) && !taken.has(q.id)).slice(0, s.count);
+          c.forEach((q) => taken.add(q.id));
+          return c.length >= s.count;
+        });
+      });
+      groupDiagram.set(group, fits.length ? fits[Math.floor(rand() * fits.length)]! : null);
+    }
+    return groupDiagram.get(group)!;
+  };
+  for (const slot of bp.slots) {
+    let cands = base(slot).filter((q) => !used.has(q.id));
+    if (slot.diagramGroup) {
+      const id = diagramOf(slot.diagramGroup);
+      if (id) cands = cands.filter((q) => q.tags.includes(id));
+    }
     const shuffled = shuffle(cands, rand);
     const preferred = slot.preferTags.length ? shuffled.filter((q) => q.tags.some((t) => slot.preferTags.includes(t))) : [];
     const rest = shuffled.filter((q) => !preferred.includes(q));

@@ -1,0 +1,30 @@
+id: w6-abc-4
+title: "ER model A–R–B–S–C (practice 4)"
+width: 800
+height: 200
+entities:
+  - name: A
+    x: 90
+    y: 140
+    attrs: [{ name: a, key: true }, { name: d }]
+  - name: B
+    x: 400
+    y: 140
+    attrs: [{ name: b, key: true }, { name: e }]
+  - name: C
+    x: 710
+    y: 140
+    attrs: [{ name: c, key: true }, { name: f }]
+relationships:
+  - name: R
+    x: 245
+    y: 140
+    ends:
+      - { entity: A, card: "1", total: true }
+      - { entity: B, card: "N", total: true }
+  - name: S
+    x: 555
+    y: 140
+    ends:
+      - { entity: B, card: "1", total: false }
+      - { entity: C, card: "1", total: true }

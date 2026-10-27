@@ -260,6 +260,29 @@ export const Question = z.discriminatedUnion("type", [
   }),
   z.object({
     ...QBase,
+    type: z.literal("instance_choices"),
+    /** The ER diagram (content/diagrams/) whose cardinality and participation constraints decide which candidates are possible. */
+    diagram: z.string(),
+    /** The relationships the instances cover; they must form a chain (A–R–B–S–C). */
+    relationships: z.array(z.string()).min(1),
+    /** The entities in each entity set, e.g. { A: [a1, a2] }. */
+    sets: z.record(z.string(), z.array(z.string()).min(1)),
+    /** Defaults to "For the given ER model, identify which of the following relationship instances for R and S are possible." */
+    prompt: z.string().default(""),
+    multi: z.boolean().default(false),
+    noneOption: z.boolean().default(true),
+    candidates: z
+      .array(
+        z.object({
+          /** Relationship instances as entity pairs, in the order the relationship's ends are listed in the diagram. */
+          instances: z.record(z.string(), z.array(z.tuple([z.string(), z.string()]))).default({}),
+          why: z.string().default(""),
+        }),
+      )
+      .min(2),
+  }),
+  z.object({
+    ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),
@@ -311,6 +334,8 @@ export const Slot = z.object({
   /** Only questions of this style fill the slot; defaults to the blueprint's style. */
   style: z.enum(["conceptual", "direct", "any"]).optional(),
   topics: z.array(z.string()).default([]),
+  /** Slots with the same group name all use questions about one ER diagram (like a quiz section built on one model). */
+  diagramGroup: z.string().optional(),
 });
 
 export const Blueprint = z.object({

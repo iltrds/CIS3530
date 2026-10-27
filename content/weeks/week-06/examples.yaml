@@ -262,3 +262,33 @@
   pitfalls:
     - "Two entity types can be linked by more than one relationship type; each one means something different."
     - "When the \"values\" of an attribute are things with their own data, they're entities."
+
+- id: w6-ex-quiz5
+  title: The Week 6 quiz's model, worked through
+  topics: [er.reading, er.cardinality, er.participation]
+  question: |
+    The in-class quiz gave this model and called A students, B professors and C committees.
+
+    {{er:w6-abc-1}}
+
+    What does it say about professors and students, professors and committees, and which snapshots of R and S could exist?
+  steps:
+    - title: Read R (students and professors)
+      body: "The 1 next to B: a student has **at most one** professor. The N next to A: a professor can have **many** students. Both lines are single, so a student can have no professor and a professor can have no students. \"A professor teaches one or more students\" is therefore **false**; \"a student is taught by at most one professor, or none\" is **true**."
+    - title: Read S (professors and committees)
+      body: "The 1 next to C: a professor is on at most one committee. The N next to B: a committee can have many professors. C's line is **double**: every committee has at least one professor (true). B's line is single: a professor needn't be on any committee (\"a professor must belong to a committee\" is false)."
+    - title: Which snapshots are possible?
+      body: |
+        With a1, a2, b1, b2, c1, c2, check the three restricting symbols (the 1 next to B, the 1 next to C, C's double line):
+
+        | Snapshot | Verdict |
+        |---|---|
+        | no R or S instances at all | ✗ c1 and c2 have no professor (C is total) |
+        | a2–b1, a2–b2; b1–c1, b2–c2 | ✗ a2 has two professors (the 1 next to B) |
+        | a1–b1; b1–c1, b2–c2 | ✓ every committee has a professor; nobody has two of anything restricted |
+        | a1–b1, a2–b2; b1–c1, b1–c2 | ✗ b1 is on two committees (the 1 next to C) |
+    - title: Section II in brief
+      body: "Several hobbies for one student → **multivalued** attribute. Existence dependency → **total participation**. User–follower and course–prerequisite are both recursive **M:N**; user–tweet is **1:N**."
+  pitfalls:
+    - "N is a maximum, not a minimum: \"one or more\" needs a double line."
+    - "An unlinked entity is only a problem if its line is double."

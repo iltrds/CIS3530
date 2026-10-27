@@ -33,7 +33,7 @@ Targets per week: 25–35 flash cards, 6–10 worked examples, 45–60 questions
 
 ### Conceptual vs direct questions
 
-**The in-class quizzes are conceptual: they never ask a direct question.** They ask you to apply a rule, predict what a query returns, compare queries, or spot why something is wrong. So every question has a `style`:
+**The in-class quizzes are conceptual: they almost never ask a direct question** (the Week 6 quiz had one, completing a definition, and its format has one slot for it). They ask you to apply a rule, predict what a query returns, compare queries, or spot why something is wrong. So every question has a `style`:
 
 | `style` | What it asks | Examples |
 |---|---|---|
@@ -50,8 +50,9 @@ Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a te
 |---|---|---|
 | `in-class` (concepts) | the Week 1 quiz | 3 `mcq`, 1 `matching`, 1 `blanks` |
 | `in-class-sql` (SQL) | the Week 3 quiz | 2 `query_shape`, 1 `query_choices` with `multi: true`, 2 single-answer `query_choices` |
+| `in-class-er` (ER) | the Week 6 quiz | per abstract A/B/C diagram: 4 `true_false` tagged `er-abc` and 1 `instance_choices`; plus `short` tagged `attr-kind`, `short` tagged `term` (direct), `matching` tagged `ratio-match` |
 
-New weeks use `in-class-sql` unless `week.yaml` says otherwise; design weeks with no SQL (Week 6, ER) use `in-class`, with True/False/Maybe statements about a diagram as the `blanks` questions. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
+New weeks use `in-class-sql` unless `week.yaml` says otherwise; Week 6 (ER) uses `in-class-er`. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
 
 ### Prompt for generating a week with Claude
 
@@ -168,6 +169,7 @@ Common fields: `id`, `type`, `topics`, `prompt`, optional `style` (`conceptual` 
 | `sql` | `dataset`, `reference`, `compare: set / bag / ordered` | result compared, on every instance |
 | `query_shape` | `dataset`, one of `sql` / `ra`, `distractors` (wrong `[degree, cardinality]` pairs), `answerIsNone` | becomes a multiple-choice question; the answer is computed by running the query |
 | `query_choices` | `dataset`, `lang` (`sql` or `ra`), `reference`, `candidates: [{ query, why }]`, `multi`, `compare` | each candidate is run on the lecture data and every grading instance; it's correct only if it matches the reference on all of them |
+| `instance_choices` | `diagram`, `relationships` (a chain, e.g. `[R, S]`), `sets` (entities per entity type), `candidates: [{ instances: { R: [[a1, b1]] }, why }]`, `multi` | each candidate is checked against the diagram: a 1 next to E allows each entity on the other side at most one E, and a double line from E needs every E entity to appear. Candidates are drawn as instance diagrams |
 
 For `query_shape` and `query_choices` you never write the answer. The build runs the queries, picks the right option, letters the choices a), b), c)… like CourseLink, adds "None of the given choices", and writes an explanation for every option (wrong columns, repeated rows, the database's error message, or "right only by coincidence"). Add a `why` to a candidate to explain the mistake behind it. The build fails if a distractor turns out to be the right answer, or if a single-answer question has two right candidates.
 
@@ -211,6 +213,8 @@ slots:
   - { types: [matching], count: 1, points: 3 }
   - { types: [blanks], count: 1, points: 4 }
 ```
+
+For `instance_choices`, pairs follow the order of the relationship's `ends` in the diagram. Every question is tagged `diagram:<id>` for each diagram its prompt shows; slots with the same `diagramGroup` all draw questions about one diagram, the way a quiz section is built on one model.
 
 A slot can also require tags (`requireTags: [query-shape]`); `query_shape` questions are tagged `query-shape` and `query_choices` questions `query-choices` automatically, plus a language-specific tag (`query-shape-sql`, `query-choices-ra`, …); the SQL quiz format uses only the SQL ones. Blueprints get a short `label` for the simulator's format buttons.
 

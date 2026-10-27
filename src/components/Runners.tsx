@@ -226,6 +226,7 @@ export function TestRunner({
   }, [grades, items]);
 
   let lastSection: string | undefined;
+  const shownFigures = new Map<string, number>();
   return (
     <div>
       <div className="quiz-bar">
@@ -297,7 +298,9 @@ export function TestRunner({
       {items.map((it, k) => {
         const g = grades?.[k];
         const header = it.section && it.section !== lastSection ? it.section : undefined;
+        if (it.section !== lastSection) shownFigures.clear();
         lastSection = it.section;
+        const prompt = oncePerSection(it.q.prompt, shownFigures, k + 1);
         return (
           <div key={it.q.id}>
             {header && items.some((x) => x.section !== items[0]!.section) && <h2>{header}</h2>}
@@ -318,7 +321,7 @@ export function TestRunner({
                   )}
                 </div>
               </div>
-              <Html className="q-prompt" html={it.q.prompt} />
+              <Html className="q-prompt" html={prompt} />
               <QuestionContext q={it.q} />
               <QuestionInput q={it.q} value={answers[k]} onChange={(v) => setAnswers((as) => as.map((x, j) => (j === k ? v : x)))} review={g} showAnswer />
               {g && <Feedback q={it.q} grade={g} />}
@@ -335,4 +338,16 @@ export function TestRunner({
       )}
     </div>
   );
+}
+
+/** In a quiz section built on one ER model, draw the model once and point back to it afterwards. */
+function oncePerSection(html: string, shown: Map<string, number>, n: number): string {
+  return html.replace(/<figure class="er-figure" data-er="([^"]+)"[\s\S]*?<\/figure>/g, (fig, id: string) => {
+    const first = shown.get(id);
+    if (first === undefined) {
+      shown.set(id, n);
+      return fig;
+    }
+    return `<p class="er-ref">Use the ER model shown in Question ${first}.</p>`;
+  });
 }

@@ -13,6 +13,7 @@ import { run as runRA, relationToTable } from "../../src/engines/ra/ra.ts";
 import { SqlEngine } from "../../src/engines/sql/engine.ts";
 import type { CQuestion, TableData } from "../../src/engines/grading.ts";
 import { figureHtml, renderEr } from "./er.ts";
+import { chainOf, instanceSvg, judgeInstance } from "./instances.ts";
 import { buildChoices, buildShape, choicesExplanation, codeBlock, judgeCandidate, shapeExplanation, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
@@ -107,12 +108,14 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
   // ---------------------------------------------------------------- ER diagrams
   figures.clear();
   const diagramIds = new Set<string>();
+  const diagramDefs = new Map<string, S.ErDiagram>();
   for (const f of files("*.yaml", C + "diagrams")) {
     const d = parse(S.ErDiagram, await readYaml(C + "diagrams/" + f), `diagrams/${f}`);
     if (!d) continue;
     if (diagramIds.has(d.id)) fail(`diagrams/${f}`, "id", `Duplicate diagram id ${d.id}`);
     if (f !== `${d.id}.yaml`) fail(`diagrams/${f}`, "id", `The file should be called ${d.id}.yaml`);
     diagramIds.add(d.id);
+    diagramDefs.set(d.id, d);
     const r = renderEr(d);
     r.problems.forEach((m) => fail(`diagrams/${f}`, d.id, m));
     figures.set(d.id, figureHtml(d, r, d.caption ? mdi(d.caption) : ""));
@@ -342,6 +345,43 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           out.tags = [...new Set([...q.tags, "query-choices", `query-choices-${q.lang}`])];
           break;
         }
+        case "instance_choices": {
+          const d = diagramDefs.get(q.diagram);
+          if (!d) {
+            fail(file, where, `No diagram called ${q.diagram} in content/diagrams/`);
+            break;
+          }
+          const { chain, problem } = chainOf(d, q.relationships);
+          if (!chain) {
+            fail(file, where, problem!);
+            break;
+          }
+          for (const c of chain.columns) if (c.kind === "entity" && !q.sets[c.name]) fail(file, where, `sets: give the entities of ${c.name}`);
+          const authoring: string[] = [];
+          const judged = q.candidates.map((c) => judgeInstance(d, q.relationships, q.sets, c.instances, authoring));
+          [...new Set(authoring)].forEach((m) => fail(file, where, m));
+          const options = q.candidates.map((c, i) => instanceSvg(d, chain, q.sets, c.instances, `Choice ${i + 1}`));
+          const correct = judged.map((j, i) => (j.possible ? i : -1)).filter((i) => i >= 0);
+          const noneIndex = q.noneOption ? options.length : -1;
+          if (q.noneOption) options.push("None of the given choices");
+          if (!correct.length && noneIndex < 0) fail(file, where, "no candidate is possible and there's no 'None' option");
+          if (!q.multi && correct.length > 1) fail(file, where, `${correct.length} candidates are possible; set multi: true or change them`);
+          out.type = q.multi ? "multi" : "mcq";
+          out.options = options;
+          out.answer = q.multi ? (correct.length ? correct : [noneIndex]) : correct.length ? correct[0]! : noneIndex;
+          const rels = q.relationships.join(" and ");
+          const lead = q.prompt.trim() || `For the given ER model, identify which of the following relationship instances for ${rels} are possible.`;
+          const nCorrect = Array.isArray(out.answer) ? out.answer.length : 1;
+          out.prompt = md(lead) + figures.get(q.diagram)! + (q.multi ? `<p class="select-count">Select ${nCorrect} correct answer${nCorrect === 1 ? "" : "s"}</p>` : "");
+          const letters = "abcdefghijklmnopqrstuvwxyz";
+          const lines = judged.map(
+            (j, i) => `<li><strong>${letters[i]}) ${j.possible ? "✓" : "✗"}</strong> ${j.reasons.map((r) => r.replace(/&/g, "&amp;").replace(/</g, "&lt;")).join(" ")}${q.candidates[i]!.why ? " " + mdi(q.candidates[i]!.why) : ""}</li>`,
+          );
+          if (noneIndex >= 0) lines.push(`<li><strong>${letters[noneIndex]}) ${correct.length ? "✗" : "✓"}</strong> ${correct.length ? "At least one choice is possible." : "Every choice breaks a constraint."}</li>`);
+          out.explanation = `<ul class="why-list">${lines.join("")}</ul>` + md(q.explanation);
+          out.tags = [...new Set([...q.tags, "instance-choices", `diagram:${q.diagram}`])];
+          break;
+        }
         case "ra":
         case "sql": {
           if (!q.dataset) {
@@ -366,6 +406,8 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           break;
         }
       }
+      // tag each question with the diagrams its prompt shows, so a quiz section can share one diagram
+      for (const m of q.prompt.matchAll(ER_REF)) out.tags = [...new Set([...(out.tags ?? q.tags), `diagram:${m[1]}`])];
       search.push({ id: q.id, kind: "Question", week: week.number, title: text(out.prompt).slice(0, 140), text: text(out.explanation), href: `#/quiz?q=${q.id}` });
       questionsOut.push(out);
     }

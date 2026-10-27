@@ -1202,3 +1202,12 @@ label.check:has(pre) {
 @media (max-width: 600px) {
   .prose table { display: block; max-width: 100%; overflow-x: auto; }
 }
+
+/* ---------------------------------------------------------------- relationship-instance diagrams (instance_choices options) */
+.inst-choice { display: block; max-width: 100%; overflow-x: auto; }
+.inst-svg { display: block; width: 100%; max-width: 640px; height: auto; font-family: var(--font-ui); }
+.inst-set { fill: none; stroke: var(--ink-3); stroke-width: 1.2; }
+.inst-head { fill: var(--ink-2); font-size: 13px; font-weight: 650; }
+.inst-item { fill: var(--ink); font-size: 13px; paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }
+.inst-line { stroke: var(--ink); stroke-width: 1.4; }
+.er-ref { color: var(--ink-2); font-style: italic; margin: 0 0 var(--s2); }

@@ -27,6 +27,7 @@ export interface Slot {
   requireTags: string[];
   style?: "conceptual" | "direct" | "any";
   topics: string[];
+  diagramGroup?: string;
 }
 export interface Blueprint {
   id: string;

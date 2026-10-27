@@ -134,3 +134,27 @@
   topic: er.reverse
   front: In a relational schema, what does a relation whose key is two foreign keys usually come from?
   back: An M:N relationship; any other columns are that relationship's attributes.
+- id: w6-fc-existence-dependency
+  topic: er.participation
+  front: Existence dependency is also known as…
+  back: Total participation (a double line). Every entity of that type must take part in the relationship.
+  tags: [trap]
+- id: w6-fc-n-not-one-or-more
+  topic: er.participation
+  front: "Professor —1— Teaches —N— Student with single lines. Must a professor teach at least one student?"
+  back: "No. N allows many but sets no minimum; \"one or more\" needs a double line between PROFESSOR and Teaches."
+  tags: [trap]
+- id: w6-fc-instance-check
+  topic: er.reading
+  front: How do you check whether a relationship instance diagram is possible for a model?
+  back: "For each 1 next to entity type E: nothing on the other side links to two Es. For each double line from E: every E entity appears. N, M and single lines never rule anything out."
+- id: w6-fc-recursive-ratios
+  topic: er.recursive
+  front: Cardinality ratio of course–prerequisite and of user–follower?
+  back: "Both M:N. A course can have several prerequisites and be a prerequisite of several; you follow many and are followed by many. (Supervision is 1:N.)"
+  tags: [trap]
+- id: w6-fc-attr-type-not-data-type
+  topic: er.attributes
+  front: "\"A student may have several hobbies.\" What type of attribute is hobbies?"
+  back: "Multivalued (double oval). \"String\" is its data type, not its ER attribute type."
+  tags: [trap]

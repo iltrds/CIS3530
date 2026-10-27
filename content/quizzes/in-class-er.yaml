@@ -1,0 +1,21 @@
+id: in-class-er
+title: In-class quiz, ER format
+label: ER format
+description: >
+  Modelled on the Week 6 quiz (Quiz 5, paper). Section I is built on one ER model with abstract entity types A, B, C and
+  relationships R, S: four 1-point True/False statements that give the letters a meaning ("if A represents students…"),
+  and one question on which relationship instances are possible. Section II: name an attribute's type from a description,
+  complete a definition, and a 2-point matching of real relationships to 1:1, 1:N or M:N.
+kind: quiz
+covers: one_week
+timeLimitMin: 15
+strictAnswers: true
+feedback: end
+style: conceptual
+slots:
+  - { name: "Section I", types: [true_false], count: 4, points: 1, requireTags: [er-abc], diagramGroup: section-1 }
+  - { name: "Section I", types: [mcq, multi], count: 1, points: 1, requireTags: [instance-choices], diagramGroup: section-1 }
+  - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [attr-kind] }
+  # the one recall question on the quiz ("Existence dependency is also known as ___")
+  - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [term], style: direct }
+  - { name: "Section II", types: [matching], count: 1, points: 2, requireTags: [ratio-match] }
