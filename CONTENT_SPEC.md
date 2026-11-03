@@ -51,8 +51,9 @@ Each week names its in-class quiz format in `week.yaml` (`quizFormat`), and a te
 | `in-class` (concepts) | the Week 1 quiz | 3 `mcq`, 1 `matching`, 1 `blanks` |
 | `in-class-sql` (SQL) | the Week 3 quiz | 2 `query_shape`, 1 `query_choices` with `multi: true`, 2 single-answer `query_choices` |
 | `in-class-er` (ER) | the Week 6 quiz | per abstract A/B/C diagram: 4 `true_false` tagged `er-abc` and 1 `instance_choices`; plus `short` tagged `attr-kind`, `short` tagged `term` (direct), `matching` tagged `ratio-match` |
+| `in-class-nf` (normalization) | a guess in the Week 6 quiz's shape | per relation (`context`): 4 `fd` questions with `mode: true_false` and 1 with `mode: mcq`, `multi` or `normal_form`; plus `short` tagged `nf-kind`, `short` tagged `term` (direct), `matching` tagged `nf-match` |
 
-New weeks use `in-class-sql` unless `week.yaml` says otherwise; Week 6 (ER) uses `in-class-er`. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
+New weeks use `in-class-sql` unless `week.yaml` says otherwise; Week 6 (ER) uses `in-class-er` and Week 7 (normalization) `in-class-nf`. Any week with `sql.*` topics must use a format that includes degree/cardinality (`query_shape`) and valid/equivalent-query (`query_choices`) questions; the build fails otherwise. If a quiz arrives in a new format, add a blueprint for it rather than changing these.
 
 ### Prompt for generating a week with Claude
 
@@ -170,6 +171,7 @@ Common fields: `id`, `type`, `topics`, `prompt`, optional `style` (`conceptual` 
 | `query_shape` | `dataset`, one of `sql` / `ra`, `distractors` (wrong `[degree, cardinality]` pairs), `answerIsNone` | becomes a multiple-choice question; the answer is computed by running the query |
 | `query_choices` | `dataset`, `lang` (`sql` or `ra`), `reference`, `candidates: [{ query, why }]`, `multi`, `compare` | each candidate is run on the lecture data and every grading instance; it's correct only if it matches the reference on all of them |
 | `instance_choices` | `diagram`, `relationships` (a chain, e.g. `[R, S]`), `sets` (entities per entity type), `candidates: [{ instances: { R: [[a1, b1]] }, why }]`, `multi` | each candidate is checked against the diagram: a 1 next to E allows each entity on the other side at most one E, and a double line from E needs every E entity to appear. Candidates are drawn as instance diagrams |
+| `fd` | `relation` ("R(A, B, C)"), `fds` ("A -> B"), `key` (if several candidate keys), `instance` (optional rows, checked against the FDs), `mode` (`true_false`, `blanks`, `mcq`, `multi`, `normal_form`), `claims` | each claim is decided by the build: `holds`, `trivial`, `full`, `partial`, `transitive` (an FD), `key`, `superkey` (attributes), `nf`, `exactNf`, `lossless`, `preserving`, `good` (a decomposition), `satisfied` (an FD, in the instance), `insertAnomaly` (the attributes a new fact supplies). Statements are written for you unless you give `text` |
 
 For `query_shape` and `query_choices` you never write the answer. The build runs the queries, picks the right option, letters the choices a), b), c)… like CourseLink, adds "None of the given choices", and writes an explanation for every option (wrong columns, repeated rows, the database's error message, or "right only by coincidence"). Add a `why` to a candidate to explain the mistake behind it. The build fails if a distractor turns out to be the right answer, or if a single-answer question has two right candidates.
 
@@ -213,6 +215,8 @@ slots:
   - { types: [matching], count: 1, points: 3 }
   - { types: [blanks], count: 1, points: 4 }
 ```
+
+Normal forms in `fd` questions use the course's definitions, which are relative to the primary key (a non-prime-key attribute is one outside the primary key), so TEACH is 3NF keyed on (Student, Course) and not 2NF keyed on (Student, Instructor). `fd` questions are tagged `context:<context>` (default: the relation with its key and FDs), so a quiz section can share one relation like it shares one ER diagram.
 
 For `instance_choices`, pairs follow the order of the relationship's `ends` in the diagram. Every question is tagged `diagram:<id>` for each diagram its prompt shows; slots with the same `diagramGroup` all draw questions about one diagram, the way a quiz section is built on one model.
 

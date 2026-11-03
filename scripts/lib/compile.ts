@@ -14,7 +14,8 @@ import { SqlEngine } from "../../src/engines/sql/engine.ts";
 import type { CQuestion, TableData } from "../../src/engines/grading.ts";
 import { figureHtml, renderEr } from "./er.ts";
 import { chainOf, instanceSvg, judgeInstance } from "./instances.ts";
-import { buildChoices, buildShape, choicesExplanation, codeBlock, judgeCandidate, shapeExplanation, type CandidateRun } from "./query-questions.ts";
+import { describeNF, FDSet, fmtFD, instanceBreaks, judgeClaim, parseFD, parseRelation, type Claim, type NF } from "./fd.ts";
+import { buildChoices, buildShape, choicesExplanation, codeBlock, esc, judgeCandidate, shapeExplanation, tableHtml, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
 const C = ROOT + "content/";
@@ -343,6 +344,117 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           out.prompt = md(q.prompt) + (q.multi ? `<p class="select-count">Select ${nCorrect} correct answer${nCorrect === 1 ? "" : "s"}</p>` : "");
           out.explanation = choicesExplanation(judged, b.order, b.noneIndex, want[q.dataset]!, mdi) + md(q.explanation);
           out.tags = [...new Set([...q.tags, "query-choices", `query-choices-${q.lang}`])];
+          break;
+        }
+        case "fd": {
+          let F: FDSet;
+          try {
+            F = new FDSet(parseRelation(q.relation), q.fds.map(parseFD));
+          } catch (e) {
+            fail(file, where, (e as Error).message);
+            break;
+          }
+          const rel = F.rel;
+          let pk: string[];
+          if (q.key) {
+            const unknown = q.key.filter((a) => !rel.attrs.includes(a));
+            if (unknown.length) {
+              fail(file, where, `key: ${unknown.join(", ")} isn't in ${rel.name}`);
+              break;
+            }
+            pk = F.order(q.key);
+            if (!F.isCandidateKey(pk)) fail(file, where, `key (${pk.join(", ")}) isn't a candidate key under these FDs; candidate keys: ${F.candidateKeys().map((k) => `(${k.join(", ")})`).join(", ")}`);
+          } else {
+            const ks = F.candidateKeys();
+            if (ks.length !== 1) {
+              fail(file, where, `${rel.name} has ${ks.length} candidate keys (${ks.map((k) => `(${k.join(", ")})`).join(", ")}); set key to the primary key`);
+              break;
+            }
+            pk = ks[0]!;
+          }
+          if (q.instance) {
+            q.instance.forEach((r, i) => r.length !== rel.attrs.length && fail(file, where, `instance row ${i + 1} has ${r.length} values but ${rel.name} has ${rel.attrs.length} attributes`));
+            for (const f of F.fds) {
+              const br = instanceBreaks(rel, q.instance, f);
+              if (br) fail(file, where, `the instance breaks ${fmtFD(f)}: ${JSON.stringify(br[0])} and ${JSON.stringify(br[1])}`);
+            }
+          }
+          const ctx = q.context ?? `${rel.name}-${(q.key ?? []).join("+")}-${q.fds.join(";")}`.toLowerCase().replace(/[^a-z0-9#+;>-]+/g, "-");
+          const relHtml = `<p class="fd-rel">${esc(rel.name)}(${rel.attrs.map((a) => (pk.includes(a) ? `<u>${esc(a)}</u>` : esc(a))).join(", ")})</p>`;
+          const inst = q.instance ? tableHtml({ cols: rel.attrs, rows: q.instance as TableData["rows"] }) : "";
+          const fdHtml = q.showFds && F.fds.length ? `<p class="fd-head">Functional dependencies:</p><ul class="fd-list">${F.fds.map((f) => `<li>${esc(fmtFD(f))}</li>`).join("")}</ul>` : "";
+          const context = `<section class="fd-context" data-ctx="${esc(ctx)}">${relHtml}${inst}${fdHtml}</section>`;
+          const judged: { value: boolean; text: string; reason: string; why: string }[] = [];
+          for (const c of q.claims) {
+            try {
+              judged.push({ ...judgeClaim(F, pk, c as Claim, q.instance as unknown[][] | undefined), why: c.why });
+            } catch (e) {
+              fail(file, where, (e as Error).message);
+            }
+          }
+          if (judged.length !== q.claims.length) break;
+          const letters = "abcdefghijklmnopqrstuvwxyz";
+          const reasons = (mark: (j: (typeof judged)[number], i: number) => string) =>
+            `<ul class="why-list">${judged.map((j, i) => `<li><strong>${mark(j, i)}</strong> ${mdi(j.reason)}${j.why ? " " + mdi(j.why) : ""}</li>`).join("")}</ul>`;
+          const tf = (v: boolean) => (v ? "True" : "False");
+          let lead = q.prompt.trim();
+          switch (q.mode) {
+            case "true_false": {
+              if (judged.length !== 1) fail(file, where, "true_false mode needs exactly one claim");
+              out.type = "true_false";
+              out.answer = judged[0]!.value;
+              lead ||= `${judged[0]!.text} True or false?`;
+              out.explanation = `<p>${tf(judged[0]!.value)}. ${mdi(judged[0]!.reason)}${judged[0]!.why ? " " + mdi(judged[0]!.why) : ""}</p>`;
+              break;
+            }
+            case "blanks": {
+              if (judged.length < 2) fail(file, where, "blanks mode needs at least two claims");
+              out.type = "blanks";
+              out.strictCase = true;
+              out.parts = judged.map((j) => ({ text: mdi(j.text), answer: tf(j.value), accept: [] }));
+              lead ||= "In context with this relation, type **True** or **False** in each box.";
+              out.explanation = reasons((j, i) => `${i + 1}. ${tf(j.value)}:`);
+              break;
+            }
+            case "mcq":
+            case "multi": {
+              const correct = judged.map((j, i) => (j.value ? i : -1)).filter((i) => i >= 0);
+              out.options = judged.map((j) => mdi(j.text));
+              const none = q.noneOption ? out.options.length : -1;
+              if (q.noneOption) out.options.push(q.mode === "multi" ? "None of the given choices" : "None of the given choices");
+              if (q.mode === "mcq") {
+                if (correct.length > 1) fail(file, where, `${correct.length} claims are true; mcq needs exactly one (or use multi)`);
+                if (!correct.length && none < 0) fail(file, where, "no claim is true; add noneOption or change the claims");
+                out.type = "mcq";
+                out.answer = correct.length ? correct[0]! : none;
+                lead ||= "Which of the following is true?";
+              } else {
+                if (!correct.length && none < 0) fail(file, where, "no claim is true; add noneOption or change the claims");
+                out.type = "multi";
+                out.answer = correct.length ? correct : [none];
+                lead ||= "Which of the following are true?";
+              }
+              const n = Array.isArray(out.answer) ? out.answer.length : 1;
+              if (q.mode === "multi") lead += `
+
+<p class="select-count">Select ${n} correct answer${n === 1 ? "" : "s"}</p>`;
+              out.explanation = reasons((j, i) => `${letters[i]}) ${j.value ? "✓" : "✗"}`) + (none >= 0 ? `<p><strong>${letters[none]})</strong> ${correct.length ? "✗ At least one statement is true." : "✓ Every statement is false."}</p>` : "");
+              break;
+            }
+            case "normal_form": {
+              if (judged.length) fail(file, where, "normal_form mode takes no claims");
+              const forms: NF[] = ["1NF", "2NF", "3NF", "BCNF"];
+              out.type = "mcq";
+              out.options = ["1NF, but not 2NF", "2NF, but not 3NF", "3NF, but not BCNF", "BCNF"];
+              out.answer = forms.indexOf(F.normalForm(pk));
+              lead ||= `What is the highest normal form of ${rel.name}?`;
+              out.explanation = md(describeNF(F, pk));
+              break;
+            }
+          }
+          out.prompt = context + md(lead);
+          out.explanation = (out.explanation ?? "") + md(q.explanation);
+          out.tags = [...new Set([...q.tags, "fd", `fd-${q.mode}`, `context:${ctx}`])];
           break;
         }
         case "instance_choices": {

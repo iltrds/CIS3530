@@ -1,0 +1,77 @@
+id: nf-first
+title: FIRST and its decompositions (Week 7)
+description: >
+  The lecture's FIRST relation (suppliers, their city and its status, and the parts they ship), with the relations
+  it is normalized into: SP and SECOND (2NF), then SC and CS (3NF). Columns are named sno, pno and so on because
+  S# isn't a valid SQL name. Rules: each supplier is in one city, each city has one status.
+source: Week 7 lecture (instance adapted from C. J. Date); decomposed relations are projections of it
+tables:
+  - name: FIRST
+    columns:
+      - { name: sno, pk: true }
+      - { name: status, type: int }
+      - { name: city }
+      - { name: pno, pk: true }
+      - { name: qty, type: int }
+    rows:
+      - [S1, 20, London, P1, 300]
+      - [S1, 20, London, P2, 200]
+      - [S1, 20, London, P3, 400]
+      - [S1, 20, London, P4, 200]
+      - [S1, 20, London, P5, 100]
+      - [S1, 20, London, P6, 100]
+      - [S2, 10, Paris, P1, 300]
+      - [S2, 10, Paris, P2, 400]
+      - [S3, 50, Guelph, P2, 200]
+      - [S4, 20, London, P2, 200]
+      - [S4, 20, London, P4, 300]
+      - [S4, 20, London, P5, 400]
+  - name: SP
+    columns:
+      - { name: sno, pk: true }
+      - { name: pno, pk: true }
+      - { name: qty, type: int }
+    foreignKeys:
+      - { columns: [sno], references: { table: SECOND, columns: [sno] } }
+    rows:
+      - [S1, P1, 300]
+      - [S1, P2, 200]
+      - [S1, P3, 400]
+      - [S1, P4, 200]
+      - [S1, P5, 100]
+      - [S1, P6, 100]
+      - [S2, P1, 300]
+      - [S2, P2, 400]
+      - [S3, P2, 200]
+      - [S4, P2, 200]
+      - [S4, P4, 300]
+      - [S4, P5, 400]
+  - name: SECOND
+    columns:
+      - { name: sno, pk: true }
+      - { name: city }
+      - { name: status, type: int }
+    rows:
+      - [S1, London, 20]
+      - [S2, Paris, 10]
+      - [S3, Guelph, 50]
+      - [S4, London, 20]
+  - name: SC
+    columns:
+      - { name: sno, pk: true }
+      - { name: city }
+    foreignKeys:
+      - { columns: [city], references: { table: CS, columns: [city] } }
+    rows:
+      - [S1, London]
+      - [S2, Paris]
+      - [S3, Guelph]
+      - [S4, London]
+  - name: CS
+    columns:
+      - { name: city, pk: true }
+      - { name: status, type: int }
+    rows:
+      - [London, 20]
+      - [Paris, 10]
+      - [Guelph, 50]

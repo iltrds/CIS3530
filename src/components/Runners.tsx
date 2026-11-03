@@ -340,14 +340,17 @@ export function TestRunner({
   );
 }
 
-/** In a quiz section built on one ER model, draw the model once and point back to it afterwards. */
+/** In a quiz section built on one ER model (or one relation), show it once and point back to it afterwards. */
 function oncePerSection(html: string, shown: Map<string, number>, n: number): string {
-  return html.replace(/<figure class="er-figure" data-er="([^"]+)"[\s\S]*?<\/figure>/g, (fig, id: string) => {
-    const first = shown.get(id);
+  const once = (key: string, block: string, what: string) => {
+    const first = shown.get(key);
     if (first === undefined) {
-      shown.set(id, n);
-      return fig;
+      shown.set(key, n);
+      return block;
     }
-    return `<p class="er-ref">Use the ER model shown in Question ${first}.</p>`;
-  });
+    return `<p class="er-ref">Use the ${what} shown in Question ${first}.</p>`;
+  };
+  return html
+    .replace(/<figure class="er-figure" data-er="([^"]+)"[\s\S]*?<\/figure>/g, (fig, id: string) => once(`er:${id}`, fig, "ER model"))
+    .replace(/<section class="fd-context" data-ctx="([^"]+)">[\s\S]*?<\/section>/g, (sec, id: string) => once(`fd:${id}`, sec, "relation"));
 }

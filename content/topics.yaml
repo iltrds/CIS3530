@@ -57,3 +57,15 @@
 - { id: er.modeling, label: "From requirements to an ER design", week: 6 }
 - { id: er.mapping, label: "Mapping ER to relations (steps 1–7)", week: 6 }
 - { id: er.reverse, label: "From relations back to ER", week: 6 }
+
+- { id: er.existence, label: "Existence dependency and NOT NULL foreign keys", week: 7 }
+- { id: nf.why, label: "What normalization is for", week: 7 }
+- { id: nf.anomalies, label: "Update anomalies (insertion, modification, deletion)", week: 7 }
+- { id: nf.1nf, label: "First normal form and repeating groups", week: 7 }
+- { id: nf.fd, label: "Functional dependencies and FD diagrams", week: 7 }
+- { id: nf.fd-kinds, label: "Trivial, full, partial and transitive dependencies", week: 7 }
+- { id: nf.keys, label: "Closures, determinants and candidate keys", week: 7 }
+- { id: nf.2nf, label: "Second normal form (2NF)", week: 7 }
+- { id: nf.3nf, label: "Third normal form (3NF)", week: 7 }
+- { id: nf.bcnf, label: "Boyce–Codd normal form (BCNF)", week: 7 }
+- { id: nf.decomposition, label: "Non-loss decomposition and Rissanen's rules", week: 7 }

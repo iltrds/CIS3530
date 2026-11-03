@@ -1,0 +1,20 @@
+id: in-class-nf
+title: In-class quiz, normalization format
+label: Normalization format
+description: >
+  A guess at the Week 7 quiz, built in the shape of the Week 6 paper quiz from the same instructor. Section I is
+  built on one relation with its rules: four 1-point True/False statements about its dependencies, keys and normal
+  form, and one multiple-choice question about it. Section II: name the anomaly or dependency a description shows,
+  complete a definition, and a 2-point matching. Replace this with the real format once you've seen the quiz.
+kind: quiz
+covers: one_week
+timeLimitMin: 15
+strictAnswers: true
+feedback: end
+style: conceptual
+slots:
+  - { name: "Section I", types: [true_false], count: 4, points: 1, requireTags: [fd-true_false], diagramGroup: section-1 }
+  - { name: "Section I", types: [mcq, multi], count: 1, points: 1, requireTags: [fd-mcq, fd-multi, fd-normal_form], diagramGroup: section-1 }
+  - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [nf-kind] }
+  - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [term], style: direct }
+  - { name: "Section II", types: [matching], count: 1, points: 2, requireTags: [nf-match] }

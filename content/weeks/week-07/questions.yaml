@@ -1,0 +1,1675 @@
+# ---------------------------------------------------------------- Section I style: one relation with its FDs; every answer is computed by the build
+# (generated from a short spec; edit freely)
+
+- id: w7-q-first-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - holds: "S# -> STATUS"
+
+- id: w7-q-first-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - full: "S#, P# -> CITY"
+    text: "CITY is fully functionally dependent on (S#, P#)."
+
+- id: w7-q-first-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - transitive: "S# -> STATUS"
+
+- id: w7-q-first-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-first-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - key:
+    - "S#"
+
+- id: w7-q-first-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - insertAnomaly:
+    - "S#"
+    - CITY
+    - STATUS
+    text: "Adding a new supplier who doesn't ship any parts yet causes an insertion anomaly."
+
+- id: w7-q-first-tf-7
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  claims:
+  - holds: "CITY -> S#"
+    why: S1 and S4 are both in London.
+
+- id: w7-q-first-nf
+  type: fd
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  mode: normal_form
+
+- id: w7-q-first-partial
+  type: fd
+  topics: [nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  mode: multi
+  prompt: Which of these are partial (non-full) dependencies on the key?
+  claims:
+  - partial: "S#, P# -> CITY"
+  - partial: "S#, P# -> STATUS"
+  - partial: "S#, P# -> QTY"
+
+- id: w7-q-first-lossless
+  type: fd
+  topics: [nf.decomposition, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "FIRST(S#, STATUS, CITY, P#, QTY)"
+  fds:
+  - "S#, P# -> QTY"
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: first
+  mode: mcq
+  prompt: Which decomposition of FIRST is non-loss (lossless)?
+  claims:
+  - lossless:
+    - - "S#"
+      - "P#"
+      - QTY
+    - - "S#"
+      - CITY
+      - STATUS
+    text: "SP(S#, P#, QTY) and SECOND(S#, CITY, STATUS)"
+  - lossless:
+    - - "S#"
+      - "P#"
+      - QTY
+    - - "P#"
+      - CITY
+      - STATUS
+    text: "(S#, P#, QTY) and (P#, CITY, STATUS)"
+  - lossless:
+    - - "S#"
+      - CITY
+    - - CITY
+      - STATUS
+      - "P#"
+      - QTY
+    text: "(S#, CITY) and (CITY, STATUS, P#, QTY)"
+  - lossless:
+    - - "S#"
+      - "P#"
+    - - "P#"
+      - STATUS
+      - CITY
+      - QTY
+    text: "(S#, P#) and (P#, STATUS, CITY, QTY)"
+  noneOption: true
+
+- id: w7-q-second-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-second-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - {nf: 3NF}
+
+- id: w7-q-second-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - good:
+    - - "S#"
+      - CITY
+    - [CITY, STATUS]
+    text: "Decomposing SECOND into SC(S#, CITY) and CS(CITY, STATUS) is good by Rissanen's rules."
+
+- id: w7-q-second-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - lossless:
+    - - "S#"
+      - STATUS
+    - [CITY, STATUS]
+    text: "Decomposing SECOND into (S#, STATUS) and (CITY, STATUS) is non-loss."
+
+- id: w7-q-second-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - preserving:
+    - - "S#"
+      - STATUS
+    - - "S#"
+      - CITY
+    text: "Decomposing SECOND into (S#, STATUS) and (S#, CITY) preserves every dependency."
+
+- id: w7-q-second-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  claims:
+  - lossless:
+    - - "S#"
+      - STATUS
+    - - "S#"
+      - CITY
+    text: "Decomposing SECOND into (S#, STATUS) and (S#, CITY) is non-loss."
+
+- id: w7-q-second-nf
+  type: fd
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  mode: normal_form
+
+- id: w7-q-second-good
+  type: fd
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SECOND(S#, CITY, STATUS)"
+  fds:
+  - "S# -> CITY"
+  - "CITY -> STATUS"
+  context: second
+  mode: mcq
+  prompt: "Which decomposition of SECOND satisfies both of Rissanen's rules?"
+  claims:
+  - good:
+    - - "S#"
+      - CITY
+    - [CITY, STATUS]
+    text: "(S#, CITY) and (CITY, STATUS)"
+  - good:
+    - - "S#"
+      - STATUS
+    - - "S#"
+      - CITY
+    text: "(S#, STATUS) and (S#, CITY)"
+  - good:
+    - - "S#"
+      - STATUS
+    - [CITY, STATUS]
+    text: "(S#, STATUS) and (CITY, STATUS)"
+  noneOption: true
+
+- id: w7-q-teach-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - key: [Student, Instructor]
+
+- id: w7-q-teach-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - {nf: 3NF}
+
+- id: w7-q-teach-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - {nf: BCNF}
+
+- id: w7-q-teach-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - holds: "Course -> Instructor"
+
+- id: w7-q-teach-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - lossless:
+    - [Student, Instructor]
+    - [Instructor, Course]
+    text: "Decomposing TEACH into SI(Student, Instructor) and IC(Instructor, Course) is non-loss."
+
+- id: w7-q-teach-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  claims:
+  - preserving:
+    - [Student, Instructor]
+    - [Instructor, Course]
+    text: "Decomposing TEACH into SI(Student, Instructor) and IC(Instructor, Course) preserves every dependency."
+
+- id: w7-q-teach-nf
+  type: fd
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  mode: normal_form
+
+- id: w7-q-teach-keys
+  type: fd
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Course]
+  context: teach
+  mode: multi
+  prompt: Which of these are candidate keys of TEACH?
+  claims:
+  - key: [Student, Course]
+  - key: [Student, Instructor]
+  - key: [Course, Instructor]
+  - key: [Student, Course, Instructor]
+
+- id: w7-q-teach-si-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Instructor]
+  context: teach-si
+  claims:
+  - nf: 2NF
+    why: "Under the course's definitions, Course is the non-prime-key attribute here, and it depends on Instructor alone."
+
+- id: w7-q-teach-si-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Instructor]
+  context: teach-si
+  claims:
+  - partial: "Student, Instructor -> Course"
+
+- id: w7-q-teach-si-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Instructor]
+  context: teach-si
+  claims:
+  - {nf: BCNF}
+
+- id: w7-q-teach-si-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Instructor]
+  context: teach-si
+  claims:
+  - superkey: [Student, Course]
+
+- id: w7-q-teach-si-nf
+  type: fd
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  key: [Student, Instructor]
+  context: teach-si
+  mode: normal_form
+  prompt: "This time (Student, Instructor) is chosen as the primary key. What is TEACH's highest normal form, by this course's definitions?"
+
+- id: w7-q-enroll-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - partial: "StudentID, CourseCode -> CourseTitle"
+
+- id: w7-q-enroll-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - full: "StudentID, CourseCode -> Grade"
+
+- id: w7-q-enroll-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - transitive: "StudentID -> Major"
+
+- id: w7-q-enroll-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-enroll-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - insertAnomaly: [CourseCode, CourseTitle]
+    text: Recording a new course that no one has enrolled in yet causes an insertion anomaly.
+
+- id: w7-q-enroll-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  claims:
+  - holds: "StudentName -> StudentID"
+
+- id: w7-q-enroll-nf
+  type: fd
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  mode: normal_form
+
+- id: w7-q-enroll-partial
+  type: fd
+  topics: [nf.fd-kinds, nf.2nf, nf.anomalies, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "ENROLL(StudentID, CourseCode, StudentName, Major, CourseTitle, Grade)"
+  fds:
+  - "StudentID, CourseCode -> Grade"
+  - "StudentID -> StudentName, Major"
+  - "CourseCode -> CourseTitle"
+  context: enroll
+  mode: multi
+  prompt: "Which of these are partial dependencies on the key (StudentID, CourseCode)?"
+  claims:
+  - partial: "StudentID, CourseCode -> StudentName"
+  - partial: "StudentID, CourseCode -> CourseTitle"
+  - partial: "StudentID, CourseCode -> Grade"
+  - partial: "StudentID, CourseCode -> Major"
+
+- id: w7-q-empdept-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-empdept-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - {nf: 3NF}
+
+- id: w7-q-empdept-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - transitive: "EmpID -> DeptName"
+
+- id: w7-q-empdept-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - partial: "EmpID -> EmpName"
+    text: EmpID → EmpName is a partial dependency.
+
+- id: w7-q-empdept-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - good:
+    - [EmpID, EmpName, DeptNo]
+    - [DeptNo, DeptName, MgrID]
+    text: "Decomposing EMP_DEPT into (EmpID, EmpName, DeptNo) and (DeptNo, DeptName, MgrID) is good by Rissanen's rules."
+
+- id: w7-q-empdept-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  claims:
+  - lossless:
+    - [EmpID, EmpName, DeptName]
+    - [DeptNo, DeptName, MgrID]
+    text: "Decomposing EMP_DEPT into (EmpID, EmpName, DeptName) and (DeptNo, DeptName, MgrID) is non-loss."
+
+- id: w7-q-empdept-nf
+  type: fd
+  topics: [nf.3nf, nf.fd-kinds, nf.anomalies, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  mode: normal_form
+
+- id: w7-q-empdept-anomaly
+  type: fd
+  topics: [nf.anomalies]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "EMP_DEPT(EmpID, EmpName, DeptNo, DeptName, MgrID)"
+  fds:
+  - "EmpID -> EmpName, DeptNo"
+  - "DeptNo -> DeptName, MgrID"
+  context: empdept
+  mode: mcq
+  prompt: Which new fact causes an insertion anomaly in EMP_DEPT?
+  claims:
+  - insertAnomaly: [DeptNo, DeptName, MgrID]
+    text: "Department 7, Research, managed by E12, which has no employees yet"
+  - insertAnomaly: [EmpID, EmpName]
+    text: "Employee E40, Nadia, whose department isn't decided yet"
+  - insertAnomaly: [EmpID, EmpName, DeptNo]
+    text: "Employee E41, Omar, in department 3"
+
+- id: w7-q-rental-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - partial: "CarID, RentDate -> Model"
+
+- id: w7-q-rental-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - partial: "CarID, RentDate -> CustomerName"
+
+- id: w7-q-rental-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - transitive: "CarID, RentDate -> CustomerName"
+
+- id: w7-q-rental-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - holds: "CarID -> DailyRate"
+
+- id: w7-q-rental-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-rental-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - key: [CarID, RentDate]
+
+- id: w7-q-rental-tf-7
+  type: fd
+  mode: true_false
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  claims:
+  - holds: "CustomerID -> CarID"
+
+- id: w7-q-rental-nf
+  type: fd
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  mode: normal_form
+
+- id: w7-q-rental-partial
+  type: fd
+  topics: [nf.fd-kinds, nf.2nf, nf.3nf, nf.keys]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "RENTAL(CarID, RentDate, CustomerID, CustomerName, Model, DailyRate)"
+  fds:
+  - "CarID, RentDate -> CustomerID"
+  - "CustomerID -> CustomerName"
+  - "CarID -> Model"
+  - "Model -> DailyRate"
+  context: rental
+  mode: multi
+  prompt: Which dependencies stop RENTAL from being in 2NF?
+  claims:
+  - partial: "CarID, RentDate -> Model"
+  - partial: "CarID, RentDate -> DailyRate"
+  - partial: "CarID, RentDate -> CustomerID"
+  - partial: "CarID, RentDate -> CustomerName"
+
+- id: w7-q-shift-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - satisfied: "Station -> HourlyRate"
+
+- id: w7-q-shift-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - satisfied: "ShiftDate -> Station"
+
+- id: w7-q-shift-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - holds: "ShiftDate -> Station"
+    text: "ShiftDate → Station is one of SHIFT's functional dependencies."
+    why: "The instance happens to fit it, but no rule says it: two employees could work different stations on the same day."
+
+- id: w7-q-shift-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - insertAnomaly: [Station, Supervisor]
+    text: "Recording that station 4's supervisor is Dee causes an insertion anomaly."
+
+- id: w7-q-shift-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - insertAnomaly: [Employee, ShiftDate, Station]
+    text: Recording that Ana works at station 2 on 2026-11-07 causes an insertion anomaly.
+
+- id: w7-q-shift-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  claims:
+  - transitive: "Employee, ShiftDate -> Supervisor"
+
+- id: w7-q-shift-nf
+  type: fd
+  topics: [nf.fd, nf.anomalies, nf.2nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SHIFT(Employee, ShiftDate, Station, Supervisor, HourlyRate)"
+  fds:
+  - "Employee, ShiftDate -> Station"
+  - "Station -> Supervisor"
+  - "Employee -> HourlyRate"
+  instance:
+  - [Ana, '2026-11-05', 2, Kim, 18]
+  - [Ana, '2026-11-06', 3, Raj, 18]
+  - [Ben, '2026-11-05', 2, Kim, 21]
+  - [Cleo, '2026-11-06', 3, Raj, 19]
+  context: shift
+  mode: normal_form
+
+- id: w7-q-patient-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  claims:
+  - {nf: 2NF}
+
+- id: w7-q-patient-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  claims:
+  - {nf: 3NF}
+
+- id: w7-q-patient-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  claims:
+  - transitive: "HealthNo -> ClinicPhone"
+
+- id: w7-q-patient-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  claims:
+  - lossless:
+    - [HealthNo, Name, ClinicID]
+    - [ClinicID, ClinicName, ClinicPhone]
+    text: "Decomposing PATIENT into (HealthNo, Name, ClinicID) and (ClinicID, ClinicName, ClinicPhone) is non-loss."
+
+- id: w7-q-patient-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  claims:
+  - key: [HealthNo, ClinicID]
+
+- id: w7-q-patient-nf
+  type: fd
+  topics: [nf.3nf, nf.fd-kinds, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PATIENT(HealthNo, Name, ClinicID, ClinicName, ClinicPhone)"
+  fds:
+  - "HealthNo -> Name, ClinicID"
+  - "ClinicID -> ClinicName, ClinicPhone"
+  context: patient
+  mode: normal_form
+
+
+# ---------------------------------------------------------------- Section II style: name the anomaly or dependency
+
+- id: w7-q-kind-modification
+  type: short
+  style: conceptual
+  topics: [nf.anomalies]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "In FIRST, supplier S1's city is stored in six rows, so moving S1 to Guelph means changing all six; changing only some leaves S1 in two cities. What kind of anomaly is this?"
+  answers: [modification, modification anomaly, update, update anomaly]
+  explanation: "One fact stored in many places: a modification (update) anomaly."
+
+- id: w7-q-kind-deletion
+  type: short
+  style: conceptual
+  topics: [nf.anomalies]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "A table stores each course's room together with its enrolled students. When the last student drops CIS*4520, the fact that it meets in Reynolds 1101 disappears too. What kind of anomaly is this?"
+  answers: [deletion, deletion anomaly, delete, delete anomaly]
+  explanation: "Deleting one fact (the enrolment) removed another (the room): a deletion anomaly."
+
+- id: w7-q-kind-insertion
+  type: short
+  style: conceptual
+  topics: [nf.anomalies]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "ORDER_LINE(<u>OrderNo, ProductID</u>, ProductName, Price, Qty) also holds each product's name and price. A new product can't be recorded until someone orders it. What kind of anomaly is this?"
+  answers: [insertion, insertion anomaly, insert, insert anomaly]
+  explanation: "OrderNo is part of the key and can't be null, so the product's facts can't be inserted on their own: an insertion anomaly."
+
+- id: w7-q-kind-partial
+  type: short
+  style: conceptual
+  topics: [nf.fd-kinds]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "In ORDER_LINE(<u>OrderNo, ProductID</u>, ProductName, Price, Qty), ProductID → ProductName. What kind of dependency is (OrderNo, ProductID) → ProductName?"
+  answers: [partial, partial dependency, non-full, nonfull, non-full dependency, non full, partial functional dependency]
+  explanation: "ProductName depends on ProductID, only part of the key: a partial (non-full) dependency, which breaks 2NF."
+
+- id: w7-q-kind-transitive
+  type: short
+  style: conceptual
+  topics: [nf.fd-kinds]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "In EMP(<u>EmpID</u>, DeptNo, DeptName), EmpID → DeptNo and DeptNo → DeptName. What kind of dependency does DeptName have on EmpID?"
+  answers: [transitive, transitive dependency, transitive functional dependency]
+  explanation: "DeptName depends on EmpID only through DeptNo, a non-key attribute: transitive. It breaks 3NF."
+
+- id: w7-q-kind-trivial
+  type: short
+  style: conceptual
+  topics: [nf.fd-kinds]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "What kind of functional dependency is (StudentID, CourseCode) → CourseCode?"
+  answers: [trivial, trivial dependency, a trivial dependency, trivial fd]
+  explanation: "Its right side is part of its left side, so it can't fail: trivial."
+
+- id: w7-q-kind-lossy
+  type: short
+  style: conceptual
+  topics: [nf.decomposition]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "A relation is split into two, and joining them back produces rows that were never in the original. What kind of decomposition is it?"
+  answers: [lossy, lossy decomposition, a lossy decomposition, loss, lossy join]
+  explanation: "The extra rows are spurious tuples; the decomposition is lossy (not non-loss)."
+
+- id: w7-q-kind-1nf
+  type: short
+  style: conceptual
+  topics: [nf.1nf]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "One row of CONTACT has \"519-555-0101, 519-555-0177\" in its phone column. Which normal form does CONTACT fail?"
+  answers: [1NF, first normal form, first, 1 NF, 1st normal form, first nf]
+  explanation: "A cell holding several values isn't atomic, so the table isn't in 1NF (it isn't even a proper relation)."
+
+- id: w7-q-kind-existence
+  type: short
+  style: conceptual
+  topics: [er.existence]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "ORDER has a foreign key CustomerID that is declared NOT NULL. In ER terms, ORDER is existence-___ on CUSTOMER. (One word.)"
+  answers: [dependent, existence-dependent, existence dependent]
+  explanation: "A mandatory (NOT NULL) foreign key means an order can't exist without its customer: existence-dependent, i.e. total participation."
+
+# ---------------------------------------------------------------- Section II style: complete the term (recall)
+
+- id: w7-q-term-determinant
+  type: short
+  topics: [nf.fd]
+  difficulty: 1
+  tags: [term]
+  prompt: "In the functional dependency X → Y, X is called the ______."
+  answers: [determinant]
+  explanation: "X is the determinant and Y the dependant."
+
+- id: w7-q-term-spurious
+  type: short
+  topics: [nf.decomposition]
+  difficulty: 1
+  tags: [term]
+  prompt: "Extra rows produced by joining the relations of a lossy decomposition are called ______ tuples."
+  answers: [spurious]
+  explanation: "Spurious tuples: they look real but were never in the original relation."
+
+- id: w7-q-term-bcnf
+  type: short
+  topics: [nf.bcnf]
+  difficulty: 1
+  tags: [term]
+  prompt: "A relation in which every determinant is a candidate key is in ______."
+  answers: [BCNF, Boyce-Codd normal form, Boyce Codd normal form, boyce-codd, boyce/codd normal form, boyce–codd normal form]
+  explanation: "Boyce–Codd normal form (BCNF)."
+
+- id: w7-q-term-closure
+  type: short
+  topics: [nf.keys]
+  difficulty: 1
+  tags: [term]
+  prompt: "The set of all attributes functionally determined by X is called the ______ of X (written X⁺)."
+  answers: [closure]
+  explanation: "X⁺ is the closure of X under the set of FDs."
+
+- id: w7-q-term-existence
+  type: short
+  topics: [er.existence]
+  difficulty: 1
+  tags: [term]
+  prompt: "If an entity's foreign key can be null, the entity is existence-______ of the related entity."
+  answers: [independent, existence-independent]
+  explanation: "A nullable FK: existence-independent. A NOT NULL FK: existence-dependent."
+
+- id: w7-q-term-codd
+  type: short
+  topics: [nf.1nf]
+  difficulty: 1
+  tags: [term]
+  prompt: "Normalization was first developed by E. F. ______ in 1972."
+  answers: [Codd]
+  explanation: "Codd also gave his name to Boyce–Codd normal form."
+
+- id: w7-q-term-2nf
+  type: short
+  topics: [nf.2nf]
+  difficulty: 1
+  tags: [term]
+  prompt: "A 1NF relation in which every non-prime-key attribute is fully functionally dependent on the primary key is in ______."
+  answers: [2NF, second normal form, 2 NF, 2nd normal form]
+  explanation: "That's the definition of 2NF."
+
+# ---------------------------------------------------------------- Section II style: 2-point matching
+
+- id: w7-q-match-anomalies-1
+  type: matching
+  topics: [nf.anomalies]
+  difficulty: 1
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "BOOKING(<u>GuestID, RoomNo, Night</u>, GuestName, RoomType, Rate) records hotel stays, and each room type has one rate. Match each problem to its anomaly."
+  left:
+    - "A new room type, \"suite\", can't be given a rate until someone books a suite."
+    - "Changing the rate for doubles means editing every booking of a double."
+    - "Cancelling the only booking ever made for room 12 loses the fact that room 12 is a single."
+  right: [Insertion anomaly, Modification anomaly, Deletion anomaly]
+  answer: [0, 1, 2]
+  explanation: "Can't record a fact alone: insertion. One fact in many rows: modification. Losing a fact with an unrelated one: deletion."
+
+- id: w7-q-match-anomalies-2
+  type: matching
+  topics: [nf.anomalies]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style, trap]
+  prompt: "In FIRST(<u>S#</u>, STATUS, CITY, <u>P#</u>, QTY), match each situation to the anomaly it shows."
+  left:
+    - "Deleting S3's only shipment removes Guelph's status."
+    - "Paris's status can't be stored until a supplier in Paris ships a part."
+    - "Two London rows end up with different statuses after a partial update."
+  right: [Insertion anomaly, Modification anomaly, Deletion anomaly]
+  answer: [2, 0, 1]
+  explanation: "The third is the result of a modification anomaly: an update that missed some copies of the fact."
+
+- id: w7-q-match-fd-kinds
+  type: matching
+  topics: [nf.fd-kinds]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "In RENTAL(<u>CarID, RentDate</u>, CustomerID, CustomerName, Model, DailyRate), with (CarID, RentDate) → CustomerID, CustomerID → CustomerName, CarID → Model and Model → DailyRate, match each dependency to its kind."
+  left:
+    - "(CarID, RentDate) → CustomerID"
+    - "(CarID, RentDate) → Model"
+    - "(CarID, RentDate) → CustomerName"
+    - "(CarID, Model) → Model"
+  right: [Full, Partial, Transitive, Trivial]
+  answer: [0, 1, 2, 3]
+  explanation: "CustomerID needs the whole key. Model needs only CarID. CustomerName comes through CustomerID, a non-key attribute. The last has its right side inside its left side."
+
+- id: w7-q-match-nf
+  type: matching
+  topics: [nf.2nf, nf.3nf, nf.bcnf]
+  difficulty: 3
+  points: 2
+  tags: [nf-match, quiz-style, trap]
+  prompt: "Match each relation (primary key underlined) to its highest normal form."
+  left:
+    - "R(<u>A</u>, B, C) with A → B and B → C"
+    - "R(<u>A, B</u>, C) with (A, B) → C and A → C"
+    - "R(<u>A, B</u>, C) with (A, B) → C and C → B"
+    - "R(<u>A</u>, B) with A → B"
+  right: ["1NF", "2NF", "3NF", "BCNF"]
+  answer: [1, 0, 2, 3]
+  explanation: "B → C is transitive (2NF). A → C is partial (1NF). C → B has a determinant that isn't a candidate key, but B is part of the primary key, so 3NF and not BCNF. A two-attribute relation keyed on A is in BCNF."
+
+- id: w7-q-match-nf-break
+  type: matching
+  topics: [nf.1nf, nf.2nf, nf.3nf, nf.bcnf]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "Match each problem to the first normal form it breaks."
+  left:
+    - "A cell holds a list of phone numbers."
+    - "A non-key attribute depends on part of the primary key."
+    - "A non-key attribute depends on another non-key attribute."
+    - "A determinant isn't a candidate key, though everything it determines is part of a key."
+  right: ["1NF", "2NF", "3NF", "BCNF"]
+  answer: [0, 1, 2, 3]
+  explanation: "The key (1NF), the whole key (2NF), nothing but the key (3NF), and every determinant a key (BCNF)."
+
+- id: w7-q-match-decompositions
+  type: matching
+  topics: [nf.decomposition]
+  difficulty: 3
+  points: 2
+  tags: [nf-match, quiz-style, trap]
+  prompt: "SECOND(<u>S#</u>, CITY, STATUS) has S# → CITY and CITY → STATUS. Match each decomposition to its verdict."
+  left:
+    - "(S#, CITY) and (CITY, STATUS)"
+    - "(S#, STATUS) and (S#, CITY)"
+    - "(S#, STATUS) and (CITY, STATUS)"
+  right: ["Lossless and preserves every FD", "Lossless, but loses CITY → STATUS", "Lossy"]
+  answer: [0, 1, 2]
+  explanation: "CITY is a key of (CITY, STATUS). S# is a key of both halves in the second, but CITY → STATUS no longer fits inside one relation. STATUS is a key of neither in the third."
+
+# ---------------------------------------------------------------- concepts (multiple choice, true/false)
+
+- id: w7-q-why-not-true
+  type: mcq
+  topics: [nf.why]
+  difficulty: 1
+  tags: [quiz-style, negated-stem]
+  prompt: Which is **not** a reason given for normalizing?
+  options:
+    - An ER model isn't always available as a starting point.
+    - To reduce redundant data in an existing design.
+    - To make every query faster by storing facts in several places.
+    - To identify missing tables, columns and constraints.
+  answer: 2
+  explanation: "Storing facts in several places is redundancy, what normalization removes. Doing it on purpose for speed is denormalization."
+
+- id: w7-q-higher-forms
+  type: mcq
+  topics: [nf.why]
+  difficulty: 1
+  tags: [quiz-style, all-none-option]
+  prompt: Which of the following is true?
+  options:
+    - A relation in 3NF is also in 2NF and 1NF.
+    - Higher normal forms are more restrictive.
+    - Higher normal forms are less vulnerable to update anomalies.
+    - All of the given choices
+    - None of the given choices
+  answer: 3
+  explanation: "Each normal form adds conditions to the previous one, and with them removes more causes of anomalies."
+
+- id: w7-q-1nf-first
+  type: mcq
+  topics: [nf.1nf, nf.anomalies]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "FIRST(S#, STATUS, CITY, P#, QTY), flattened so every row is complete, repeats S1's city in six rows. Which statement is correct?"
+  options:
+    - FIRST is in 1NF, but it still has update anomalies.
+    - FIRST isn't in 1NF, because it repeats values.
+    - FIRST is in 1NF, so it has no update anomalies.
+    - FIRST isn't a relation, because it has repeating groups.
+  answer: 0
+  explanation: "Repeated values across rows aren't repeating groups; every cell is atomic, so it's 1NF. The anomalies come from partial and transitive dependencies."
+
+- id: w7-q-unflattened
+  type: mcq
+  topics: [nf.1nf]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "An unnormalized supplier table lists S1's status and city once, then six part rows below with those columns left blank. What happens to \"find the city of every supplier who ships P2\"?"
+  options:
+    - The P2 rows have no city in them, so the query returns null instead of the cities.
+    - It works, because Postgres fills in the blanks.
+    - It returns every city, because the blanks match anything.
+    - The table can't be queried at all.
+  answer: 0
+  explanation: "That's why 1NF requires flattening: each row must carry its own values, not lean on the row above."
+
+- id: w7-q-fd-instance
+  type: mcq
+  topics: [nf.fd]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "In a sample of EMPLOYEE rows, no two employees share a last name. What can you conclude about LastName → EmpID?"
+  options:
+    - Nothing yet; FDs come from the rules, and a sample can only rule one out.
+    - It holds, because the sample satisfies it.
+    - It doesn't hold, because LastName isn't the key.
+    - LastName must be a candidate key.
+  answer: 0
+  explanation: "The next employee hired might share a last name. A sample can disprove an FD (two rows agreeing on X but not Y), never prove it."
+
+- id: w7-q-fd-properties
+  type: multi
+  topics: [nf.fd]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: Which of these are true of functional dependencies? Select all that apply.
+  options:
+    - The determinant needn't be a key of the relation.
+    - Both sides can be composite.
+    - Two attributes can each determine the other.
+    - If X → Y, no two tuples can have the same Y value.
+    - An FD that can never be violated is called trivial.
+  answer: [0, 1, 2, 4]
+  explanation: "Many X values can share a Y value (many suppliers are in London); what's forbidden is one X value with two Y values."
+
+- id: w7-q-2nf-single-key
+  type: true_false
+  topics: [nf.2nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "Every 1NF relation whose primary key is a single attribute is automatically in 2NF."
+  answer: true
+  explanation: "A partial dependency needs a proper part of the key to depend on, and a one-attribute key has none."
+
+- id: w7-q-3nf-no-anomalies
+  type: true_false
+  topics: [nf.bcnf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "Once a relation is in 3NF, it can't have update anomalies."
+  answer: false
+  explanation: "TEACH is in 3NF and still repeats \"instructor X teaches course Y\" once per student. BCNF removes that."
+
+- id: w7-q-bcnf-when
+  type: mcq
+  topics: [nf.bcnf]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: When can a relation in 3NF still have update anomalies?
+  options:
+    - When it has several candidate keys that are composite and overlap
+    - When its primary key is a single attribute
+    - When it has a trivial dependency
+    - Never; 3NF removes every anomaly
+  answer: 0
+  explanation: "That's exactly the TEACH situation: (Student, Course) and (Student, Instructor) overlap on Student."
+
+- id: w7-q-decompose-how
+  type: mcq
+  topics: [nf.2nf, nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "ORDER_LINE(<u>OrderNo, ProductID</u>, ProductName, Price, Qty) has ProductID → ProductName, Price. Which decomposition gives 2NF without losing information?"
+  options:
+    - "LINE(<u>OrderNo, ProductID</u>, Qty) and PRODUCT(<u>ProductID</u>, ProductName, Price)"
+    - "LINE(<u>OrderNo</u>, Qty) and PRODUCT(<u>ProductID</u>, ProductName, Price)"
+    - "LINE(<u>OrderNo, ProductID</u>, Qty, ProductName) and PRODUCT(<u>ProductID</u>, Price)"
+    - "LINE(<u>OrderNo, ProductID</u>, Qty) and PRODUCT(<u>ProductName</u>, Price)"
+  answer: 0
+  explanation: "Move the partially dependent attributes to a relation keyed on the part of the key they depend on, and keep that part (ProductID) in the original so the two can be joined. The second loses which product each line is for; the third still has ProductID → ProductName in LINE; the fourth can't rejoin."
+
+- id: w7-q-rissanen
+  type: mcq
+  topics: [nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, all-none-option]
+  prompt: "By Rissanen's rules, decomposing R into R1 and R2 is good if…"
+  options:
+    - "the attributes R1 and R2 share form a candidate key of at least one of them, and every FD of R can be derived from the FDs in R1 and R2"
+    - "R1 and R2 have no attributes in common"
+    - "R1 and R2 have the same number of attributes"
+    - "every attribute of R is in both R1 and R2"
+    - None of the given choices
+  answer: 0
+  explanation: "No common attributes makes the join a Cartesian product, the most lossy decomposition there is."
+
+- id: w7-q-lossy-what
+  type: mcq
+  topics: [nf.decomposition]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "U(A, B, C) = {(5, 10, 6), (7, 10, 4)} is split into (A, B) and (B, C). How many rows does joining them back give?"
+  options: ["2", "3", "4", "6"]
+  answer: 2
+  explanation: "Both (A, B) rows have B = 10, and so do both (B, C) rows, so every one pairs with every other: 2 × 2 = 4 rows, two of them spurious."
+
+# ---------------------------------------------------------------- ER, continued
+
+- id: w7-q-existence-fk
+  type: mcq
+  topics: [er.existence]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In a relational schema, what shows that an entity is existence-dependent on a related entity?"
+  options:
+    - Its foreign key to that entity can't contain nulls.
+    - Its foreign key to that entity can be null.
+    - Its primary key is a single attribute.
+    - It has no foreign keys.
+  answer: 0
+  explanation: "A mandatory foreign key means the related entity must exist: existence dependency, i.e. total participation."
+
+- id: w7-q-existence-weak
+  type: true_false
+  topics: [er.existence, er.weak]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "SECTION(<u>CLASS_CODE</u>, CRS_CODE, SECTION#, CLASS_TIME, ROOM_CODE, PROF_NUM) has CRS_CODE as a NOT NULL foreign key to COURSE. Therefore SECTION is a weak entity."
+  answer: false
+  explanation: "It's existence-dependent (NOT NULL FK), but its primary key CLASS_CODE doesn't contain COURSE's key, so it isn't weak."
+
+- id: w7-q-existence-staff
+  type: multi
+  topics: [er.existence, er.mapping]
+  difficulty: 2
+  dataset: university-staff
+  show: { diagram: true }
+  tags: [quiz-style]
+  prompt: "In the mapped University Staff schema (NOT NULL columns are listed next to each relation), which entities are existence-dependent on another entity? Select all that apply."
+  options:
+    - "EMPLOYEE, on DEPARTMENT (through dnumber)"
+    - "ACTIVITY, on DEPARTMENT (through dnumber)"
+    - "DEPARTMENT, on EMPLOYEE (through mgr_sin)"
+    - "EMPLOYEE, on its supervisor (through s_sin)"
+  answer: [0, 1, 2]
+  explanation: "dnumber in EMPLOYEE and ACTIVITY, and mgr_sin in DEPARTMENT, are NOT NULL. s_sin can be null (someone has no supervisor), so EMPLOYEE is existence-independent of a supervisor."
+
+- id: w7-q-existence-total
+  type: mcq
+  topics: [er.existence, er.participation]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "Existence dependency corresponds to which ER constraint?"
+  options:
+    - Total participation (a double line)
+    - Partial participation (a single line)
+    - A cardinality ratio of 1:1
+    - A multivalued attribute
+  answer: 0
+  explanation: "Existence dependency is total participation: the entity can't exist without being related."
+
+- id: w7-q-design-order
+  type: order_steps
+  topics: [er.existence, er.modeling]
+  difficulty: 1
+  style: direct
+  prompt: Put the lecture's general approach to designing an ER model in order.
+  items:
+    - Gather requirements (problem statement, domain knowledge, general knowledge)
+    - Identify the entity and relationship sets, and their multiplicities
+    - Add attributes to describe the entity and relationship sets
+    - Identify the keys or discriminators of the entity sets
+  explanation: "Structure first (what exists and how it's related), then detail (attributes), then identification (keys)."
+
+# ---------------------------------------------------------------- direct practice
+
+- id: w7-q-order-normalize
+  type: order_steps
+  topics: [nf.2nf, nf.decomposition]
+  difficulty: 1
+  style: direct
+  prompt: Put the lecture's process for removing anomalies from a 1NF relation in order.
+  items:
+    - Identify the key
+    - Detect the anomalies
+    - Decompose into smaller relations
+    - Prove that the decomposition is good
+  explanation: "From the lecture: key, anomalies, decompose, then check the decomposition (non-loss, dependencies preserved)."
+
+- id: w7-q-sql-rejoin
+  type: sql
+  topics: [nf.decomposition, nf.2nf]
+  difficulty: 1
+  dataset: nf-first
+  show: { tables: [SP, SECOND] }
+  prompt: "FIRST was decomposed into SP(sno, pno, qty) and SECOND(sno, city, status). Write a query that rebuilds FIRST from them, with the columns in the order sno, status, city, pno, qty."
+  reference: SELECT sno, status, city, pno, qty FROM SP NATURAL JOIN SECOND;
+  explanation: "A non-loss decomposition rejoins on the common attribute and gives back exactly the original rows."
+
+- id: w7-q-sql-check-fd
+  type: sql
+  topics: [nf.fd]
+  difficulty: 2
+  dataset: nf-first
+  show: { tables: [FIRST] }
+  prompt: "Write a query that tests the instance of FIRST against the FD pno → qty: list each pno that appears with more than one qty (just the pno column)."
+  reference: SELECT pno FROM FIRST GROUP BY pno HAVING COUNT(DISTINCT qty) > 1;
+  explanation: "Each row returned is a counterexample, so pno → qty isn't satisfied here (and isn't a rule). An empty result would only mean the instance doesn't break it."

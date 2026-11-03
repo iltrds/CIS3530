@@ -1,0 +1,41 @@
+id: nf-teach
+title: TEACH and its BCNF decomposition (Week 7)
+description: >
+  The lecture's TEACH(student, course, instructor): for each course a student is taught by one instructor, and each
+  instructor teaches only one course. Candidate keys are (student, course) and (student, instructor). SI and IC are
+  the BCNF decomposition. Rows are practice data.
+source: Week 7 lecture (schema and rules); rows invented for practice
+tables:
+  - name: TEACH
+    columns:
+      - { name: student, pk: true }
+      - { name: course, pk: true }
+      - { name: instructor, notNull: true }
+    unique: [[student, instructor]]
+    rows:
+      - [Smith, Math, White]
+      - [Smith, Physics, Green]
+      - [Jones, Math, White]
+      - [Jones, Physics, Brown]
+      - [Lee, Math, Black]
+  - name: IC
+    columns:
+      - { name: instructor, pk: true }
+      - { name: course, notNull: true }
+    rows:
+      - [White, Math]
+      - [Green, Physics]
+      - [Brown, Physics]
+      - [Black, Math]
+  - name: SI
+    columns:
+      - { name: student, pk: true }
+      - { name: instructor, pk: true }
+    foreignKeys:
+      - { columns: [instructor], references: { table: IC, columns: [instructor] } }
+    rows:
+      - [Smith, White]
+      - [Smith, Green]
+      - [Jones, White]
+      - [Jones, Brown]
+      - [Lee, Black]

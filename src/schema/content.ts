@@ -283,6 +283,49 @@ export const Question = z.discriminatedUnion("type", [
   }),
   z.object({
     ...QBase,
+    type: z.literal("fd"),
+    /** The relation, e.g. "FIRST(S#, STATUS, CITY, P#, QTY)". */
+    relation: z.string(),
+    /** Primary key; needed only when there's more than one candidate key. Normal forms are judged against it. */
+    key: z.array(z.string()).optional(),
+    /** Its functional dependencies, e.g. "S#, P# -> QTY". */
+    fds: z.array(z.string()).default([]),
+    /** List the FDs in the question (turn off when the question asks the student to work them out). */
+    showFds: z.boolean().default(true),
+    /** An instance to show (rows in the relation's attribute order); the build checks it satisfies every FD. */
+    instance: z.array(z.array(Scalar)).optional(),
+    /** Questions with the same context form one quiz section; defaults to the relation and its FDs. */
+    context: z.string().optional(),
+    /** true_false: one claim. blanks: True/False per claim. mcq: exactly one true claim. multi: select the true ones. normal_form: no claims; asks for the highest normal form. */
+    mode: z.enum(["true_false", "blanks", "mcq", "multi", "normal_form"]),
+    noneOption: z.boolean().default(false),
+    claims: z
+      .array(
+        z.object({
+          holds: z.string().optional(),
+          trivial: z.string().optional(),
+          full: z.string().optional(),
+          partial: z.string().optional(),
+          transitive: z.string().optional(),
+          key: z.array(z.string()).optional(),
+          superkey: z.array(z.string()).optional(),
+          nf: z.enum(["1NF", "2NF", "3NF", "BCNF"]).optional(),
+          exactNf: z.enum(["1NF", "2NF", "3NF", "BCNF"]).optional(),
+          lossless: z.tuple([z.array(z.string()), z.array(z.string())]).optional(),
+          preserving: z.array(z.array(z.string())).optional(),
+          good: z.tuple([z.array(z.string()), z.array(z.string())]).optional(),
+          satisfied: z.string().optional(),
+          insertAnomaly: z.array(z.string()).optional(),
+          /** The statement shown; written automatically from the claim when left out. */
+          text: z.string().optional(),
+          why: z.string().default(""),
+        }),
+      )
+      .default([]),
+    prompt: z.string().default(""),
+  }),
+  z.object({
+    ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),

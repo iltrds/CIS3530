@@ -1,0 +1,135 @@
+- id: w7-fc-what
+  topic: nf.why
+  front: What is normalization for?
+  back: Producing relations with minimal redundancy, so each fact is stored once and update anomalies can't happen. It decomposes relations into smaller ones based on their constraints.
+- id: w7-fc-why
+  topic: nf.why
+  front: Four reasons to normalize?
+  back: An ER model isn't always available; to reduce redundant data in an existing design; to increase integrity and stability; to find missing tables, columns and constraints.
+- id: w7-fc-insertion
+  topic: nf.anomalies
+  front: Insertion anomaly?
+  back: A fact can't be recorded on its own without inserting an unrelated fact too (in FIRST, a new supplier's city can't be stored until it ships a part, since P# is part of the key).
+- id: w7-fc-modification
+  topic: nf.anomalies
+  front: Modification (update) anomaly?
+  back: One fact is stored in several rows, so changing it means changing all of them; missing one makes the data contradict itself.
+- id: w7-fc-deletion
+  topic: nf.anomalies
+  front: Deletion anomaly?
+  back: Deleting one fact unintentionally deletes another (deleting S3's only shipment loses Guelph's status).
+- id: w7-fc-1nf
+  topic: nf.1nf
+  front: When is a relation in 1NF?
+  back: "Every value is atomic: no repeating groups or multi-valued cells. (Key attributes defined, every attribute dependent on the key.)"
+- id: w7-fc-flatten
+  topic: nf.1nf
+  front: How do you get an unnormalized table with a repeating group into 1NF?
+  back: "Flatten it: fill in the repeated values so every row is complete."
+- id: w7-fc-1nf-anomalies
+  topic: nf.1nf
+  front: Is FIRST(S#, STATUS, CITY, P#, QTY) in 1NF? Does it have anomalies?
+  back: Yes and yes. 1NF only rules out repeating groups; the redundancy comes from partial and transitive dependencies.
+  tags: [trap]
+- id: w7-fc-fd
+  topic: nf.fd
+  front: What does X → Y mean?
+  back: Y is functionally dependent on X (X determines Y) - any two tuples that agree on X agree on Y.
+- id: w7-fc-determinant
+  topic: nf.fd
+  front: In X → Y, what are X and Y called?
+  back: X is the determinant; Y is the dependant.
+- id: w7-fc-instance-fd
+  topic: nf.fd
+  front: Can a sample instance prove that an FD holds?
+  back: No. It can only show one doesn't (two rows agree on X and differ on Y). FDs come from the rules.
+  tags: [trap]
+- id: w7-fc-same-y
+  topic: nf.fd
+  front: "S# → CITY, and S1 and S4 are both in London. Does that break the FD?"
+  back: No. The same Y value can appear for many X values; what's forbidden is one X value with two Y values.
+  tags: [trap]
+- id: w7-fc-trivial
+  topic: nf.fd-kinds
+  front: Trivial FD?
+  back: "One that can't fail because its right side is part of its left side, e.g. (CITY, STATUS) → STATUS."
+- id: w7-fc-closure
+  topic: nf.keys
+  front: What is the closure X⁺?
+  back: Every attribute X determines, directly or through a chain of FDs. X is a superkey if X⁺ is every attribute.
+- id: w7-fc-candidate
+  topic: nf.keys
+  front: Candidate key, in FD terms?
+  back: A minimal set of attributes whose closure is the whole relation (no proper part of it is a superkey).
+- id: w7-fc-nonprime
+  topic: nf.keys
+  front: In this course's definitions, what is a non-prime-key attribute?
+  back: One that isn't part of the primary key.
+- id: w7-fc-full
+  topic: nf.fd-kinds
+  front: Full functional dependency?
+  back: Y depends on X and on no proper subset of X.
+- id: w7-fc-partial
+  topic: nf.fd-kinds
+  front: Partial (non-full) dependency, with an example?
+  back: "Y depends on X, but also on a proper part of X: (S#, P#) → CITY is partial because S# → CITY."
+- id: w7-fc-transitive
+  topic: nf.fd-kinds
+  front: Transitive dependency, with an example?
+  back: "X → Y and Y → Z, so Z depends on X only through Y: S# → CITY → STATUS."
+- id: w7-fc-partial-vs-transitive
+  topic: nf.fd-kinds
+  front: Partial vs transitive, in one line?
+  back: Partial - part of the key determines a non-key attribute. Transitive - a non-key attribute determines another non-key attribute.
+  tags: [trap]
+- id: w7-fc-2nf
+  topic: nf.2nf
+  front: When is a relation in 2NF?
+  back: In 1NF, and every non-prime-key attribute is fully functionally dependent on the primary key (no partial dependencies).
+- id: w7-fc-2nf-single
+  topic: nf.2nf
+  front: A 1NF relation has a single-attribute primary key. Is it in 2NF?
+  back: Yes. There is no proper part of the key for anything to depend on.
+  tags: [trap]
+- id: w7-fc-3nf
+  topic: nf.3nf
+  front: When is a relation in 3NF?
+  back: In 2NF, and no non-prime-key attribute is transitively dependent on the primary key.
+- id: w7-fc-codd
+  topic: nf.3nf
+  front: "\"The key, the whole key, and nothing but the key\" - which form is which?"
+  back: The key - 1NF. The whole key - 2NF. Nothing but the key - 3NF.
+- id: w7-fc-bcnf
+  topic: nf.bcnf
+  front: When is a relation in BCNF?
+  back: Every determinant is a candidate key.
+- id: w7-fc-bcnf-when
+  topic: nf.bcnf
+  front: When can a 3NF relation still have anomalies?
+  back: When it has several candidate keys that are composite and overlap (TEACH(Student, Course, Instructor)).
+- id: w7-fc-teach
+  topic: nf.bcnf
+  front: How is TEACH normalized to BCNF, and what does it cost?
+  back: "Into SI(Student, Instructor) and IC(Instructor, Course). Lossless, but (Student, Course) → Instructor can no longer be enforced."
+  tags: [trap]
+- id: w7-fc-lossless
+  topic: nf.decomposition
+  front: What makes a decomposition non-loss (lossless)?
+  back: Joining the parts gives back exactly the original relation, with no spurious tuples, and the parts can be maintained independently.
+- id: w7-fc-rissanen
+  topic: nf.decomposition
+  front: Rissanen's rules for decomposing R into R1 and R2?
+  back: 1. The common attributes are a candidate key of at least one of them. 2. Every FD of R can be derived from the FDs in R1 and R2.
+- id: w7-fc-spurious
+  topic: nf.decomposition
+  front: What are spurious tuples?
+  back: Rows that appear when a lossy decomposition is joined back together, but were never in the original relation.
+- id: w7-fc-existence-fk
+  topic: er.existence
+  front: In relational terms, when is an entity existence-dependent on another?
+  back: When its foreign key to that entity can't be null (it's mandatory). A nullable FK means it's existence-independent.
+- id: w7-fc-existence-not-weak
+  topic: er.existence
+  front: SECTION has a NOT NULL FK to COURSE but its own key CLASS_CODE. Existence-dependent? Weak?
+  back: Existence-dependent, yes. Weak, no - its key doesn't include COURSE's key.
+  tags: [trap]

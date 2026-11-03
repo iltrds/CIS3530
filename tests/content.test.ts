@@ -25,18 +25,20 @@ test("every week has enough questions for its in-class quiz format", async () =>
   }
 }, 60000);
 
-test("a diagram group's slots all use one ER diagram", async () => {
-  const { out } = await compile({ onlyWeek: 6 });
+test("a diagram group's slots all share one diagram or relation", async () => {
+  const { out } = await compile();
   const m = out!.manifest as { blueprints: Blueprint[] };
-  const bp = m.blueprints.find((b) => b.id === "in-class-er")!;
-  const pool = (out!.weeks[6] as { questions: CQuestion[] }).questions;
-  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
-    const { items, shortfalls } = assemble(bp, pool, seed);
-    expect(shortfalls).toEqual([]);
-    const s1 = items.filter((it) => it.section === "Section I");
-    expect(s1.length).toBe(5);
-    const diagrams = new Set(s1.map((it) => it.q.tags.find((t) => t.startsWith("diagram:"))));
-    expect(diagrams.size).toBe(1);
+  for (const [week, format, prefix] of [[6, "in-class-er", "diagram:"], [7, "in-class-nf", "context:"]] as const) {
+    const bp = m.blueprints.find((b) => b.id === format)!;
+    const pool = (out!.weeks[week] as { questions: CQuestion[] }).questions;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const { items, shortfalls } = assemble(bp, pool, seed);
+      expect(shortfalls).toEqual([]);
+      const s1 = items.filter((it) => it.section === "Section I");
+      expect(s1.length).toBe(5);
+      const shared = new Set(s1.map((it) => it.q.tags.find((t) => t.startsWith(prefix))));
+      expect({ week, seed, shared: shared.size }).toEqual({ week, seed, shared: 1 });
+    }
   }
 }, 60000);
 

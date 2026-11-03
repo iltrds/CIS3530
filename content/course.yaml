@@ -14,3 +14,4 @@ weights:
 events:
   - { date: "2026-10-06", kind: quiz, title: In-class quiz on Week 3, covers: [3] }
   - { date: "2026-10-27", kind: quiz, title: In-class quiz on Week 6, covers: [6], note: "Expected at the start of the Oct 27 lecture (each lecture opens with a quiz on the previous week)." }
+  - { date: "2026-11-03", kind: quiz, title: In-class quiz on Week 7, covers: [7], note: "Expected at the start of the Nov 3 lecture: normalization (1NF to BCNF) and the end of the ER model." }

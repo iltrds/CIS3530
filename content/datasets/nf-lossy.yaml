@@ -1,0 +1,37 @@
+id: nf-lossy
+title: A lossy and a non-loss decomposition (Week 7)
+description: >
+  The lecture's U(A, B, C) with two rows, and its projections. R1(A, B) and R3(A, C) share A, which is a key of
+  both, so joining them gives back U. R1(A, B) and R2(B, C) share only B, which isn't a key of either, so the
+  join invents rows.
+source: Week 7 lecture (example credited there to Dr. Fangju Wang's notes)
+tables:
+  - name: U
+    columns:
+      - { name: a, type: int, pk: true }
+      - { name: b, type: int }
+      - { name: c, type: int }
+    rows:
+      - [5, 10, 6]
+      - [7, 10, 4]
+  - name: R1
+    columns:
+      - { name: a, type: int, pk: true }
+      - { name: b, type: int }
+    rows:
+      - [5, 10]
+      - [7, 10]
+  - name: R2
+    columns:
+      - { name: b, type: int, pk: true }
+      - { name: c, type: int, pk: true }
+    rows:
+      - [10, 6]
+      - [10, 4]
+  - name: R3
+    columns:
+      - { name: a, type: int, pk: true }
+      - { name: c, type: int }
+    rows:
+      - [5, 6]
+      - [7, 4]

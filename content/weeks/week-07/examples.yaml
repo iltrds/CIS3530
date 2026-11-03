@@ -1,0 +1,193 @@
+- id: w7-ex-anomalies
+  title: The three update anomalies, live
+  topics: [nf.anomalies]
+  dataset: nf-first
+  question: "FIRST(<u>sno</u>, status, city, <u>pno</u>, qty) stores each supplier's city once per shipment. Watch each anomaly happen in Postgres (every step is rolled back afterwards)."
+  steps:
+    - title: Insertion - a new supplier with no shipments
+      body: "S6 is in Guelph but ships nothing yet. pno is part of the primary key, so it can't be null, and the fact can't be stored."
+      sql: INSERT INTO FIRST VALUES ('S6', 50, 'Guelph', NULL, NULL);
+      expectError: true
+    - title: Modification - moving S1 to Guelph, one row at a time
+      body: "S1's city is in six rows. Change only one and the relation now says S1 is in two cities at once."
+      sql: |
+        UPDATE FIRST SET city = 'Guelph' WHERE sno = 'S1' AND pno = 'P1';
+        SELECT DISTINCT sno, city FROM FIRST WHERE sno = 'S1';
+    - title: Deletion - removing S3's only shipment
+      body: "S3 is the only supplier in Guelph. Delete its shipment and the fact that Guelph's status is 50 disappears with it."
+      sql: |
+        DELETE FROM FIRST WHERE sno = 'S3';
+        SELECT DISTINCT city, status FROM FIRST;
+  pitfalls:
+    - "All three come from redundancy: one fact (a supplier's city, a city's status) stored in many rows, or tied to an unrelated fact (a shipment)."
+
+- id: w7-ex-fds
+  title: Finding FIRST's dependencies and key
+  topics: [nf.fd, nf.keys, nf.fd-kinds]
+  dataset: nf-first
+  question: "Rules: suppliers ship quantities of parts, each supplier is in one city, and each city has one status. List FIRST's FDs, its key, and which dependencies are full, partial or transitive."
+  steps:
+    - title: Read the FDs off the rules
+      body: |
+        - one quantity per supplier and part: (S#, P#) → QTY
+        - one city per supplier: S# → CITY
+        - one status per city: CITY → STATUS
+
+        Together these imply S# → STATUS and (S#, P#) → CITY, STATUS.
+    - title: Close over the FDs to find the key
+      body: "S#⁺ = {S#, CITY, STATUS} (no P#, no QTY). P#⁺ = {P#}. (S#, P#)⁺ is everything, and neither part alone is, so (S#, P#) is the only candidate key."
+    - title: Check that the instance doesn't contradict the rules
+      body: "The GROUP BY trick from Week 4: a determinant with more than one dependant value breaks the FD. No supplier has two cities…"
+      sql: SELECT sno FROM FIRST GROUP BY sno HAVING COUNT(DISTINCT city) > 1;
+    - title: …but an instance can only disprove
+      body: "P# → QTY clearly isn't a rule, and the data shows it: P1 happens to appear only with 300, but P2, P4 and P5 each have two different quantities. If every part happened to have one quantity, that still wouldn't make P# → QTY a rule."
+      sql: SELECT pno, COUNT(DISTINCT qty) AS quantities FROM FIRST GROUP BY pno ORDER BY pno;
+    - title: Classify the dependencies on the key
+      body: |
+        - (S#, P#) → QTY is **full**: neither S# nor P# alone determines QTY.
+        - (S#, P#) → CITY and (S#, P#) → STATUS are **partial**: S# alone determines them.
+        - STATUS is **transitively** dependent on S#: S# → CITY and CITY → STATUS.
+  pitfalls:
+    - "London appears for both S1 and S4. That doesn't break S# → CITY: many X values may share one Y value."
+
+- id: w7-ex-2nf
+  title: FIRST to 2NF, and checking the decomposition
+  topics: [nf.2nf, nf.decomposition]
+  dataset: nf-first
+  question: "FIRST has partial dependencies on its key (S#, P#). Decompose it into 2NF and show the decomposition is non-loss."
+  steps:
+    - title: Split off what depends on part of the key
+      body: "CITY and STATUS depend on S# alone, so they move to SECOND(<u>S#</u>, CITY, STATUS); S# stays behind in SP(<u>S#, P#</u>, QTY) so the two can be joined. QTY depends on the whole key and stays in SP."
+      sql: SELECT * FROM SECOND;
+    - title: "Rissanen rule 1: the common attributes are a key of one side"
+      body: "SP and SECOND share only S#, the key of SECOND. Each SP row matches exactly one SECOND row, so the join can't invent rows."
+      sql: SELECT * FROM SP NATURAL JOIN SECOND ORDER BY sno, pno;
+    - title: The join gives back exactly FIRST
+      body: "Rows of FIRST missing from the join, and rows of the join not in FIRST: neither query returns anything."
+      sql: |
+        SELECT sno, status, city, pno, qty FROM FIRST
+        EXCEPT
+        SELECT sno, status, city, pno, qty FROM SP NATURAL JOIN SECOND;
+    - title: "Rissanen rule 2: no FD is lost"
+      body: "(S#, P#) → QTY is inside SP; S# → CITY and CITY → STATUS are inside SECOND. Every FD can still be checked within one relation."
+    - title: Is the result in 2NF?
+      body: "SP: QTY is fully dependent on (S#, P#). SECOND: its key is one attribute, so nothing can depend on part of it. Both are in 2NF, and the S6 insertion now works: add a SECOND row with no shipments."
+      sql: |
+        INSERT INTO SECOND VALUES ('S6', 'Guelph', 50);
+        SELECT * FROM SECOND;
+  pitfalls:
+    - "Drop S# from SP and you could never rejoin the shipments to their suppliers."
+
+- id: w7-ex-lossy
+  title: A lossy decomposition makes up rows
+  topics: [nf.decomposition]
+  dataset: nf-lossy
+  question: "U(A, B, C) holds two rows, and A is its key. Compare decomposing it into R1(A, B) + R2(B, C) with R1(A, B) + R3(A, C)."
+  steps:
+    - title: The original
+      sql: SELECT * FROM U;
+    - title: Splitting on B loses information
+      body: "R1 and R2 share only B, and B = 10 in every row, so every R1 row pairs with every R2 row. (5, 10, 4) and (7, 10, 6) are **spurious tuples**: they were never in U. B isn't a key of R1 or R2, so rule 1 fails."
+      sql: SELECT * FROM R1 NATURAL JOIN R2 ORDER BY a, c;
+    - title: Splitting on A doesn't
+      body: "R1 and R3 share A, which is a key of both, so each row of R1 meets exactly one row of R3."
+      sql: SELECT * FROM R1 NATURAL JOIN R3 ORDER BY a;
+  pitfalls:
+    - "Lossy doesn't mean rows go missing: the original rows are still there, buried among extra, false ones. You lose the ability to tell which are real."
+
+- id: w7-ex-3nf
+  title: SECOND to 3NF, and the decompositions that don't work
+  topics: [nf.3nf, nf.decomposition, nf.fd-kinds]
+  dataset: nf-first
+  question: "SECOND(<u>S#</u>, CITY, STATUS) is in 2NF, but S# → CITY → STATUS is transitive. Decompose it into 3NF, and try the lecture's two alternatives."
+  steps:
+    - title: Split on the transitive dependency
+      body: "CITY → STATUS becomes CS(<u>CITY</u>, STATUS); CITY stays in SC(<u>S#</u>, CITY). Their common attribute CITY is the key of CS, and S# → CITY and CITY → STATUS each sit in one relation: lossless and dependency-preserving."
+      sql: SELECT * FROM SC NATURAL JOIN CS ORDER BY sno;
+    - title: "Alternative 1: (S#, STATUS) + (S#, CITY)"
+      body: "Lossless (S# is a key of both), but CITY → STATUS now spans two relations. Nothing stops this: S5 in London with status 30, while S1 in London has 20."
+      sql: |
+        WITH ss AS (SELECT sno, status FROM SECOND UNION ALL SELECT 'S5', 30),
+             sc AS (SELECT sno, city FROM SECOND UNION ALL SELECT 'S5', 'London')
+        SELECT * FROM ss NATURAL JOIN sc WHERE city = 'London' ORDER BY sno;
+    - title: "Alternative 2: (S#, STATUS) + (CITY, STATUS)"
+      body: "The common attribute STATUS is a key of neither, so it's lossy. In this instance no two cities share a status, so it happens to rejoin correctly. Add Oslo with status 20 and every status-20 supplier is paired with both London and Oslo."
+      sql: |
+        WITH ss AS (SELECT sno, status FROM SECOND),
+             cs AS (SELECT city, status FROM CS UNION ALL SELECT 'Oslo', 20)
+        SELECT * FROM ss NATURAL JOIN cs ORDER BY sno, city;
+  pitfalls:
+    - "Decompose on the offending FD: its determinant and dependants form the new relation, keyed on the determinant, and the determinant also stays in the old one."
+
+- id: w7-ex-bcnf
+  title: TEACH - in 3NF, but not BCNF
+  topics: [nf.bcnf, nf.3nf, nf.keys, nf.decomposition]
+  dataset: nf-teach
+  question: "TEACH(Student, Course, Instructor): for each course a student has one instructor, and each instructor teaches one course. Find its keys and normal form, and normalize it to BCNF."
+  steps:
+    - title: FDs and candidate keys
+      body: "(Student, Course) → Instructor and Instructor → Course. (Student, Course)⁺ and (Student, Instructor)⁺ are both everything, so there are **two composite, overlapping candidate keys**."
+    - title: 3NF with (Student, Course) as the primary key
+      body: "The only non-prime-key attribute is Instructor. It depends on the whole key and on nothing else, so there's no partial or transitive dependency: 3NF."
+    - title: But not BCNF
+      body: "Instructor → Course has a determinant, Instructor, that isn't a candidate key. The anomaly: \"White teaches Math\" is stored once per White student."
+      sql: SELECT instructor, course, COUNT(*) AS copies FROM TEACH GROUP BY instructor, course ORDER BY copies DESC;
+    - title: Decompose on the offending FD
+      body: "IC(<u>Instructor</u>, Course) and SI(<u>Student, Instructor</u>). They share Instructor, the key of IC, so the join is lossless."
+      sql: SELECT student, course, instructor FROM SI NATURAL JOIN IC ORDER BY student, course;
+    - title: The cost - a dependency is lost
+      body: "(Student, Course) → Instructor spans both relations, so neither can enforce it. Give Lee a second Math instructor in SI and the join shows Lee with two instructors for one course, which TEACH's key would have refused."
+      sql: |
+        INSERT INTO SI VALUES ('Lee', 'White');
+        SELECT student, course, instructor FROM SI NATURAL JOIN IC WHERE student = 'Lee';
+  pitfalls:
+    - "With (Student, Instructor) as the primary key, Course depends on part of it (Instructor), so under this course's definitions TEACH wouldn't even be in 2NF. The problem is the same; only its name changes."
+
+- id: w7-ex-shift
+  title: "A worksheet-style analysis: SHIFT"
+  topics: [nf.fd, nf.anomalies, nf.2nf, nf.3nf]
+  question: |
+    SHIFT(<u>Employee, ShiftDate</u>, Station, Supervisor, HourlyRate). Rules: an employee works at one station on a given date; each station has one supervisor; an employee is paid the same hourly rate on every shift.
+
+    | Employee | ShiftDate | Station | Supervisor | HourlyRate |
+    |---|---|---|---|---|
+    | Ana | 2026-11-05 | 2 | Kim | 18 |
+    | Ana | 2026-11-06 | 3 | Raj | 18 |
+    | Ben | 2026-11-05 | 2 | Kim | 21 |
+    | Cleo | 2026-11-06 | 3 | Raj | 19 |
+
+    Find the FDs, decide which new facts cause an insertion anomaly, give the normal form, and decompose to 3NF.
+  steps:
+    - title: FDs
+      body: "(Employee, ShiftDate) → Station; Station → Supervisor; Employee → HourlyRate. The key is (Employee, ShiftDate): together they determine everything, and neither does alone."
+    - title: Which facts can't be inserted?
+      body: |
+        - "Station 4's supervisor is Dee": no Employee or ShiftDate, both part of the key. **Insertion anomaly.**
+        - "Dan will be paid $20 an hour": no ShiftDate. **Insertion anomaly.**
+        - "Ana works at station 2 on Nov 7": the whole key is there (Supervisor and HourlyRate can be filled in or left null). **No anomaly.**
+    - title: Normal form
+      body: "1NF (atomic values). Not 2NF: HourlyRate depends on Employee, part of the key. It also has a transitive dependency, (Employee, ShiftDate) → Station → Supervisor."
+    - title: Decompose to 2NF, then 3NF
+      body: |
+        - 2NF: RATE(<u>Employee</u>, HourlyRate) and SHIFT2(<u>Employee, ShiftDate</u>, Station, Supervisor).
+        - SHIFT2 still has Station → Supervisor, so 3NF: ASSIGNMENT(<u>Employee, ShiftDate</u>, Station) and STATION(<u>Station</u>, Supervisor).
+
+        Each split shares a key of one side (Employee, then Station) and keeps every FD inside one relation.
+  pitfalls:
+    - "Two rows say \"2, Kim\": that's a modification anomaly waiting to happen (station 2 gets a new supervisor), not a broken FD."
+
+- id: w7-ex-existence
+  title: Existence dependency as NOT NULL
+  topics: [er.existence]
+  dataset: university-staff
+  question: "In the mapped University Staff schema, EMPLOYEE.dnumber is NOT NULL and EMPLOYEE.s_sin isn't. What does each say about existence dependency?"
+  steps:
+    - title: A mandatory foreign key
+      body: "WORKS_FOR is total on EMPLOYEE's side, so its FK dnumber is NOT NULL: an employee can't be stored without a department. EMPLOYEE is **existence-dependent** on DEPARTMENT."
+      sql: INSERT INTO EMPLOYEE (SIN, fname, dnumber) VALUES ('888', 'Ian', NULL);
+      expectError: true
+    - title: An optional foreign key
+      body: "Supervision is partial (someone is at the top), so s_sin can be null: an employee is **existence-independent** of a supervisor."
+      sql: SELECT SIN, fname, s_sin FROM EMPLOYEE WHERE s_sin IS NULL;
+    - title: Dependent isn't the same as weak
+      body: "EMPLOYEE has its own key, SIN. It's existence-dependent on DEPARTMENT but not weak, like SECTION with its surrogate CLASS_CODE. DEPENDENT is weak: its key (SIN, fname) includes EMPLOYEE's key."

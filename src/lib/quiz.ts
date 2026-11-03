@@ -48,7 +48,8 @@ export function assemble(bp: Blueprint, pool: CQuestion[], seed: number): { item
   const diagramOf = (group: string) => {
     if (!groupDiagram.has(group)) {
       const slots = bp.slots.filter((s) => s.diagramGroup === group);
-      const ids = [...new Set(pool.flatMap((q) => q.tags.filter((t) => t.startsWith("diagram:"))))].sort();
+      // a shared context is an ER diagram (diagram:…) or a relation with its FDs (context:…)
+      const ids = [...new Set(pool.flatMap((q) => q.tags.filter((t) => t.startsWith("diagram:") || t.startsWith("context:"))))].sort();
       const fits = ids.filter((id) => {
         const taken = new Set<string>();
         return slots.every((s) => {
