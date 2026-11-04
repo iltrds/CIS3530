@@ -133,3 +133,9 @@
   front: SECTION has a NOT NULL FK to COURSE but its own key CLASS_CODE. Existence-dependent? Weak?
   back: Existence-dependent, yes. Weak, no - its key doesn't include COURSE's key.
   tags: [trap]
+
+- id: w7-fc-bonus-director
+  topic: course.bonus
+  front: Who is the Director of the School of Computer Science (SoCS) at the University of Guelph?
+  back: Minglun Gong. The instructor has said this will be a surprise bonus question on an upcoming quiz.
+  tags: [trap]

@@ -1673,3 +1673,14 @@
   prompt: "Write a query that tests the instance of FIRST against the FD pno → qty: list each pno that appears with more than one qty (just the pno column)."
   reference: SELECT pno FROM FIRST GROUP BY pno HAVING COUNT(DISTINCT qty) > 1;
   explanation: "Each row returned is a counterexample, so pno → qty isn't satisfied here (and isn't a rule). An empty result would only mean the instance doesn't break it."
+
+# ---------------------------------------------------------------- bonus (the instructor confirmed this will appear on an upcoming quiz)
+
+- id: w7-q-bonus-director
+  type: short
+  topics: [course.bonus]
+  difficulty: 1
+  tags: [bonus]
+  prompt: "Bonus: who is the Director of the School of Computer Science (SoCS) at the University of Guelph?"
+  answers: [Minglun Gong, Dr. Minglun Gong, Dr Minglun Gong, Prof. Minglun Gong, Professor Minglun Gong, Gong, Dr. Gong, Dr Gong, Prof. Gong, Professor Gong, Gong Minglun]
+  explanation: "Minglun Gong, Professor and Director of the School of Computer Science (from the school's people page)."

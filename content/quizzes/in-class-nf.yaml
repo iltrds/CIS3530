@@ -18,3 +18,5 @@ slots:
   - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [nf-kind] }
   - { name: "Section II", types: [short], count: 1, points: 1, requireTags: [term], style: direct }
   - { name: "Section II", types: [matching], count: 1, points: 2, requireTags: [nf-match] }
+  # the instructor confirmed a surprise bonus question on an upcoming quiz
+  - { name: "Bonus", types: [short], count: 1, points: 1, requireTags: [bonus], style: any }

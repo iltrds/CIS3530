@@ -3,6 +3,6 @@ title: Normalization (1NF to BCNF)
 summary: Why redundant tables cause insertion, modification and deletion anomalies, functional dependencies, the normal forms 1NF, 2NF, 3NF and BCNF, and how to decompose a relation without losing information. Also the end of the ER model, existence dependency revisited.
 status: published
 quizFormat: in-class-nf
-topics: [er.existence, nf.why, nf.anomalies, nf.1nf, nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf, nf.bcnf, nf.decomposition]
+topics: [er.existence, nf.why, nf.anomalies, nf.1nf, nf.fd, nf.fd-kinds, nf.keys, nf.2nf, nf.3nf, nf.bcnf, nf.decomposition, course.bonus]
 readings: ["Elmasri & Navathe: the chapter on functional dependencies and normalization (normal forms based on primary keys, then BCNF)"]
 sources: [ERModel_continued_from_week6.pdf, Week7_Normalization.pdf, Worksheet7.pdf]

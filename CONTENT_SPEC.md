@@ -223,3 +223,5 @@ For `instance_choices`, pairs follow the order of the relationship's `ends` in t
 A slot can also require tags (`requireTags: [query-shape]`); `query_shape` questions are tagged `query-shape` and `query_choices` questions `query-choices` automatically, plus a language-specific tag (`query-shape-sql`, `query-choices-ra`, …); the SQL quiz format uses only the SQL ones. Blueprints get a short `label` for the simulator's format buttons.
 
 If a quiz arrives in a new format, add a new blueprint and point that week's `quizFormat` at it.
+
+**Bonus slot.** The instructor confirmed a surprise bonus question on an upcoming quiz: "Who is the Director of the School of Computer Science?" (Minglun Gong). It's question `w7-q-bonus-director`, tagged `bonus`, and the normalization format ends with a `Bonus` slot (`requireTags: [bonus]`, `style: any`). Until it has appeared on a quiz, copy that slot into each new week's format, and keep the `bonus`-tagged question in that week's bank (or move it there).
