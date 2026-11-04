@@ -69,4 +69,8 @@
 - { id: nf.3nf, label: "Third normal form (3NF)", week: 7 }
 - { id: nf.bcnf, label: "Boyce–Codd normal form (BCNF)", week: 7 }
 - { id: nf.decomposition, label: "Non-loss decomposition and Rissanen's rules", week: 7 }
-- { id: course.bonus, label: "Bonus questions (course and school facts)", week: 7 }
+- { id: course.bonus, label: "Bonus questions (course and school facts)", week: 8 }
+- { id: nf.recap, label: "Normalization recap (1NF to BCNF)", week: 8 }
+- { id: nf.mvd, label: "Multivalued dependencies (MVDs)", week: 8 }
+- { id: nf.4nf, label: "Fourth normal form (4NF)", week: 8 }
+- { id: nf.denormalization, label: "Denormalization", week: 8 }

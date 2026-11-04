@@ -1,0 +1,89 @@
+- id: w8-ex-sch
+  title: "SCH: in BCNF, and still redundant"
+  topics: [nf.mvd, nf.4nf]
+  dataset: nf-mvd
+  question: "Students take courses and have hobbies, independently. Flatten the lecture's SCH table to 1NF, find what's left of its redundancy, and decompose it into 4NF."
+  steps:
+    - title: Flattened, every course meets every hobby
+      body: "No course goes with a particular hobby, so 1NF can only say \"each course with each hobby\": 2 × 2 rows for Jin and 3 × 2 for Habib."
+      sql: SELECT * FROM SCH ORDER BY student DESC, course, hobby;
+    - title: No FDs, so the key is everything, so BCNF
+      body: "A student has many courses and many hobbies, so no attribute determines another. The only key is (Student, Courses, Hobbies), every determinant is a candidate key, and SCH is in **BCNF**."
+    - title: The anomaly that's left
+      body: "Habib takes up chess. Insert one row and the table claims chess goes with C++ only; the MVD needs one row per course. Count Habib's hobby rows per course afterwards:"
+      sql: |
+        INSERT INTO SCH VALUES ('Habib', 'C++', 'Chess');
+        SELECT course, COUNT(*) AS hobbies FROM SCH WHERE student = 'Habib' GROUP BY course ORDER BY course;
+    - title: The cause is an MVD
+      body: "Student →→ Courses | Hobbies: two independent 1:N relationships in one relation. It isn't an FD, so SCH isn't in **4NF**."
+    - title: One relation per independent set
+      body: "SC(Student, Courses) and SH(Student, Hobbies). Habib's chess is now one row in SH."
+      sql: SELECT * FROM SH ORDER BY student, hobby;
+    - title: The join rebuilds SCH exactly
+      body: "Student isn't a key of SC or SH, but the MVD guarantees that each student's courses pair with all their hobbies, which is precisely what the join produces. Rows of SCH missing from the join, and the other way round: none."
+      sql: |
+        (SELECT * FROM SCH EXCEPT SELECT student, course, hobby FROM SC NATURAL JOIN SH)
+        UNION ALL
+        (SELECT student, course, hobby FROM SC NATURAL JOIN SH EXCEPT SELECT * FROM SCH);
+  pitfalls:
+    - "Rissanen's key test (common attributes form a key) is for FDs. Here the decomposition is lossless because of the MVD."
+
+- id: w8-ex-mvd-or-not
+  title: MVD or not?
+  topics: [nf.mvd, nf.4nf]
+  question: "For each relation, decide whether it has a non-trivial MVD, and whether it's in 4NF: PERSON(SIN, PhoneNos, KidsSIN), FACULTY(UtorId, coursesTeach, dependentSIN), STUINFO(StudentNo, Height, ShoeSize), and OFFERING(Course, Teacher, Textbook) where each teacher of a course picks their own textbook."
+  steps:
+    - title: PERSON
+      body: "A person has a set of phone numbers and a set of children, and they're unrelated: **SIN →→ PhoneNos | KidsSIN**. No FDs, so it's all-key, BCNF, and not 4NF. Decompose into (SIN, PhoneNo) and (SIN, KidSIN)."
+    - title: FACULTY
+      body: "The courses someone teaches have nothing to do with their dependants: **UtorId →→ coursesTeach | dependentSIN**. Not 4NF, for the same reason."
+    - title: STUINFO
+      body: "A student has one height and one shoe size: **StudentNo → Height** and **StudentNo → ShoeSize**. Those are FDs, and an FD is also an MVD, so its MVDs are all FDs: **4NF**."
+    - title: OFFERING
+      body: "Teachers and textbooks aren't independent here: the textbook depends on which teacher. (Course, Teacher) → Textbook is an FD, the key is (Course, Teacher), and there's no non-trivial MVD: 4NF. Splitting it into (Course, Teacher) and (Course, Textbook) would be lossy: it would pair every teacher with every textbook of the course."
+  pitfalls:
+    - "Two multi-valued facts about the same thing make an MVD only when every pairing of them is valid."
+
+- id: w8-ex-denorm
+  title: "CONTACT: normalize, or not?"
+  topics: [nf.denormalization, nf.3nf]
+  dataset: nf-mvd
+  question: "CONTACT(Name, Street, Zip, City, Province). Find its key and normal form, normalize it to 3NF, and decide whether that's worth it."
+  steps:
+    - title: Key and dependencies
+      body: "Name → Street, Zip (each contact has one address) and Zip → City, Province (a postal code is in one city and province). The key is Name."
+      sql: SELECT * FROM CONTACT;
+    - title: 2NF, not 3NF
+      body: "The key is a single attribute, so there are no partial dependencies: 2NF. But City and Province depend on Name through Zip: transitive, so not 3NF. Windsor and ON are repeated for John and Harry."
+    - title: The 3NF version
+      body: "CONTACT3(<u>Name</u>, Street, Zip) and ZIP(<u>Zip</u>, City, Province). Getting a full address now takes a join."
+      sql: SELECT c.name, c.street, z.city, z.province, c.zip FROM CONTACT3 c JOIN ZIP z ON c.zip = z.zip ORDER BY c.name;
+    - title: Is it worth it?
+      body: |
+        - **For splitting:** no repeated city and province, and no way for two contacts with the same postal code to disagree on the city.
+        - **Against:** every address lookup needs a join; postal codes almost never change city, so the anomaly would rarely happen; the redundancy is a couple of short values per row.
+
+        Many designs would keep CONTACT as it is, in 2NF: a deliberate denormalization for faster reads.
+  pitfalls:
+    - "Denormalizing is a decision you justify (read-heavy, rarely-changing data), not a shortcut for skipping the analysis."
+
+- id: w8-ex-recap
+  title: "Recap: one relation, all the way to BCNF"
+  topics: [nf.recap, nf.bcnf]
+  question: |
+    STAY(<u>GuestID, Night</u>, GuestName, RoomNo, RoomType, Rate). Rules: a guest stays in one room on a given night, each room has one type, and each room type has one rate.
+
+    Identify the FDs and anomalies, and normalize to BCNF.
+  steps:
+    - title: FDs
+      body: "(GuestID, Night) → RoomNo; GuestID → GuestName; RoomNo → RoomType; RoomType → Rate. The key is (GuestID, Night)."
+    - title: Anomalies
+      body: "Insertion: a new room type's rate can't be stored until someone stays in such a room. Modification: changing the double rate means editing every double stay. Deletion: removing a guest's only stay loses their name."
+    - title: Normal form
+      body: "1NF. GuestName depends on GuestID, part of the key (partial), and Rate depends on the key through RoomNo and RoomType (transitive)."
+    - title: Decompose
+      body: |
+        - 2NF: GUEST(<u>GuestID</u>, GuestName) and STAY2(<u>GuestID, Night</u>, RoomNo, RoomType, Rate)
+        - 3NF: split STAY2 on RoomNo → RoomType and RoomType → Rate: STAY3(<u>GuestID, Night</u>, RoomNo), ROOM(<u>RoomNo</u>, RoomType), RATE(<u>RoomType</u>, Rate)
+
+        Every determinant in each relation is now its key, so all four are in BCNF too.

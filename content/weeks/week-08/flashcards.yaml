@@ -1,0 +1,101 @@
+- id: w8-fc-recap-forms
+  topic: nf.recap
+  front: 1NF, 2NF and 3NF in one line each (the course's wording)?
+  back: "1NF: a primary key and no repeating groups. 2NF: 1NF and no partial dependencies on the key. 3NF: 2NF and no transitive dependencies on the key."
+- id: w8-fc-recap-decompose
+  topic: nf.recap
+  front: "R(A, B, C, D) has a non-trivial FD C → D that breaks a normal form. How is it decomposed?"
+  back: "Into R1(A, B, C) and R2(C, D): the attributes causing the violation go into a new relation keyed on C, and C stays behind so the two can be joined."
+- id: w8-fc-recap-good
+  topic: nf.recap
+  front: What makes a decomposition into R1 and R2 good?
+  back: "It's non-loss (R1 ∩ R2 is a key of R1, R2 or both) and it preserves the FDs."
+- id: w8-fc-bcnf-when
+  topic: nf.bcnf
+  front: When do anomalies remain in a 3NF relation?
+  back: When it has multiple candidate keys that are composite and overlap.
+- id: w8-fc-bcnf-limit
+  topic: nf.bcnf
+  front: Which anomalies does BCNF remove, and which can remain?
+  back: All those caused by functional dependencies. Redundancy from multivalued dependencies can remain.
+  tags: [trap]
+- id: w8-fc-mvd
+  topic: nf.mvd
+  front: What is a multivalued dependency A →→ B | C?
+  back: For each A there is a set of B values and a set of C values, and the two sets are independent of each other.
+- id: w8-fc-mvd-cause
+  topic: nf.mvd
+  front: What situation in a relation produces an MVD?
+  back: "Two independent 1:N relationships in the same relation, e.g. Student:Courses and Student:Hobbies in SCH."
+- id: w8-fc-mvd-1nf
+  topic: nf.mvd
+  front: Why do MVDs exist at all?
+  back: Because 1NF won't let an attribute hold a set of values, so independent sets become every combination of rows.
+- id: w8-fc-mvd-rows
+  topic: nf.mvd
+  front: In SCH, Jin takes 2 courses and has 2 hobbies; Habib takes 3 and has 2. How many rows?
+  back: "4 + 6 = 10. Every course is paired with every hobby."
+- id: w8-fc-mvd-swap
+  topic: nf.mvd
+  front: How can you test an instance for A →→ B?
+  back: For any two rows with the same A, swapping their B values must give rows that are also in the table.
+- id: w8-fc-fd-is-mvd
+  topic: nf.mvd
+  front: Is every FD an MVD?
+  back: "Yes. If A → B, each A has a set of exactly one B value."
+  tags: [trap]
+- id: w8-fc-mvd-independent
+  topic: nf.mvd
+  front: Each teacher of a course chooses their own textbook. Is there an MVD Course →→ Teacher | Textbook?
+  back: "No. The sets aren't independent: a textbook goes with a particular teacher, so not every pairing appears."
+  tags: [trap]
+- id: w8-fc-mvd-trivial
+  topic: nf.mvd
+  front: When is an MVD A →→ B trivial?
+  back: When B is part of A, or when A and B together make up the whole relation.
+- id: w8-fc-4nf
+  topic: nf.4nf
+  front: When is a relation in 4NF?
+  back: It's in BCNF and has no MVDs, or all its MVDs are also FDs.
+- id: w8-fc-sch-4nf
+  topic: nf.4nf
+  front: Is SCH(Student, Courses, Hobbies) in BCNF? In 4NF?
+  back: "BCNF yes (no non-trivial FDs; the key is all three attributes). 4NF no: Student →→ Courses isn't an FD."
+  tags: [trap]
+- id: w8-fc-sch-decompose
+  topic: nf.4nf
+  front: How is SCH decomposed into 4NF?
+  back: Into SC(Student, Courses) and SH(Student, Hobbies). The join rebuilds every combination, so it's lossless.
+- id: w8-fc-stuinfo
+  topic: nf.4nf
+  front: Why is STUINFO(StudentNo, Height, ShoeSize) in 4NF?
+  back: Its MVDs are also FDs (StudentNo → Height, StudentNo → ShoeSize), on its key.
+- id: w8-fc-person
+  topic: nf.mvd
+  front: Does PERSON(SIN, PhoneNos, KidsSIN) have an MVD?
+  back: "Yes: SIN →→ PhoneNos | KidsSIN. Phone numbers and children are independent sets."
+- id: w8-fc-er-4nf
+  topic: nf.4nf
+  front: Why do relations mapped from an ER model usually need no transformation to 4NF?
+  back: Each multivalued attribute already gets its own relation (mapping step 6), so two independent sets never share a table.
+- id: w8-fc-denorm
+  topic: nf.denormalization
+  front: What is denormalization?
+  back: Deliberately adding redundant data or grouping data to speed up retrieval, moving from a higher normal form to a lower one.
+- id: w8-fc-denorm-why
+  topic: nf.denormalization
+  front: What does normalization optimize, and at what cost?
+  back: Updates (each fact in one place), at the expense of retrievals, which need joins across several relations.
+- id: w8-fc-contact
+  topic: nf.denormalization
+  front: "CONTACT(Name, Street, Zip, City, Province): key? 3NF?"
+  back: "The key is Name. Not 3NF: Zip → City, Province makes them transitively dependent on Name (it's 2NF)."
+- id: w8-fc-contact-worth
+  topic: nf.denormalization
+  front: Why might CONTACT be left in 2NF rather than split off ZIP?
+  back: Addresses are read whole (every lookup would need a join), and a postal code's city and province almost never change, so the anomaly rarely bites.
+- id: w8-fc-bonus-director
+  topic: course.bonus
+  front: Who is the Director of the School of Computer Science (SoCS) at the University of Guelph?
+  back: Minglun Gong. The instructor has said this will be a surprise bonus question on an upcoming quiz.
+  tags: [trap]

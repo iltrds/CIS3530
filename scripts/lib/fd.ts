@@ -54,12 +54,38 @@ export function parseFD(s: string): FD {
 export const fmtSet = (xs: Attrs) => (xs.length === 1 ? xs[0]! : `(${xs.join(", ")})`);
 export const fmtFD = (f: FD) => `${fmtSet(f.lhs)} → ${f.rhs.join(", ")}`;
 
+/** A multivalued dependency X →→ Y (and, implicitly, X →→ the rest). */
+export type MVD = FD;
+
+/** "Student ->> Courses" or "Student ->> Courses | Hobbies" (→→ also works); the part after | is just the rest. */
+export function parseMVD(s: string): MVD {
+  const parts = s.split(/->>|→→|↠/);
+  if (parts.length !== 2) throw new Error(`can't read MVD "${s}"; write it as A ->> B`);
+  const lhs = splitAttrs(parts[0]!), rhs = splitAttrs(parts[1]!.split("|")[0]!);
+  if (!lhs.length || !rhs.length) throw new Error(`MVD "${s}" needs attributes on both sides`);
+  return { lhs, rhs };
+}
+export const fmtMVD = (m: MVD, rel: Relation) => {
+  const rest = rel.attrs.filter((a) => !m.lhs.includes(a) && !m.rhs.includes(a));
+  return `${fmtSet(m.lhs)} →→ ${m.rhs.join(", ")}${rest.length ? ` | ${rest.join(", ")}` : ""}`;
+};
+
 export class FDSet {
   constructor(
     readonly rel: Relation,
     readonly fds: FD[],
+    /** Declared MVDs; undefined means 4NF isn't considered. */
+    readonly mvds?: MVD[],
   ) {
-    for (const f of fds) for (const a of [...f.lhs, ...f.rhs]) if (!rel.attrs.includes(a)) throw new Error(`FD ${fmtFD(f)} uses ${a}, which isn't in ${rel.name}`);
+    for (const f of [...fds, ...(mvds ?? [])]) for (const a of [...f.lhs, ...f.rhs]) if (!rel.attrs.includes(a)) throw new Error(`dependency ${fmtFD(f)} uses ${a}, which isn't in ${rel.name}`);
+  }
+
+  /** Non-trivial MVDs whose determinant isn't a superkey (they break 4NF). */
+  mvdViolations(): MVD[] {
+    return (this.mvds ?? []).filter((m) => {
+      const trivial = m.rhs.every((a) => m.lhs.includes(a)) || this.rel.attrs.every((a) => m.lhs.includes(a) || m.rhs.includes(a));
+      return !trivial && !this.isSuperkey(m.lhs);
+    });
   }
 
   /** Keeps the relation's attribute order. */
@@ -147,13 +173,14 @@ export class FDSet {
     return { partial, transitive, bcnf };
   }
 
-  /** Highest of 1NF, 2NF, 3NF, BCNF (the relation is assumed to have atomic values). */
-  normalForm(pk: Attrs): "1NF" | "2NF" | "3NF" | "BCNF" {
+  /** Highest of 1NF, 2NF, 3NF, BCNF and (when MVDs are declared) 4NF; values are assumed atomic. */
+  normalForm(pk: Attrs): NF {
     const v = this.violations(pk);
     if (v.partial.length) return "1NF";
     if (v.transitive.length) return "2NF";
     if (v.bcnf.length) return "3NF";
-    return "BCNF";
+    if (!this.mvds) return "BCNF";
+    return this.mvdViolations().length ? "BCNF" : "4NF";
   }
 
   /** FDs of this set that hold within `sub` (X → A with X ⊆ sub, A ∈ sub), as minimal determinants. */
@@ -169,7 +196,7 @@ export class FDSet {
   }
 }
 
-const ORDER = ["1NF", "2NF", "3NF", "BCNF"] as const;
+const ORDER = ["1NF", "2NF", "3NF", "BCNF", "4NF"] as const;
 export type NF = (typeof ORDER)[number];
 export const atLeast = (have: NF, want: NF) => ORDER.indexOf(have) >= ORDER.indexOf(want);
 
@@ -182,6 +209,16 @@ export function lossless(F: FDSet, r1: Attrs, r2: Attrs): { ok: boolean; common:
   const name = (xs: Attrs) => `(${xs.join(", ")})`;
   if (k1 || k2)
     return { ok: true, common, why: `The common attribute${common.length > 1 ? "s" : ""} ${fmtSet(common)} ${common.length > 1 ? "are" : "is"} a key of ${name(k1 ? r1 : r2)}, so the join restores the original rows.` };
+  // with MVDs: (X ∪ Y) + (X ∪ Z) is lossless when X →→ Y (equivalently X →→ Z)
+  const rest1 = r1.filter((a) => !common.includes(a)).sort().join("|"), rest2 = r2.filter((a) => !common.includes(a)).sort().join("|");
+  const viaMvd = (F.mvds ?? []).find((m) => {
+    if (!m.lhs.every((a) => common.includes(a))) return false;
+    const y = m.rhs.filter((a) => !common.includes(a)).sort().join("|");
+    const z = F.rel.attrs.filter((a) => !common.includes(a) && !m.rhs.includes(a)).sort().join("|");
+    return [y, z].includes(rest1) && [y, z].includes(rest2);
+  });
+  if (viaMvd)
+    return { ok: true, common, why: `${fmtMVD(viaMvd, F.rel)} holds, so every ${viaMvd.lhs.join(", ")} value already pairs each of its ${viaMvd.rhs.join(", ")} values with each of its other values: the join restores the original rows.` };
   return { ok: false, common, why: `The common attribute${common.length > 1 ? "s" : ""} ${fmtSet(common)} ${common.length > 1 ? "are" : "is"} a key of neither side, so the join can create spurious rows.` };
 }
 
@@ -190,6 +227,23 @@ export function preserving(F: FDSet, parts: Attrs[]): { ok: boolean; lost: FD[] 
   const projected = new FDSet(F.rel, parts.flatMap((p) => F.project(p)));
   const lost = F.fds.filter((f) => !projected.implies(f.lhs, f.rhs));
   return { ok: !lost.length, lost };
+}
+
+/**
+ * Rows that break the MVD X →→ Y, if any: t1 and t2 agree on X, but the row with
+ * t1's X and Y and t2's other values is missing. Returns [t1, t2, missing row].
+ */
+export function instanceBreaksMVD(rel: Relation, rows: unknown[][], m: MVD): [unknown[], unknown[], unknown[]] | undefined {
+  const idx = (a: string) => rel.attrs.indexOf(a);
+  const key = (r: unknown[]) => JSON.stringify(r);
+  const have = new Set(rows.map(key));
+  for (const t1 of rows)
+    for (const t2 of rows) {
+      if (!m.lhs.every((a) => JSON.stringify(t1[idx(a)]) === JSON.stringify(t2[idx(a)]))) continue;
+      const t3 = rel.attrs.map((a, i) => (m.lhs.includes(a) || m.rhs.includes(a) ? t1[i] : t2[i]));
+      if (!have.has(key(t3))) return [t1, t2, t3];
+    }
+  return undefined;
 }
 
 /** Rows (in relation attribute order) that break X → Y, if any. */
@@ -222,11 +276,12 @@ export interface Claim {
   good?: [Attrs, Attrs];
   satisfied?: string;
   insertAnomaly?: Attrs;
+  mvdSatisfied?: string;
   text?: string;
   why?: string;
 }
 
-export const CLAIM_KINDS = ["holds", "trivial", "full", "partial", "transitive", "key", "superkey", "nf", "exactNf", "lossless", "preserving", "good", "satisfied", "insertAnomaly"] as const;
+export const CLAIM_KINDS = ["holds", "trivial", "full", "partial", "transitive", "key", "superkey", "nf", "exactNf", "lossless", "preserving", "good", "satisfied", "insertAnomaly", "mvdSatisfied"] as const;
 
 export interface Judged {
   value: boolean;
@@ -235,7 +290,7 @@ export interface Judged {
 }
 
 const list = (xs: Attrs) => xs.join(", ");
-const nfText: Record<NF, string> = { "1NF": "1NF", "2NF": "2NF", "3NF": "3NF", BCNF: "BCNF" };
+const nfText: Record<NF, string> = { "1NF": "1NF", "2NF": "2NF", "3NF": "3NF", BCNF: "BCNF", "4NF": "4NF" };
 
 export function describeNF(F: FDSet, pk: Attrs): string {
   const v = F.violations(pk);
@@ -246,8 +301,13 @@ export function describeNF(F: FDSet, pk: Attrs): string {
   if (v.transitive.length) parts.push(`transitive dependencies: ${v.transitive.map(dep).join("; ")}, whose determinant isn't a key${v.partial.length ? "" : " (so not 3NF)"}`);
   const onlyBcnf = v.bcnf.filter((d) => !v.partial.includes(d) && !v.transitive.includes(d));
   if (onlyBcnf.length) parts.push(`${onlyBcnf.map(dep).join("; ")}: the determinant isn't a candidate key, though the dependant is part of the primary key${nf === "3NF" ? " (so 3NF but not BCNF)" : ""}`);
-  const head = `With primary key ${fmtSet(pk)}, ${F.rel.name} is in **${nf}**${nf === "BCNF" ? "" : ` but not ${ORDER[ORDER.indexOf(nf) + 1]}`}.`;
-  return parts.length ? `${head} It has ${parts.join("; and ")}.` : `${head} Every determinant is a candidate key.`;
+  const top = F.mvds ? "4NF" : "BCNF";
+  const mv = nf === "BCNF" && F.mvds ? F.mvdViolations() : [];
+  if (mv.length) parts.push(`the multivalued dependenc${mv.length > 1 ? "ies" : "y"} ${mv.map((m) => fmtMVD(m, F.rel)).join("; ")}, whose determinant isn't a superkey (so not 4NF)`);
+  const keyText = pk.length === F.rel.attrs.length ? `its whole heading ${fmtSet(pk)} as the key` : `primary key ${fmtSet(pk)}`;
+  const head = `With ${keyText}, ${F.rel.name} is in **${nf}**${nf === top ? "" : ` but not ${ORDER[ORDER.indexOf(nf) + 1]}`}.`;
+  if (parts.length) return `${head} It has ${parts.join("; and ")}.`;
+  return nf === "4NF" && F.mvds!.length ? `${head} Every determinant is a candidate key, and every multivalued dependency is implied by a key (an FD).` : `${head} Every determinant is a candidate key.`;
 }
 
 export function judgeClaim(F: FDSet, pk: Attrs, c: Claim, rows?: unknown[][]): Judged {
@@ -338,6 +398,20 @@ export function judgeClaim(F: FDSet, pk: Attrs, c: Claim, rows?: unknown[][]): J
       const ll = lossless(F, parts[0]!, parts[1]!);
       if (kind === "lossless") return out(ll.ok, `Decomposing ${rel} into ${name} is non-loss (lossless).`, ll.why);
       return out(ll.ok && pres.ok, `Decomposing ${rel} into ${name} is a good decomposition (by Rissanen's rules).`, `${ll.why} ${presWhy}`);
+    }
+    case "mvdSatisfied": {
+      if (!rows) throw new Error("an mvdSatisfied claim needs an instance");
+      const m = parseMVD(c.mvdSatisfied!);
+      new FDSet(F.rel, [m]);
+      const br = instanceBreaksMVD(F.rel, rows, m);
+      const t = fmtMVD(m, F.rel);
+      return out(
+        !br,
+        `The instance satisfies ${t}.`,
+        br
+          ? `Two rows share ${list(m.lhs)}, so every combination of their ${list(m.rhs)} and other values must appear, but (${br[2].map(String).join(", ")}) is missing.`
+          : `For each ${list(m.lhs)} value, every combination of its ${list(m.rhs)} values with its other values appears.`,
+      );
     }
     case "insertAnomaly": {
       const known = F.order(c.insertAnomaly!);

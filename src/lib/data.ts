@@ -28,6 +28,7 @@ export interface Slot {
   style?: "conceptual" | "direct" | "any";
   topics: string[];
   diagramGroup?: string;
+  optional?: boolean;
 }
 export interface Blueprint {
   id: string;

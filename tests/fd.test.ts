@@ -69,3 +69,37 @@ describe("functional dependencies", () => {
     expect(() => judgeClaim(FIRST, pk, { holds: "S# -> COLOUR" })).toThrow();
   });
 });
+
+describe("multivalued dependencies and 4NF", () => {
+  test("the lecture's SCH, PERSON and STUINFO", async () => {
+    const { parseMVD, instanceBreaksMVD } = await import("../scripts/lib/fd.ts");
+    const rel = parseRelation("SCH(Student, Courses, Hobbies)");
+    const SCH = new FDSet(rel, [], [parseMVD("Student ->> Courses | Hobbies")]);
+    expect(SCH.candidateKeys()).toEqual([["Student", "Courses", "Hobbies"]]);
+    expect(SCH.normalForm(["Student", "Courses", "Hobbies"])).toBe("BCNF");
+    // decomposed: SC(Student, Courses) has only a trivial MVD
+    const SC = new FDSet(parseRelation("SC(Student, Courses)"), [], [parseMVD("Student ->> Courses")]);
+    expect(SC.normalForm(["Student", "Courses"])).toBe("4NF");
+    // STUINFO: its MVDs are FDs on the key
+    const ST = new FDSet(parseRelation("STUINFO(StudentNo, Height, ShoeSize)"), [parseFD("StudentNo -> Height, ShoeSize")], [parseMVD("StudentNo ->> Height | ShoeSize")]);
+    expect(ST.normalForm(["StudentNo"])).toBe("4NF");
+    // the flattened SCH instance from the lecture satisfies the MVD; drop one row and it doesn't
+    const rows = [
+      ["Jin", "DBMS", "Tennis"], ["Jin", "DBMS", "Cooking"], ["Jin", "OS", "Tennis"], ["Jin", "OS", "Cooking"],
+      ["Habib", "C++", "Reading"], ["Habib", "C++", "Surfing"], ["Habib", "Networking", "Reading"], ["Habib", "Networking", "Surfing"], ["Habib", "CA", "Reading"], ["Habib", "CA", "Surfing"],
+    ];
+    const m = parseMVD("Student ->> Courses");
+    expect(instanceBreaksMVD(rel, rows, m)).toBeUndefined();
+    expect(instanceBreaksMVD(rel, rows.slice(1), m)).toBeDefined();
+    expect(judgeClaim(SCH, ["Student", "Courses", "Hobbies"], { nf: "4NF" }).value).toBe(false);
+  });
+});
+
+test("a decomposition along an MVD is lossless", async () => {
+  const { parseMVD, lossless: ll } = await import("../scripts/lib/fd.ts");
+  const P = new FDSet(parseRelation("PERSON(SIN, PhoneNo, KidSIN)"), [], [parseMVD("SIN ->> PhoneNo | KidSIN")]);
+  expect(ll(P, ["SIN", "PhoneNo"], ["SIN", "KidSIN"]).ok).toBe(true);
+  expect(ll(P, ["SIN", "PhoneNo"], ["PhoneNo", "KidSIN"]).ok).toBe(false);
+  const noMvd = new FDSet(parseRelation("OFFER(Course, Teacher, Book)"), [], []);
+  expect(ll(noMvd, ["Course", "Teacher"], ["Course", "Book"]).ok).toBe(false);
+});

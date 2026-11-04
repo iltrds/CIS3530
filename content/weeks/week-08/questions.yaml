@@ -1,0 +1,1276 @@
+# ---------------------------------------------------------------- Section I style: one relation; every answer is computed by the build
+# (generated from a short spec; edit freely)
+
+- id: w8-q-sch-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - {nf: BCNF}
+
+- id: w8-q-sch-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - {nf: 4NF}
+
+- id: w8-q-sch-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - key: [Student, Courses, Hobbies]
+
+- id: w8-q-sch-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - holds: "Student -> Courses"
+
+- id: w8-q-sch-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - mvdSatisfied: "Student ->> Courses"
+    text: "The instance has every combination of each student's courses and hobbies, as Student →→ Courses | Hobbies requires."
+
+- id: w8-q-sch-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - lossless:
+    - [Student, Courses]
+    - [Student, Hobbies]
+    text: "Decomposing SCH into SC(Student, Courses) and SH(Student, Hobbies) is non-loss."
+
+- id: w8-q-sch-tf-7
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  claims:
+  - lossless:
+    - [Student, Courses]
+    - [Courses, Hobbies]
+    text: "Decomposing SCH into (Student, Courses) and (Courses, Hobbies) is non-loss."
+
+- id: w8-q-sch-nf
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  mode: normal_form
+
+- id: w8-q-sch-decomp
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds:
+  - "Student ->> Courses | Hobbies"
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, DBMS, Cooking]
+  - [Jin, OS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  - [Habib, Networking, Reading]
+  - [Habib, Networking, Surfing]
+  - [Habib, CA, Reading]
+  - [Habib, CA, Surfing]
+  context: sch
+  mode: mcq
+  prompt: Which decomposition of SCH reaches 4NF without losing information?
+  claims:
+  - lossless:
+    - [Student, Courses]
+    - [Student, Hobbies]
+    text: "SC(Student, Courses) and SH(Student, Hobbies)"
+  - lossless:
+    - [Student, Courses]
+    - [Courses, Hobbies]
+    text: "(Student, Courses) and (Courses, Hobbies)"
+  - lossless:
+    - [Student, Hobbies]
+    - [Courses, Hobbies]
+    text: "(Student, Hobbies) and (Courses, Hobbies)"
+  noneOption: true
+
+- id: w8-q-sch-sample-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds: []
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  context: sch-sample
+  claims:
+  - mvdSatisfied: "Student ->> Courses"
+    text: "This instance is consistent with Student →→ Courses | Hobbies."
+
+- id: w8-q-sch-sample-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds: []
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  context: sch-sample
+  claims:
+  - satisfied: "Courses -> Hobbies"
+    text: The instance satisfies Courses → Hobbies.
+
+- id: w8-q-sch-sample-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds: []
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  context: sch-sample
+  claims:
+  - satisfied: "Student, Courses -> Hobbies"
+    text: "The instance satisfies (Student, Courses) → Hobbies."
+
+- id: w8-q-sch-sample-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "SCH(Student, Courses, Hobbies)"
+  fds: []
+  mvds: []
+  instance:
+  - [Jin, DBMS, Tennis]
+  - [Jin, OS, Cooking]
+  - [Habib, C++, Reading]
+  - [Habib, C++, Surfing]
+  context: sch-sample
+  claims:
+  - satisfied: "Courses -> Student"
+    text: The instance satisfies Courses → Student.
+
+- id: w8-q-person-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - {nf: BCNF}
+
+- id: w8-q-person-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - {nf: 4NF}
+
+- id: w8-q-person-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - key: [SIN]
+
+- id: w8-q-person-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - key: [SIN, PhoneNo, KidSIN]
+
+- id: w8-q-person-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - lossless:
+    - [SIN, PhoneNo]
+    - [SIN, KidSIN]
+    text: "Decomposing PERSON into (SIN, PhoneNo) and (SIN, KidSIN) is non-loss."
+
+- id: w8-q-person-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  claims:
+  - holds: "SIN -> PhoneNo"
+
+- id: w8-q-person-nf
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "PERSON(SIN, PhoneNo, KidSIN)"
+  fds: []
+  mvds:
+  - "SIN ->> PhoneNo | KidSIN"
+  context: person
+  mode: normal_form
+
+- id: w8-q-stuinfo-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  claims:
+  - {nf: 4NF}
+
+- id: w8-q-stuinfo-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  claims:
+  - {nf: BCNF}
+
+- id: w8-q-stuinfo-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  claims:
+  - key: [StudentNo]
+
+- id: w8-q-stuinfo-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  claims:
+  - holds: "Height -> ShoeSize"
+
+- id: w8-q-stuinfo-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  claims:
+  - holds: "StudentNo -> ShoeSize"
+
+- id: w8-q-stuinfo-nf
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "STUINFO(StudentNo, Height, ShoeSize)"
+  fds:
+  - "StudentNo -> Height, ShoeSize"
+  mvds:
+  - "StudentNo ->> Height | ShoeSize"
+  context: stuinfo
+  mode: normal_form
+
+- id: w8-q-ctb-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  claims:
+  - {nf: 4NF}
+
+- id: w8-q-ctb-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  claims:
+  - {nf: BCNF}
+
+- id: w8-q-ctb-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  claims:
+  - lossless:
+    - [Course, Teacher]
+    - [Course, Textbook]
+    text: "Decomposing CTB into (Course, Teacher) and (Course, Textbook) is non-loss."
+
+- id: w8-q-ctb-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  claims:
+  - holds: "Course -> Teacher"
+
+- id: w8-q-ctb-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  claims:
+  - mvdSatisfied: "Course ->> Teacher"
+    text: "The instance satisfies Course →→ Teacher | Textbook."
+
+- id: w8-q-ctb-nf
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CTB(Course, Teacher, Textbook)"
+  fds: []
+  mvds:
+  - "Course ->> Teacher | Textbook"
+  instance:
+  - [CIS3530, Ritu, Elmasri]
+  - [CIS3530, Ritu, Date]
+  - [CIS3530, Sam, Elmasri]
+  - [CIS3530, Sam, Date]
+  - [CIS2750, Lee, Kernighan]
+  context: ctb
+  mode: normal_form
+
+- id: w8-q-offering-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "OFFERING(Course, Teacher, Textbook)"
+  fds:
+  - "Course, Teacher -> Textbook"
+  mvds: []
+  context: offering
+  claims:
+  - {nf: 4NF}
+
+- id: w8-q-offering-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "OFFERING(Course, Teacher, Textbook)"
+  fds:
+  - "Course, Teacher -> Textbook"
+  mvds: []
+  context: offering
+  claims:
+  - key: [Course, Teacher]
+
+- id: w8-q-offering-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "OFFERING(Course, Teacher, Textbook)"
+  fds:
+  - "Course, Teacher -> Textbook"
+  mvds: []
+  context: offering
+  claims:
+  - lossless:
+    - [Course, Teacher]
+    - [Course, Textbook]
+    text: "Decomposing OFFERING into (Course, Teacher) and (Course, Textbook) is non-loss."
+
+- id: w8-q-offering-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "OFFERING(Course, Teacher, Textbook)"
+  fds:
+  - "Course, Teacher -> Textbook"
+  mvds: []
+  context: offering
+  claims:
+  - holds: "Course -> Textbook"
+
+- id: w8-q-offering-nf
+  type: fd
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "OFFERING(Course, Teacher, Textbook)"
+  fds:
+  - "Course, Teacher -> Textbook"
+  mvds: []
+  context: offering
+  mode: normal_form
+  prompt: "Here each teacher of a course chooses their own textbook. What is OFFERING's highest normal form?"
+
+- id: w8-q-contact-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - {nf: 2NF}
+
+- id: w8-q-contact-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - {nf: 3NF}
+
+- id: w8-q-contact-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 1
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - key: [Name]
+
+- id: w8-q-contact-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - transitive: "Name -> City"
+
+- id: w8-q-contact-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - good:
+    - [Name, Street, Zip]
+    - [Zip, City, Province]
+    text: "Decomposing CONTACT into (Name, Street, Zip) and (Zip, City, Province) is good by Rissanen's rules."
+
+- id: w8-q-contact-tf-6
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - partial: "Name -> City"
+    text: City is partially dependent on the key.
+
+- id: w8-q-contact-tf-7
+  type: fd
+  mode: true_false
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  claims:
+  - satisfied: "City -> Zip"
+    text: The instance satisfies City → Zip.
+
+- id: w8-q-contact-nf
+  type: fd
+  topics: [nf.denormalization, nf.3nf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "CONTACT(Name, Street, Zip, City, Province)"
+  fds:
+  - "Name -> Street, Zip"
+  - "Zip -> City, Province"
+  mvds: []
+  instance:
+  - [John, 401 Sunset Av., N91 Q23, Windsor, 'ON']
+  - [Harry, 402 Sunset Av., N4T 3R5, Windsor, 'ON']
+  - [Bill, 123 First St., N4Y 7Y8, London, 'ON']
+  context: contact
+  mode: normal_form
+
+- id: w8-q-teach-tf-1
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  claims:
+  - {nf: 3NF}
+
+- id: w8-q-teach-tf-2
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  claims:
+  - {nf: BCNF}
+
+- id: w8-q-teach-tf-3
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  claims:
+  - lossless:
+    - [Student, Instructor]
+    - [Instructor, Course]
+    text: "Decomposing TEACH into SI(Student, Instructor) and IC(Instructor, Course) is non-loss."
+
+- id: w8-q-teach-tf-4
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  claims:
+  - preserving:
+    - [Student, Instructor]
+    - [Instructor, Course]
+    text: "SI(Student, Instructor) and IC(Instructor, Course) keep every functional dependency enforceable."
+
+- id: w8-q-teach-tf-5
+  type: fd
+  mode: true_false
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  claims:
+  - key: [Student, Instructor]
+
+- id: w8-q-teach-nf
+  type: fd
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  relation: "TEACH(Student, Course, Instructor)"
+  fds:
+  - "Student, Course -> Instructor"
+  - "Instructor -> Course"
+  mvds: []
+  key: [Student, Course]
+  context: teach
+  mode: normal_form
+
+
+# ---------------------------------------------------------------- Section II style: name it
+
+- id: w8-q-kind-mvd
+  type: short
+  style: conceptual
+  topics: [nf.mvd]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "In SCH(Student, Courses, Hobbies), each student has a set of courses and a set of hobbies, and the two sets have nothing to do with each other. What kind of dependency is this?"
+  answers: [multivalued, multivalued dependency, multi-valued dependency, multi-valued, mvd, an mvd, a multivalued dependency]
+  explanation: "Student →→ Courses | Hobbies: a multivalued dependency, from two independent 1:N relationships in one relation."
+
+- id: w8-q-kind-4nf
+  type: short
+  style: conceptual
+  topics: [nf.4nf]
+  difficulty: 2
+  tags: [nf-kind, quiz-style, trap]
+  prompt: "SCH(Student, Courses, Hobbies) has no non-trivial functional dependencies, but has Student →→ Courses | Hobbies. Which normal form is the first one it fails?"
+  answers: [4NF, fourth normal form, 4 NF, 4th normal form, fourth]
+  explanation: "No non-trivial FDs, so it's in BCNF; the MVD isn't an FD, so it fails 4NF."
+
+- id: w8-q-kind-denorm
+  type: short
+  style: conceptual
+  topics: [nf.denormalization]
+  difficulty: 1
+  tags: [nf-kind, quiz-style]
+  prompt: "Reports join ORDER and CUSTOMER millions of times a day, so a designer copies the customer's name into ORDER, accepting the redundancy to avoid the join. What is this process called?"
+  answers: [denormalization, denormalisation, denormalizing, denormalising]
+  explanation: "Deliberately adding redundant data to speed up retrieval: denormalization."
+
+- id: w8-q-kind-stuinfo
+  type: short
+  style: conceptual
+  topics: [nf.4nf, nf.mvd]
+  difficulty: 2
+  tags: [nf-kind, quiz-style, trap]
+  prompt: "STUINFO(<u>StudentNo</u>, Height, ShoeSize): each student has one height and one shoe size. What is its highest normal form, among 1NF, 2NF, 3NF, BCNF and 4NF?"
+  answers: [4NF, fourth normal form, 4 NF, 4th normal form]
+  explanation: "Its only MVDs are the FDs StudentNo → Height and StudentNo → ShoeSize, on the key, so it's in 4NF."
+
+- id: w8-q-kind-contact
+  type: short
+  style: conceptual
+  topics: [nf.denormalization, nf.3nf]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "CONTACT(<u>Name</u>, Street, Zip, City, Province) has Zip → City, Province. What kind of dependency do City and Province have on Name?"
+  answers: [transitive, transitive dependency, transitive functional dependency]
+  explanation: "Name → Zip and Zip → City, Province: transitive, which is why CONTACT is in 2NF but not 3NF."
+
+- id: w8-q-kind-teach
+  type: short
+  style: conceptual
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [nf-kind, quiz-style]
+  prompt: "TEACH(<u>Student, Course</u>, Instructor) has Instructor → Course, and Instructor isn't a candidate key. Which normal form does TEACH fail?"
+  answers: [BCNF, Boyce-Codd normal form, Boyce Codd normal form, boyce-codd, boyce–codd normal form]
+  explanation: "It's in 3NF (Course is part of the key), but Instructor is a determinant that isn't a candidate key, so not BCNF."
+
+# ---------------------------------------------------------------- Section II style: complete the term (recall)
+
+- id: w8-q-term-4nf
+  type: short
+  topics: [nf.4nf]
+  difficulty: 1
+  tags: [term]
+  prompt: "A relation is in 4NF if it is in BCNF and it has no ______ dependencies, or all of them are also FDs."
+  answers: [multivalued, multi-valued, multivalued dependencies, mvd, mvds]
+  explanation: "4NF: BCNF, and no MVDs other than ones that are also FDs."
+
+- id: w8-q-term-updates
+  type: short
+  topics: [nf.denormalization]
+  difficulty: 1
+  tags: [term]
+  prompt: "Normalization puts one fact in one place. This optimizes ______ at the expense of retrievals."
+  answers: [updates, updating, update, modifications]
+  explanation: "Changing a fact means changing it in one place; reading related facts means joining several relations."
+
+- id: w8-q-term-lower
+  type: short
+  topics: [nf.denormalization]
+  difficulty: 1
+  tags: [term]
+  prompt: "Denormalization moves a design from a higher normal form to a ______ one, to speed up database access."
+  answers: [lower]
+  explanation: "From the lecture's definition: a technique to move from higher to lower normal forms."
+
+- id: w8-q-term-mvd-notation
+  type: short
+  topics: [nf.mvd]
+  difficulty: 1
+  tags: [term]
+  prompt: "The MVD in SCH is written Student ______ Courses | Hobbies. Which symbol goes in the blank?"
+  answers: ["→→", "->>", "↠", "-->>", "->->"]
+  explanation: "A double arrow: Student →→ Courses | Hobbies."
+
+- id: w8-q-term-independent
+  type: short
+  topics: [nf.mvd]
+  difficulty: 1
+  tags: [term]
+  prompt: "An MVD exists in a relation R when there are two ______ 1:N relationships in R."
+  answers: [independent]
+  explanation: "Two independent 1:N relationships, like Student:Courses and Student:Hobbies."
+
+# ---------------------------------------------------------------- Section II style: 2-point matching
+
+- id: w8-q-match-mvd
+  type: matching
+  topics: [nf.mvd, nf.4nf]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style, trap]
+  prompt: "Match each relation to its description."
+  left:
+    - "PERSON(SIN, PhoneNos, KidsSIN)"
+    - "STUINFO(StudentNo, Height, ShoeSize)"
+    - "OFFERING(Course, Teacher, Textbook), where each teacher of a course picks their own textbook"
+  right:
+    - "Has a non-trivial MVD, so it isn't in 4NF"
+    - "Its MVDs are all FDs, so it is in 4NF"
+    - "No MVD: the multi-valued facts aren't independent"
+  answer: [0, 1, 2]
+  explanation: "Phones and kids are independent sets for one SIN. Height and shoe size are single values (FDs). A textbook depends on the teacher, so not every pairing appears."
+
+- id: w8-q-match-forms
+  type: matching
+  topics: [nf.recap, nf.4nf, nf.bcnf]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "Match each problem to the first normal form it breaks."
+  left:
+    - "A non-key attribute depends on another non-key attribute."
+    - "A determinant isn't a candidate key, though it determines only part of a key."
+    - "Two independent sets of values for the same student share one relation."
+    - "A non-key attribute depends on part of the key."
+  right: ["2NF", "3NF", "BCNF", "4NF"]
+  answer: [1, 2, 3, 0]
+  explanation: "Transitive (3NF), a non-key determinant (BCNF), an MVD (4NF), partial (2NF)."
+
+- id: w8-q-match-tradeoff
+  type: matching
+  topics: [nf.denormalization]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "Match each statement to the design it describes."
+  left:
+    - "Each fact is stored once, so changing it is quick and can't leave copies disagreeing."
+    - "Reads are faster because related facts sit in the same row, but some facts are stored many times."
+    - "Getting a full address takes a join of two relations."
+  right: ["Normalized", "Denormalized"]
+  answer: [0, 1, 0]
+  explanation: "Normalization optimizes updates at the expense of retrievals; denormalization trades the other way."
+
+- id: w8-q-match-sch-anomalies
+  type: matching
+  topics: [nf.mvd, nf.recap]
+  difficulty: 2
+  points: 2
+  tags: [nf-match, quiz-style]
+  prompt: "SCH(Student, Courses, Hobbies) stores every combination of a student's courses and hobbies. Match each problem to its anomaly."
+  left:
+    - "Habib takes up chess, which takes three new rows, one per course."
+    - "A new student with hobbies but no courses yet can't be stored."
+    - "Jin drops both courses, and the fact that Jin cooks disappears."
+  right: [Insertion anomaly, Modification anomaly, Deletion anomaly]
+  answer: [1, 0, 2]
+  explanation: "One fact (Habib has a hobby) must be written in several rows: modification. Courses is part of the key, so a student with no courses can't be inserted. Deleting the courses deletes the hobbies with them."
+
+# ---------------------------------------------------------------- concepts
+
+- id: w8-q-bcnf-enough
+  type: true_false
+  topics: [nf.bcnf, nf.mvd]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "A relation in BCNF has no redundancy at all."
+  answer: false
+  explanation: "BCNF removes redundancy caused by FDs. An all-key relation like SCH is in BCNF and still repeats each course once per hobby, because of an MVD."
+
+- id: w8-q-fd-is-mvd
+  type: true_false
+  topics: [nf.mvd]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Every functional dependency is also a multivalued dependency."
+  answer: true
+  explanation: "If A → B, each A value has a set of exactly one B value, which satisfies A →→ B."
+
+- id: w8-q-why-mvd
+  type: mcq
+  topics: [nf.mvd]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: Why do multivalued dependencies arise in the first place?
+  options:
+    - "1NF doesn't allow an attribute to hold a set of values, so independent sets become combinations of rows."
+    - "The relation has a partial dependency on its key."
+    - "The relation was mapped from an ER model."
+    - "The relation has two overlapping candidate keys."
+  answer: 0
+  explanation: "That's the lecture's explanation. Mapping from ER is actually what usually avoids them (each multivalued attribute gets its own relation)."
+
+- id: w8-q-er-4nf
+  type: mcq
+  topics: [nf.4nf]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Why do relations mapped from an ER model usually need no transformation to 4NF?"
+  options:
+    - "Each multivalued attribute gets its own relation (mapping step 6), so two independent sets never share one."
+    - "Mapping removes every functional dependency."
+    - "ER diagrams can't show multivalued attributes."
+    - "Every mapped relation has a single-attribute key."
+  answer: 0
+  explanation: "DEP_LOCATION and MEMBER_PHONE are examples: one owner key plus one set of values each."
+
+- id: w8-q-mvd-rows
+  type: mcq
+  topics: [nf.mvd]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "In SCH, a student takes 4 courses and has 3 hobbies. With Student →→ Courses | Hobbies, how many rows does that student have?"
+  options: ["7", "12", "4", "3"]
+  answer: 1
+  explanation: "Every course is paired with every hobby: 4 × 3 = 12. In SC and SH it would be 4 + 3 = 7."
+
+- id: w8-q-denorm-not
+  type: mcq
+  topics: [nf.denormalization]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: Which statement about denormalization is **not** true?
+  options:
+    - It adds redundant data or groups data to make retrieval faster.
+    - It moves a design from a higher normal form to a lower one.
+    - It removes the risk of update anomalies.
+    - It can make sense when joins of separately stored relations are slow.
+  answer: 2
+  explanation: "It does the opposite: redundancy brings back the possibility of update anomalies. That's the price paid for faster reads."
+
+- id: w8-q-denorm-when
+  type: mcq
+  topics: [nf.denormalization]
+  difficulty: 2
+  tags: [quiz-style, all-none-option]
+  prompt: "When is keeping CONTACT(Name, Street, Zip, City, Province) denormalized (in 2NF) a reasonable choice?"
+  options:
+    - When addresses are almost always read whole, so splitting off ZIP would add a join to every lookup
+    - When a postal code's city and province essentially never change, so the anomaly rarely happens
+    - When the redundancy is small compared with the cost of the join
+    - All of the given choices
+    - None of the given choices
+  answer: 3
+  explanation: "All three are the usual arguments for denormalizing: read-heavy access, rarely-changing data and small redundancy."
+
+- id: w8-q-bcnf-when
+  type: mcq
+  topics: [nf.bcnf, nf.recap]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Update anomalies can remain in a 3NF relation when its candidate keys are…"
+  options:
+    - "multiple, composite and overlapping"
+    - "a single attribute"
+    - "multiple but disjoint single attributes"
+    - "the whole heading"
+  answer: 0
+  explanation: "That's the TEACH situation: (Student, Course) and (Student, Instructor) overlap on Student."
+
+# ---------------------------------------------------------------- direct practice
+
+- id: w8-q-order-forms
+  type: order_steps
+  topics: [nf.recap, nf.4nf]
+  difficulty: 1
+  style: direct
+  prompt: Put the normal forms in order, weakest first.
+  items: ["1NF", "2NF", "3NF", "BCNF", "4NF", "5NF"]
+  explanation: "Each form is more restrictive than the one before it."
+
+- id: w8-q-sql-sch
+  type: sql
+  topics: [nf.4nf, nf.mvd]
+  difficulty: 1
+  dataset: nf-mvd
+  show: { tables: [SC, SH] }
+  prompt: "SCH was decomposed into SC(student, course) and SH(student, hobby). Write a query that rebuilds SCH, with columns student, course, hobby."
+  reference: SELECT student, course, hobby FROM SC NATURAL JOIN SH;
+  explanation: "Joining on student pairs each course with each hobby of the same student, exactly the combinations the MVD says SCH holds."
+
+- id: w8-q-sql-contact
+  type: sql
+  topics: [nf.denormalization]
+  difficulty: 1
+  dataset: nf-mvd
+  show: { tables: [CONTACT3, ZIP] }
+  prompt: "CONTACT was normalized into CONTACT3(name, street, zip) and ZIP(zip, city, province). Write a query giving every contact's name, street, city and province."
+  reference: SELECT name, street, city, province FROM CONTACT3 NATURAL JOIN ZIP;
+  explanation: "The join every address lookup now needs: the cost the denormalization argument weighs."
+
+# ---------------------------------------------------------------- bonus (the instructor confirmed it will appear on an upcoming quiz; carry it forward each week)
+
+- id: w8-q-bonus-director
+  type: short
+  topics: [course.bonus]
+  difficulty: 1
+  tags: [bonus]
+  prompt: "Bonus: who is the Director of the School of Computer Science (SoCS) at the University of Guelph?"
+  answers: [Minglun Gong, Dr. Minglun Gong, Dr Minglun Gong, Prof. Minglun Gong, Professor Minglun Gong, Gong, Dr. Gong, Dr Gong, Prof. Gong, Professor Gong, Gong Minglun]
+  explanation: "Minglun Gong, Professor and Director of the School of Computer Science (from the school's people page)."

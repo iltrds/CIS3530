@@ -1,0 +1,8 @@
+number: 8
+title: Normalization, continued (BCNF, 4NF, denormalization)
+summary: A recap of 1NF to BCNF, then multivalued dependencies and fourth normal form, and when it's worth denormalizing a design for faster reads.
+status: published
+quizFormat: in-class-nf
+topics: [nf.recap, nf.bcnf, nf.mvd, nf.4nf, nf.denormalization, course.bonus]
+readings: ["Elmasri & Navathe: multivalued dependencies and fourth normal form (in the chapters on normalization)"]
+sources: [Week8_Normalization_contd.pdf]

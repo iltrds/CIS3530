@@ -1,0 +1,74 @@
+id: nf-mvd
+title: SCH and CONTACT (Week 8)
+description: >
+  SCH(student, course, hobby) is the lecture's student, courses and hobbies table after flattening to 1NF: a
+  student's courses and hobbies are independent, so every course is paired with every hobby. SC and SH are its 4NF
+  decomposition. CONTACT is the lecture's denormalization example; ZIP and CONTACT3 split it into 3NF.
+source: Week 8 lecture (SCH and CONTACT rows copied from the slides)
+tables:
+  - name: SCH
+    columns:
+      - { name: student, pk: true }
+      - { name: course, pk: true }
+      - { name: hobby, pk: true }
+    rows:
+      - [Jin, DBMS, Tennis]
+      - [Jin, DBMS, Cooking]
+      - [Jin, OS, Tennis]
+      - [Jin, OS, Cooking]
+      - [Habib, C++, Reading]
+      - [Habib, C++, Surfing]
+      - [Habib, Networking, Reading]
+      - [Habib, Networking, Surfing]
+      - [Habib, CA, Reading]
+      - [Habib, CA, Surfing]
+  - name: SC
+    columns:
+      - { name: student, pk: true }
+      - { name: course, pk: true }
+    rows:
+      - [Jin, DBMS]
+      - [Jin, OS]
+      - [Habib, C++]
+      - [Habib, Networking]
+      - [Habib, CA]
+  - name: SH
+    columns:
+      - { name: student, pk: true }
+      - { name: hobby, pk: true }
+    rows:
+      - [Jin, Tennis]
+      - [Jin, Cooking]
+      - [Habib, Reading]
+      - [Habib, Surfing]
+  - name: CONTACT
+    columns:
+      - { name: name, pk: true }
+      - { name: street }
+      - { name: zip }
+      - { name: city }
+      - { name: province }
+    rows:
+      - [John, 401 Sunset Av., N91 Q23, Windsor, ON]
+      - [Harry, 402 Sunset Av., N4T 3R5, Windsor, ON]
+      - [Bill, 123 First St., N4Y 7Y8, London, ON]
+  - name: ZIP
+    columns:
+      - { name: zip, pk: true }
+      - { name: city }
+      - { name: province }
+    rows:
+      - [N91 Q23, Windsor, ON]
+      - [N4T 3R5, Windsor, ON]
+      - [N4Y 7Y8, London, ON]
+  - name: CONTACT3
+    columns:
+      - { name: name, pk: true }
+      - { name: street }
+      - { name: zip }
+    foreignKeys:
+      - { columns: [zip], references: { table: ZIP, columns: [zip] } }
+    rows:
+      - [John, 401 Sunset Av., N91 Q23]
+      - [Harry, 402 Sunset Av., N4T 3R5]
+      - [Bill, 123 First St., N4Y 7Y8]

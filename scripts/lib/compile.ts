@@ -14,7 +14,7 @@ import { SqlEngine } from "../../src/engines/sql/engine.ts";
 import type { CQuestion, TableData } from "../../src/engines/grading.ts";
 import { figureHtml, renderEr } from "./er.ts";
 import { chainOf, instanceSvg, judgeInstance } from "./instances.ts";
-import { describeNF, FDSet, fmtFD, instanceBreaks, judgeClaim, parseFD, parseRelation, type Claim, type NF } from "./fd.ts";
+import { describeNF, FDSet, fmtFD, fmtMVD, instanceBreaks, instanceBreaksMVD, judgeClaim, parseFD, parseMVD, parseRelation, type Claim, type NF } from "./fd.ts";
 import { buildChoices, buildShape, choicesExplanation, codeBlock, esc, judgeCandidate, shapeExplanation, tableHtml, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
@@ -349,7 +349,7 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
         case "fd": {
           let F: FDSet;
           try {
-            F = new FDSet(parseRelation(q.relation), q.fds.map(parseFD));
+            F = new FDSet(parseRelation(q.relation), q.fds.map(parseFD), q.mvds?.map(parseMVD));
           } catch (e) {
             fail(file, where, (e as Error).message);
             break;
@@ -372,17 +372,25 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
             }
             pk = ks[0]!;
           }
+          if (!q.mvds && q.claims.some((c) => c.nf === "4NF" || c.exactNf === "4NF")) fail(file, where, "a 4NF claim needs mvds (use mvds: [] if there are none)");
           if (q.instance) {
             q.instance.forEach((r, i) => r.length !== rel.attrs.length && fail(file, where, `instance row ${i + 1} has ${r.length} values but ${rel.name} has ${rel.attrs.length} attributes`));
             for (const f of F.fds) {
               const br = instanceBreaks(rel, q.instance, f);
               if (br) fail(file, where, `the instance breaks ${fmtFD(f)}: ${JSON.stringify(br[0])} and ${JSON.stringify(br[1])}`);
             }
+            for (const m of F.mvds ?? []) {
+              const br = instanceBreaksMVD(rel, q.instance, m);
+              if (br) fail(file, where, `the instance breaks ${fmtMVD(m, rel)}: it needs the row ${JSON.stringify(br[2])}`);
+            }
           }
-          const ctx = q.context ?? `${rel.name}-${(q.key ?? []).join("+")}-${q.fds.join(";")}`.toLowerCase().replace(/[^a-z0-9#+;>-]+/g, "-");
+          const ctx = q.context ?? `${rel.name}-${(q.key ?? []).join("+")}-${q.fds.join(";")}-${(q.mvds ?? []).join(";")}`.toLowerCase().replace(/[^a-z0-9#+;>-]+/g, "-");
           const relHtml = `<p class="fd-rel">${esc(rel.name)}(${rel.attrs.map((a) => (pk.includes(a) ? `<u>${esc(a)}</u>` : esc(a))).join(", ")})</p>`;
           const inst = q.instance ? tableHtml({ cols: rel.attrs, rows: q.instance as TableData["rows"] }) : "";
-          const fdHtml = q.showFds && F.fds.length ? `<p class="fd-head">Functional dependencies:</p><ul class="fd-list">${F.fds.map((f) => `<li>${esc(fmtFD(f))}</li>`).join("")}</ul>` : "";
+          const fdHtml =
+            (q.showFds && F.fds.length ? `<p class="fd-head">Functional dependencies:</p><ul class="fd-list">${F.fds.map((f) => `<li>${esc(fmtFD(f))}</li>`).join("")}</ul>` : "") +
+            (q.showFds && F.mvds?.length ? `<p class="fd-head">Multivalued dependencies:</p><ul class="fd-list">${F.mvds.map((m) => `<li>${esc(fmtMVD(m, rel))}</li>`).join("")}</ul>` : "") +
+            (q.showFds && !F.fds.length && !F.mvds?.length ? `<p class="fd-head">No non-trivial functional dependencies.</p>` : "");
           const context = `<section class="fd-context" data-ctx="${esc(ctx)}">${relHtml}${inst}${fdHtml}</section>`;
           const judged: { value: boolean; text: string; reason: string; why: string }[] = [];
           for (const c of q.claims) {
@@ -443,9 +451,9 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
             }
             case "normal_form": {
               if (judged.length) fail(file, where, "normal_form mode takes no claims");
-              const forms: NF[] = ["1NF", "2NF", "3NF", "BCNF"];
+              const forms: NF[] = q.mvds ? ["1NF", "2NF", "3NF", "BCNF", "4NF"] : ["1NF", "2NF", "3NF", "BCNF"];
               out.type = "mcq";
-              out.options = ["1NF, but not 2NF", "2NF, but not 3NF", "3NF, but not BCNF", "BCNF"];
+              out.options = q.mvds ? ["1NF, but not 2NF", "2NF, but not 3NF", "3NF, but not BCNF", "BCNF, but not 4NF", "4NF"] : ["1NF, but not 2NF", "2NF, but not 3NF", "3NF, but not BCNF", "BCNF"];
               out.answer = forms.indexOf(F.normalForm(pk));
               lead ||= `What is the highest normal form of ${rel.name}?`;
               out.explanation = md(describeNF(F, pk));

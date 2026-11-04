@@ -19,7 +19,7 @@ test("every week has enough questions for its in-class quiz format", async () =>
     const pool = (out!.weeks[w.number] as { questions: CQuestion[] }).questions;
     const { shortfalls, items } = assemble(bp, pool, 1);
     // every item has its slot's style: conceptual unless a slot asks otherwise (the ER quiz has one recall question)
-    const want = bp.slots.flatMap((s) => Array(s.count).fill(s.style ?? bp.style));
+    const want = bp.slots.flatMap((s) => Array(s.optional && !pool.some((q) => q.tags.some((t) => s.requireTags.includes(t))) ? 0 : s.count).fill(s.style ?? bp.style));
     expect(items.map((it, i) => (want[i] === "any" ? "any" : it.q.style))).toEqual(want.slice(0, items.length));
     expect({ week: w.number, format: bp.id, shortfalls }).toEqual({ week: w.number, format: bp.id, shortfalls: [] });
   }

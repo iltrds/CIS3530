@@ -72,7 +72,7 @@ export function assemble(bp: Blueprint, pool: CQuestion[], seed: number): { item
     const preferred = slot.preferTags.length ? shuffled.filter((q) => q.tags.some((t) => slot.preferTags.includes(t))) : [];
     const rest = shuffled.filter((q) => !preferred.includes(q));
     const pick = [...preferred, ...rest].slice(0, slot.count);
-    if (pick.length < slot.count) shortfalls.push(`${slot.name ?? slot.types.join("/")}: ${pick.length} of ${slot.count} available`);
+    if (pick.length < slot.count && !slot.optional) shortfalls.push(`${slot.name ?? slot.types.join("/")}: ${pick.length} of ${slot.count} available`);
     for (const q of pick) {
       used.add(q.id);
       items.push({ q, points: slot.points ?? q.points, section: slot.name });

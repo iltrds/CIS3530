@@ -290,6 +290,8 @@ export const Question = z.discriminatedUnion("type", [
     key: z.array(z.string()).optional(),
     /** Its functional dependencies, e.g. "S#, P# -> QTY". */
     fds: z.array(z.string()).default([]),
+    /** Its multivalued dependencies, e.g. "Student ->> Courses | Hobbies". Giving this (even []) brings 4NF into play. */
+    mvds: z.array(z.string()).optional(),
     /** List the FDs in the question (turn off when the question asks the student to work them out). */
     showFds: z.boolean().default(true),
     /** An instance to show (rows in the relation's attribute order); the build checks it satisfies every FD. */
@@ -309,13 +311,14 @@ export const Question = z.discriminatedUnion("type", [
           transitive: z.string().optional(),
           key: z.array(z.string()).optional(),
           superkey: z.array(z.string()).optional(),
-          nf: z.enum(["1NF", "2NF", "3NF", "BCNF"]).optional(),
-          exactNf: z.enum(["1NF", "2NF", "3NF", "BCNF"]).optional(),
+          nf: z.enum(["1NF", "2NF", "3NF", "BCNF", "4NF"]).optional(),
+          exactNf: z.enum(["1NF", "2NF", "3NF", "BCNF", "4NF"]).optional(),
           lossless: z.tuple([z.array(z.string()), z.array(z.string())]).optional(),
           preserving: z.array(z.array(z.string())).optional(),
           good: z.tuple([z.array(z.string()), z.array(z.string())]).optional(),
           satisfied: z.string().optional(),
           insertAnomaly: z.array(z.string()).optional(),
+          mvdSatisfied: z.string().optional(),
           /** The statement shown; written automatically from the claim when left out. */
           text: z.string().optional(),
           why: z.string().default(""),
@@ -377,6 +380,8 @@ export const Slot = z.object({
   /** Only questions of this style fill the slot; defaults to the blueprint's style. */
   style: z.enum(["conceptual", "direct", "any"]).optional(),
   topics: z.array(z.string()).default([]),
+  /** Leave the slot out quietly when no question fits (e.g. a bonus question some weeks don't have). */
+  optional: z.boolean().default(false),
   /** Slots with the same group name all use questions about one ER diagram (like a quiz section built on one model). */
   diagramGroup: z.string().optional(),
 });
