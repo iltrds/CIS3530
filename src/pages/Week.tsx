@@ -28,6 +28,9 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
           <a className="btn ghost" href={href("/quiz/run", { mode: "practice", weeks: n, count: 10, style: "direct" })}>
             Direct practice: write and recall
           </a>
+          <a className="btn ghost" href={href("/quiz/run", { mode: "practice", weeks: n, count: "all" })}>
+            Practise all {w.questions.length} questions
+          </a>
           <a className="btn" href={href("/quiz/run", { bp: w.week.quizFormat, week: n })}>
             Quiz simulator
           </a>
@@ -50,7 +53,7 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
           )}
           <div className="chips" style={{ marginTop: 16 }}>
             {w.week.topics.map((t) => (
-              <a key={t} className="chip" href={href("/quiz/run", { mode: "practice", topics: t, count: 8 })} title="Practise this topic">
+              <a key={t} className="chip" href={href("/quiz/run", { mode: "practice", topics: t, count: "all" })} title="Practise every question on this topic">
                 {topicLabel(ctx.m, t)}
               </a>
             ))}

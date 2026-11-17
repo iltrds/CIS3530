@@ -45,7 +45,8 @@ function QuizRun({ ctx, query }: { ctx: Ctx; query: URLSearchParams }) {
       topics: list(query.get("topics")),
       types: list(query.get("types")),
       difficulty: list(query.get("difficulty")).map(Number),
-      count: Number(query.get("count")) || 10,
+      // count=all serves every matching question, in random order
+      count: query.get("count") === "all" ? Infinity : Number(query.get("count")) || 10,
       style: (query.get("style") ?? "") as "conceptual" | "direct" | "",
     };
     const items = build(pool, settings, seed);
@@ -104,7 +105,7 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
   const [weeks, setWeeks] = useState<number[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState<number | "all">(10);
   const [mode, setMode] = useState<"practice" | "test">("practice");
   const [style, setStyle] = useState<"conceptual" | "direct" | "">("");
   const toggle = <T,>(xs: T[], x: T) => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
@@ -112,6 +113,17 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
   const available = pool.filter(
     (q) => (!weeks.length || weeks.includes(q.week)) && (!topics.length || q.topics.some((t) => topics.includes(t))) && (!types.length || types.includes(q.type)) && (!style || q.style === style),
   ).length;
+  const n = count === "all" ? available : Math.min(count, available);
+  const startHref = (c: number | "all") =>
+    href("/quiz/run", {
+      mode,
+      weeks: weeks.join(","),
+      topics: topics.join(","),
+      types: types.join(","),
+      style: style || undefined,
+      count: c,
+      time: mode === "test" ? Math.max(5, (c === "all" ? available : c) * 2) : undefined,
+    });
   const mistakeIds = Object.keys(p.mistakes).filter((id) => pool.some((q) => q.id === id));
   const allTypes = [...new Set(pool.map((q) => q.type))];
   const shownTopics = m.topics.filter((t) => !weeks.length || weeks.includes(t.week));
@@ -250,10 +262,13 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
           <div className="row">
             <label className="row" style={{ gap: 6 }}>
               <span className="small muted">Questions</span>
-              <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
-                {[5, 10, 15, 20, 30].map((n) => (
-                  <option key={n}>{n}</option>
+              <select value={String(count)} onChange={(e) => setCount(e.target.value === "all" ? "all" : Number(e.target.value))}>
+                {[5, 10, 15, 20, 30].map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
                 ))}
+                <option value="all">All</option>
               </select>
             </label>
             <div className="chips" role="group" aria-label="Mode">
@@ -266,28 +281,17 @@ function QuizHub({ ctx }: { ctx: Ctx }) {
             </div>
           </div>
           <div className="row">
-            <a
-              className={"btn primary" + (available ? "" : " disabled")}
-              aria-disabled={!available}
-              href={
-                available
-                  ? href("/quiz/run", {
-                      mode,
-                      weeks: weeks.join(","),
-                      topics: topics.join(","),
-                      types: types.join(","),
-                      style: style || undefined,
-                      count,
-                      time: mode === "test" ? Math.max(5, count * 2) : undefined,
-                    })
-                  : undefined
-              }
-            >
-              Start
+            <a className={"btn primary" + (available ? "" : " disabled")} aria-disabled={!available} href={available ? startHref(count) : undefined}>
+              Start {n > 0 ? `(${n})` : ""}
             </a>
+            {available > 0 && count !== "all" && available > count && (
+              <a className="btn" href={startHref("all")}>
+                Do all {available}
+              </a>
+            )}
             <span className="small muted">
               {available} matching question{available === 1 ? "" : "s"}
-              {available < count && available > 0 ? ` (you'll get all ${available})` : ""}
+              {count !== "all" && available < count && available > 0 ? ` (you'll get all ${available})` : ""}
             </span>
           </div>
         </div>
