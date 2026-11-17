@@ -1,0 +1,8 @@
+number: 9
+title: "SQL DDL: creating and changing tables, transactions and triggers"
+summary: CREATE SCHEMA and CREATE TABLE with data types and constraints, copying tables with CREATE TABLE … AS, ALTER TABLE, DROP TABLE with RESTRICT and CASCADE, TRUNCATE, COMMIT and ROLLBACK, and PL/pgSQL functions and triggers.
+status: published
+quizFormat: in-class-ddl
+topics: [ddl.schema, ddl.create, ddl.constraints, ddl.copy, ddl.alter, ddl.drop, ddl.truncate, ddl.transactions, ddl.functions, ddl.triggers, course.bonus]
+readings: ["Elmasri & Navathe: SQL data definition, constraints and schema change statements; triggers"]
+sources: [Week9_SQL_DDL_Updated.pdf, Worksheet9.pdf]

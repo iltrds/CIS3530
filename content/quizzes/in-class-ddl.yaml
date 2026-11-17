@@ -1,0 +1,20 @@
+id: in-class-ddl
+title: Quiz, DDL and triggers format
+label: DDL format
+description: >
+  A guess at the Week 9 quiz in the style of the CourseLink quizzes: four 1-point concept questions (multiple
+  choice or True/False), a 2-point "which of these statements run?" question, a 1-point degree/cardinality question
+  on a table built with DDL, and a 2-point matching. Replace it with the real format once you've seen the quiz.
+kind: quiz
+covers: one_week
+timeLimitMin: 15
+strictAnswers: true
+feedback: end
+style: conceptual
+slots:
+  - { name: Concepts, types: [mcq, true_false], count: 4, points: 1, preferTags: [quiz-style, negated-stem, all-none-option, trap] }
+  - { name: Statements, types: [multi, mcq], count: 1, points: 2, requireTags: [sql-runs] }
+  - { name: Statements, types: [mcq], count: 1, points: 1, requireTags: [query-shape-sql] }
+  - { name: Matching, types: [matching], count: 1, points: 2, requireTags: [ddl-match] }
+  # the instructor confirmed a surprise bonus question on an upcoming quiz; carried into every new week until it appears
+  - { name: "Bonus", types: [short], count: 1, points: 1, requireTags: [bonus], style: any, optional: true }

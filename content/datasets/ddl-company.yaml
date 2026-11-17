@@ -1,0 +1,36 @@
+id: ddl-company
+title: EMP and DEPT, with foreign keys in both directions (Week 9)
+description: >
+  The lecture's scenario for ALTER TABLE: every employee works in a department (EMP.dno) and has a supervisor
+  (EMP.superid), and every department has a manager (DEPT.mgrid). EMP refers to DEPT and DEPT refers to EMP, so
+  whichever table is created first can't declare its foreign key yet; it has to be added afterwards with
+  ALTER TABLE … ADD CONSTRAINT. Rows are practice data.
+source: Week 9 lecture (schema); rows invented for practice
+tables:
+  - name: DEPT
+    columns:
+      - { name: dno, type: int, pk: true }
+      - { name: dname, notNull: true }
+      - { name: mgrid, type: int }
+    foreignKeys:
+      - { columns: [mgrid], references: { table: EMP, columns: [empid] } }
+    rows:
+      - [1, Research, 101]
+      - [2, Sales, 104]
+  - name: EMP
+    columns:
+      - { name: empid, type: int, pk: true }
+      - { name: fname }
+      - { name: lname }
+      - { name: salary, type: int }
+      - { name: dno, type: int }
+      - { name: superid, type: int }
+    foreignKeys:
+      - { columns: [dno], references: { table: DEPT, columns: [dno] } }
+      - { columns: [superid], references: { table: EMP, columns: [empid] } }
+    rows:
+      - [101, Asha, Rao, 95000, 1, null]
+      - [102, Ben, Cole, 70000, 1, 101]
+      - [103, Cara, Diaz, 68000, 1, 101]
+      - [104, Dev, Shah, 88000, 2, 101]
+      - [105, Eve, Moss, 52000, 2, 104]

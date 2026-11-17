@@ -15,4 +15,6 @@ events:
   - { date: "2026-10-06", kind: quiz, title: In-class quiz on Week 3, covers: [3] }
   - { date: "2026-10-27", kind: quiz, title: In-class quiz on Week 6, covers: [6], note: "Expected at the start of the Oct 27 lecture (each lecture opens with a quiz on the previous week)." }
   - { date: "2026-11-03", kind: quiz, title: In-class quiz on Week 7, covers: [7], note: "Expected at the start of the Nov 3 lecture: normalization (1NF to BCNF) and the end of the ER model." }
-  - { date: "2026-11-10", kind: quiz, title: In-class quiz on Week 8, covers: [8], note: "Expected at the start of the Nov 10 lecture: BCNF, MVDs and 4NF, denormalization. Watch for the bonus question on the SoCS director." }
+  - { date: "2026-11-10", kind: quiz, title: "Quiz 7 (online) on Week 8", covers: [8], note: "Online on CourseLink, Nov 10 until Nov 11 at 11:59 PM (no in-person class Nov 10)." }
+  - { date: "2026-11-16", kind: lab, title: Lab exam week, note: "Lab exam during the week of Nov 16; see the CourseLink announcement for your time." }
+  - { date: "2026-11-17", kind: quiz, title: Quiz on Week 9, covers: [9], note: "Expected with the Nov 17 lecture (check CourseLink in case it's online): SQL DDL, transactions, functions and triggers. Watch for the bonus question on the SoCS director." }

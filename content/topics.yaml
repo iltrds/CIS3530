@@ -74,3 +74,13 @@
 - { id: nf.mvd, label: "Multivalued dependencies (MVDs)", week: 8 }
 - { id: nf.4nf, label: "Fourth normal form (4NF)", week: 8 }
 - { id: nf.denormalization, label: "Denormalization", week: 8 }
+- { id: ddl.schema, label: "Schemas (CREATE SCHEMA, search_path)", week: 9 }
+- { id: ddl.create, label: "CREATE TABLE and data types", week: 9 }
+- { id: ddl.constraints, label: "Constraints: PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK", week: 9 }
+- { id: ddl.copy, label: "CREATE TABLE … AS SELECT", week: 9 }
+- { id: ddl.alter, label: "ALTER TABLE", week: 9 }
+- { id: ddl.drop, label: "DROP TABLE, RESTRICT and CASCADE", week: 9 }
+- { id: ddl.truncate, label: "TRUNCATE, and DELETE vs TRUNCATE vs DROP", week: 9 }
+- { id: ddl.transactions, label: "Transactions: COMMIT and ROLLBACK", week: 9 }
+- { id: ddl.functions, label: "User-defined functions (PL/pgSQL)", week: 9 }
+- { id: ddl.triggers, label: "Triggers", week: 9 }

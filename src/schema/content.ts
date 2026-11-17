@@ -329,6 +329,18 @@ export const Question = z.discriminatedUnion("type", [
   }),
   z.object({
     ...QBase,
+    type: z.literal("sql_runs"),
+    /** Run first, before each candidate (e.g. CREATE TABLE …). Everything is rolled back afterwards. */
+    setup: z.string().optional(),
+    prompt: z.string().default(""),
+    /** Ask for the statements that run (default) or the ones Postgres refuses. */
+    select: z.enum(["runs", "fails"]).default("runs"),
+    multi: z.boolean().default(true),
+    noneOption: z.boolean().default(true),
+    candidates: z.array(z.object({ sql: z.string(), why: z.string().default("") })).min(2),
+  }),
+  z.object({
+    ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),

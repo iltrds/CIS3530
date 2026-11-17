@@ -465,6 +465,52 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           out.tags = [...new Set([...q.tags, "fd", `fd-${q.mode}`, `context:${ctx}`])];
           break;
         }
+        case "sql_runs": {
+          if (!q.dataset) {
+            fail(file, where, "sql_runs needs a dataset");
+            break;
+          }
+          const results: { ok: boolean; error?: string }[] = [];
+          if (q.setup) {
+            try {
+              await evalSQL(q.setup, q.dataset);
+            } catch (e) {
+              fail(file, where, `setup failed: ${(e as Error).message}`);
+              break;
+            }
+          }
+          for (const c of q.candidates) {
+            try {
+              await evalSQL(withCheck(q.setup, c.sql), q.dataset);
+              results.push({ ok: true });
+            } catch (e) {
+              results.push({ ok: false, error: (e as Error).message });
+            }
+          }
+          const wantRuns = q.select === "runs";
+          const correct = results.map((r, i) => (r.ok === wantRuns ? i : -1)).filter((i) => i >= 0);
+          out.options = q.candidates.map((c) => codeBlock(c.sql));
+          const none = q.noneOption ? out.options.length : -1;
+          if (q.noneOption) out.options.push("None of the given choices");
+          if (!correct.length && none < 0) fail(file, where, "no candidate qualifies and there's no 'None' option");
+          if (!q.multi && correct.length > 1) fail(file, where, `${correct.length} candidates qualify; set multi: true or change them`);
+          out.type = q.multi ? "multi" : "mcq";
+          out.answer = q.multi ? (correct.length ? correct : [none]) : correct.length ? correct[0]! : none;
+          const lead = q.prompt.trim() || (wantRuns ? "Which of these statements run without an error?" : "Which of these statements does Postgres refuse?");
+          const n = Array.isArray(out.answer) ? out.answer.length : 1;
+          out.prompt = md(lead) + (q.setup ? `<p>Starting from this setup:</p>${codeBlock(q.setup)}<p>Each statement below is run on its own, starting from that state.</p>` : "") + (q.multi ? `<p class="select-count">Select ${n} correct answer${n === 1 ? "" : "s"}</p>` : "");
+          const letters = "abcdefghijklmnopqrstuvwxyz";
+          const lines = results.map((r, i) => {
+            const mark = r.ok === wantRuns ? "✓" : "✗";
+            const what = r.ok ? "Runs without an error." : `Postgres refuses it: <code>${esc(r.error!)}</code>`;
+            const why = q.candidates[i]!.why ? " " + mdi(q.candidates[i]!.why) : "";
+            return `<li><strong>${letters[i]}) ${mark}</strong> ${what}${why}</li>`;
+          });
+          if (none >= 0) lines.push(`<li><strong>${letters[none]}) ${correct.length ? "✗" : "✓"}</strong> ${correct.length ? "At least one statement qualifies." : "No statement qualifies."}</li>`);
+          out.explanation = `<ul class="why-list">${lines.join("")}</ul>` + md(q.explanation);
+          out.tags = [...new Set([...q.tags, "sql-runs"])];
+          break;
+        }
         case "instance_choices": {
           const d = diagramDefs.get(q.diagram);
           if (!d) {

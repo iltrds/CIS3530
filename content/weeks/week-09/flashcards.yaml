@@ -1,0 +1,142 @@
+- id: w9-fc-ddl-dml
+  topic: ddl.create
+  front: DDL vs DML?
+  back: "DDL defines the database (CREATE, ALTER, DROP, TRUNCATE TABLE). DML works with the rows (SELECT, INSERT, UPDATE, DELETE)."
+- id: w9-fc-schema
+  topic: ddl.schema
+  front: What is a schema, and how do you make Postgres use yours?
+  back: "A group of tables and other objects for one application. CREATE SCHEMA for3530; SET SEARCH_PATH TO for3530;"
+- id: w9-fc-char-varchar
+  topic: ddl.create
+  front: CHAR(n) vs VARCHAR(n)?
+  back: CHAR(n) is fixed length (padded to n characters); VARCHAR(n) holds up to n characters.
+- id: w9-fc-decimal
+  topic: ddl.create
+  front: What does DECIMAL(i, j) mean?
+  back: A number with i digits in all, j of them after the decimal point.
+- id: w9-fc-three-constraints
+  topic: ddl.constraints
+  front: The relational model's three basic constraints, as SQL enforces them?
+  back: "Key (no duplicate primary key), entity integrity (no null primary key), referential integrity (a foreign key matches an existing primary key, or is null)."
+- id: w9-fc-composite-pk
+  topic: ddl.constraints
+  front: How is a composite primary key declared?
+  back: "As one table constraint, PRIMARY KEY (sno, pno), not as PRIMARY KEY on each column (a table has only one primary key)."
+  tags: [trap]
+- id: w9-fc-pk-implies
+  topic: ddl.constraints
+  front: Does a primary key column also need UNIQUE and NOT NULL?
+  back: No. A primary key is UNIQUE and NOT NULL by definition.
+- id: w9-fc-unique-null
+  topic: ddl.constraints
+  front: Can a UNIQUE column hold several nulls?
+  back: Yes. Nulls don't count as equal to each other for UNIQUE.
+  tags: [trap]
+- id: w9-fc-check
+  topic: ddl.constraints
+  front: What does CHECK (attr1 > 0) do?
+  back: Refuses any row for which the condition is false.
+- id: w9-fc-ctas
+  topic: ddl.copy
+  front: What does CREATE TABLE T2 AS SELECT * FROM T copy, and what not?
+  back: The columns, their types and the rows. Not the primary key, foreign keys or other constraints.
+  tags: [trap]
+- id: w9-fc-where-1-2
+  topic: ddl.copy
+  front: Why add WHERE 1 = 2 to CREATE TABLE … AS SELECT?
+  back: The condition is never true, so the new table gets the structure and no rows.
+- id: w9-fc-drop-fk
+  topic: ddl.drop
+  front: Why does DROP TABLE S fail when SP has a foreign key on S?
+  back: SP's rows would point at nothing. RESTRICT (the default) refuses to drop a table something depends on.
+- id: w9-fc-cascade
+  topic: ddl.drop
+  front: What does DROP TABLE S CASCADE remove besides S?
+  back: The dependent objects and constraints, e.g. SP's foreign key to S. SP and its rows stay.
+  tags: [trap]
+- id: w9-fc-if-exists
+  topic: ddl.drop
+  front: DROP TABLE IF EXISTS Department?
+  back: Drops the table if it's there, and does nothing (instead of raising an error) if it isn't.
+- id: w9-fc-alter-add
+  topic: ddl.alter
+  front: Why can't ALTER TABLE ADD a NOT NULL column to a table with rows?
+  back: The new column is null in every existing row, which would break NOT NULL at once (unless a DEFAULT fills it).
+  tags: [trap]
+- id: w9-fc-alter-forms
+  topic: ddl.alter
+  front: Four things ALTER TABLE can do?
+  back: "ADD a column, ALTER a column's TYPE, DROP a column, ADD CONSTRAINT (primary key, foreign key, CHECK…)."
+- id: w9-fc-circular
+  topic: ddl.alter
+  front: EMP.dno refers to DEPT and DEPT.mgrid refers to EMP. How do you create them?
+  back: Create both without the second foreign key, then ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY once both tables exist.
+- id: w9-fc-truncate
+  topic: ddl.truncate
+  front: What does TRUNCATE TABLE do?
+  back: Removes every row, keeps the table. No WHERE clause. Usually much faster than DELETE on a large table.
+- id: w9-fc-restart-identity
+  topic: ddl.truncate
+  front: TRUNCATE … RESTART IDENTITY?
+  back: Also resets the table's identity/serial sequences, so numbering starts again.
+- id: w9-fc-del-trunc-drop
+  topic: ddl.truncate
+  front: DELETE vs TRUNCATE vs DROP, in a word each?
+  back: DELETE removes rows (WHERE allowed); TRUNCATE empties the table; DROP removes the table.
+- id: w9-fc-transaction
+  topic: ddl.transactions
+  front: COMMIT vs ROLLBACK?
+  back: COMMIT makes a transaction's changes permanent; ROLLBACK undoes all of them.
+- id: w9-fc-pg-oracle
+  topic: ddl.transactions
+  front: Can TRUNCATE be rolled back?
+  back: In Postgres, yes, inside a transaction. In Oracle, no (TRUNCATE is DDL and commits).
+  tags: [trap]
+- id: w9-fc-recycle
+  topic: ddl.drop
+  front: Does Postgres have a recycle bin for dropped tables?
+  back: No. Before COMMIT, ROLLBACK undoes the drop; after it, only a backup. (Oracle has a Recycle Bin and FLASHBACK TABLE.)
+- id: w9-fc-plpgsql
+  topic: ddl.functions
+  front: The parts of a PL/pgSQL function?
+  back: "CREATE OR REPLACE FUNCTION name(params) RETURNS type LANGUAGE plpgsql AS $$ DECLARE … BEGIN … RETURN …; END; $$;"
+- id: w9-fc-trigger
+  topic: ddl.triggers
+  front: What is a trigger?
+  back: An action the DBMS runs automatically when a specified event occurs on a table; it's never called directly.
+- id: w9-fc-eca
+  topic: ddl.triggers
+  front: The three parts of a trigger?
+  back: "Event (INSERT, UPDATE, DELETE, TRUNCATE), condition (optional; WHEN), action (a trigger function)."
+- id: w9-fc-timing
+  topic: ddl.triggers
+  front: BEFORE vs AFTER vs INSTEAD OF?
+  back: BEFORE can check or change the new row before it's written; AFTER runs once the operation succeeded (logging); INSTEAD OF is for views.
+- id: w9-fc-row-stmt
+  topic: ddl.triggers
+  front: FOR EACH ROW vs FOR EACH STATEMENT?
+  back: Once per affected row vs once per statement, however many rows (even none).
+  tags: [trap]
+- id: w9-fc-new-old
+  topic: ddl.triggers
+  front: Which of NEW and OLD exist for INSERT, UPDATE and DELETE?
+  back: INSERT has NEW; UPDATE has both; DELETE has OLD.
+  tags: [trap]
+- id: w9-fc-two-steps
+  topic: ddl.triggers
+  front: The two steps to make a trigger in Postgres?
+  back: 1. CREATE FUNCTION … RETURNS TRIGGER. 2. CREATE TRIGGER … ON table … EXECUTE FUNCTION it.
+- id: w9-fc-drop-trigger
+  topic: ddl.triggers
+  front: Does DROP TRIGGER also drop its function?
+  back: No. The function stays until DROP FUNCTION.
+  tags: [trap]
+- id: w9-fc-prefer-constraints
+  topic: ddl.triggers
+  front: When should you use a constraint instead of a trigger?
+  back: When one fits - NOT NULL, CHECK, or a foreign key with ON DELETE CASCADE. Triggers are for what they can't express (auditing, history, complex rules).
+- id: w9-fc-bonus-director
+  topic: course.bonus
+  front: Who is the Director of the School of Computer Science (SoCS) at the University of Guelph?
+  back: Minglun Gong. The instructor has said this will be a surprise bonus question on an upcoming quiz.
+  tags: [trap]

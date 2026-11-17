@@ -1,0 +1,827 @@
+# ---------------------------------------------------------------- which statements run? (computed by running each one in Postgres)
+
+- id: w9-q-runs-drop
+  type: sql_runs
+  topics: [ddl.drop, ddl.truncate]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { diagram: true }
+  tags: [quiz-style]
+  prompt: "SP has foreign keys on S and P. Starting from this database each time, which of these statements run without an error?"
+  candidates:
+    - sql: DROP TABLE SP;
+    - sql: DROP TABLE S;
+      why: "SP's foreign key depends on S, and RESTRICT is the default."
+    - sql: DROP TABLE S CASCADE;
+      why: "CASCADE drops SP's foreign key along with S; SP stays."
+    - sql: TRUNCATE TABLE S;
+      why: "S is referenced by a foreign key, so TRUNCATE needs SP listed too, or CASCADE."
+    - sql: DELETE FROM SP WHERE qty > 100;
+
+- id: w9-q-runs-alter
+  type: sql_runs
+  topics: [ddl.alter, ddl.constraints]
+  difficulty: 3
+  dataset: ddl-company
+  show: { tables: [EMP] }
+  tags: [quiz-style, trap]
+  prompt: "EMP already has the rows shown. Which of these ALTER TABLE statements run without an error?"
+  candidates:
+    - sql: ALTER TABLE EMP ADD bonus INTEGER;
+    - sql: ALTER TABLE EMP ADD bonus INTEGER NOT NULL;
+      why: "The new column would be null in every existing row."
+    - sql: ALTER TABLE EMP ADD CONSTRAINT pos_sal CHECK (salary > 0);
+    - sql: ALTER TABLE EMP ADD CONSTRAINT big_sal CHECK (salary > 60000);
+      why: "Eve's salary of 52000 already breaks it."
+    - sql: ALTER TABLE EMP ADD CONSTRAINT one_per_dept UNIQUE (dno);
+      why: "Several employees already share a department."
+
+- id: w9-q-runs-create
+  type: sql_runs
+  topics: [ddl.create, ddl.constraints]
+  difficulty: 2
+  dataset: supplier-parts
+  tags: [quiz-style, trap]
+  prompt: "In the supplier–parts database (S.sno is text), which of these CREATE TABLE statements run without an error?"
+  candidates:
+    - sql: CREATE TABLE T (a INT PRIMARY KEY, b INT PRIMARY KEY);
+      why: "A table has one primary key; a composite key is written PRIMARY KEY (a, b)."
+    - sql: CREATE TABLE T (a INT, b INT, PRIMARY KEY (a, b));
+    - sql: CREATE TABLE T (a INT REFERENCES S (sno));
+      why: "A foreign key must have a type compatible with the key it references; sno is text."
+    - sql: CREATE TABLE T (a VARCHAR(5) REFERENCES S (sno), b INT CHECK (b > 0));
+    - sql: CREATE TABLE T (a INT NOT NULL UNIQUE);
+
+- id: w9-q-runs-test
+  type: sql_runs
+  topics: [ddl.constraints]
+  difficulty: 3
+  dataset: supplier-parts
+  tags: [quiz-style, trap]
+  setup: "CREATE TABLE TEST (ATTR1 NUMERIC CHECK (ATTR1 > 0), ATTR2 VARCHAR(2) UNIQUE);"
+  prompt: "TEST is created with a CHECK and a UNIQUE constraint. Which of these inserts run without an error?"
+  candidates:
+    - sql: INSERT INTO TEST VALUES (5, 'ab');
+    - sql: INSERT INTO TEST VALUES (-1, 'cd');
+    - sql: INSERT INTO TEST VALUES (3, 'abc');
+      why: "VARCHAR(2) holds at most two characters."
+    - sql: INSERT INTO TEST VALUES (NULL, NULL);
+      why: "A CHECK only refuses rows where the condition is false; NULL > 0 is unknown, not false. UNIQUE allows nulls."
+    - sql: INSERT INTO TEST VALUES (2, 'ab'), (4, 'ab');
+      why: "The two rows clash on the UNIQUE column."
+
+- id: w9-q-runs-ctas
+  type: sql_runs
+  topics: [ddl.copy, ddl.constraints]
+  difficulty: 2
+  dataset: supplier-parts
+  tags: [quiz-style]
+  setup: "CREATE TABLE S2 AS SELECT * FROM S;"
+  select: fails
+  multi: false
+  prompt: "S2 is a copy of S made with CREATE TABLE … AS. Which of these statements does Postgres refuse?"
+  candidates:
+    - sql: INSERT INTO S2 SELECT * FROM S;
+      why: "S2 has no primary key, so duplicates are fine."
+    - sql: INSERT INTO S SELECT * FROM S2;
+      why: "S still has its primary key, and every sno is already there."
+    - sql: INSERT INTO S2 VALUES (NULL, 'NOBODY', 10, 'OTTAWA');
+      why: "No key on S2 means a null sno is allowed too."
+    - sql: ALTER TABLE S2 ADD PRIMARY KEY (sno);
+      why: "The copy has no duplicate or null sno yet, so the key can be added."
+
+- id: w9-q-runs-truncate
+  type: sql_runs
+  topics: [ddl.truncate]
+  difficulty: 2
+  dataset: supplier-parts
+  tags: [quiz-style]
+  select: fails
+  prompt: "SP has a foreign key on S. Which of these statements does Postgres refuse?"
+  candidates:
+    - sql: TRUNCATE TABLE SP;
+    - sql: TRUNCATE TABLE S;
+    - sql: TRUNCATE TABLE S, SP;
+    - sql: TRUNCATE TABLE S CASCADE;
+    - sql: TRUNCATE TABLE SP WHERE qty > 100;
+      why: "TRUNCATE has no WHERE clause; that's what DELETE is for."
+
+- id: w9-q-runs-trigger
+  type: sql_runs
+  topics: [ddl.triggers, ddl.functions]
+  difficulty: 3
+  dataset: supplier-parts
+  tags: [quiz-style, trap]
+  setup: "CREATE TABLE log_t (sno VARCHAR(5));"
+  prompt: "Which of these run without an error?"
+  candidates:
+    - sql: CREATE TRIGGER t AFTER INSERT ON S FOR EACH ROW EXECUTE FUNCTION no_such_function();
+      why: "The trigger function has to exist first."
+    - sql: |
+        CREATE FUNCTION log_it() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN INSERT INTO log_t VALUES (NEW.sno); RETURN NEW; END; $$;
+    - sql: |
+        CREATE FUNCTION log_it(s VARCHAR) RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN INSERT INTO log_t VALUES (s); RETURN NEW; END; $$;
+      why: "A trigger function can't declare parameters; it reads the row from NEW and OLD."
+    - sql: |
+        CREATE FUNCTION log_it() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN INSERT INTO log_t VALUES (OLD.sno); RETURN OLD; END; $$;
+        CREATE TRIGGER t AFTER DELETE ON S FOR EACH ROW EXECUTE FUNCTION log_it();
+
+# ---------------------------------------------------------------- degree and cardinality after DDL (computed)
+
+- id: w9-q-shape-empty-copy
+  type: query_shape
+  topics: [ddl.copy]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  setup: CREATE TABLE S_EMPTY AS SELECT * FROM S WHERE 1 = 2;
+  sql: SELECT * FROM S_EMPTY;
+  distractors: [[4, 6], [0, 0], [1, 0]]
+  tags: [quiz-style]
+
+- id: w9-q-shape-add-column
+  type: query_shape
+  topics: [ddl.alter]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { tables: [S] }
+  setup: ALTER TABLE S ADD rating INTEGER;
+  sql: SELECT * FROM S WHERE rating IS NULL;
+  distractors: [[4, 6], [5, 0], [4, 0]]
+  tags: [quiz-style, trap]
+
+- id: w9-q-shape-truncate
+  type: query_shape
+  topics: [ddl.truncate]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  setup: TRUNCATE TABLE SP;
+  sql: SELECT * FROM SP;
+  distractors: [[3, 12], [0, 0], [3, 1]]
+  tags: [quiz-style]
+
+- id: w9-q-shape-copy-after-delete
+  type: query_shape
+  topics: [ddl.copy]
+  difficulty: 2
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  setup: |
+    DELETE FROM SP WHERE sno = 'S5';
+    CREATE TABLE SP_COPY AS SELECT * FROM SP;
+  sql: SELECT DISTINCT sno FROM SP_COPY;
+  distractors: [[1, 5], [3, 6], [1, 6]]
+  tags: [quiz-style]
+
+- id: w9-q-shape-row-trigger
+  type: query_shape
+  topics: [ddl.triggers]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  setup: |
+    CREATE TABLE fired (k TEXT);
+    CREATE FUNCTION note() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN INSERT INTO fired VALUES ('x'); RETURN NEW; END; $$;
+    CREATE TRIGGER t AFTER UPDATE ON SP FOR EACH ROW EXECUTE FUNCTION note();
+    UPDATE SP SET qty = qty + 1 WHERE sno IN ('S2', 'S3');
+  sql: SELECT * FROM fired;
+  distractors: [[1, 1], [1, 2], [2, 4]]
+  tags: [quiz-style, trap]
+
+- id: w9-q-shape-stmt-trigger
+  type: query_shape
+  topics: [ddl.triggers]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  setup: |
+    CREATE TABLE fired (k TEXT);
+    CREATE FUNCTION note() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN INSERT INTO fired VALUES ('x'); RETURN NULL; END; $$;
+    CREATE TRIGGER t AFTER UPDATE ON SP FOR EACH STATEMENT EXECUTE FUNCTION note();
+    UPDATE SP SET qty = qty + 1 WHERE sno IN ('S2', 'S3');
+  sql: SELECT * FROM fired;
+  distractors: [[1, 4], [1, 2], [1, 0]]
+  tags: [quiz-style, trap]
+
+- id: w9-q-shape-stmt-trigger-none
+  type: query_shape
+  topics: [ddl.triggers]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  setup: |
+    CREATE TABLE fired (k TEXT);
+    CREATE FUNCTION note() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN INSERT INTO fired VALUES ('x'); RETURN NULL; END; $$;
+    CREATE TRIGGER t AFTER DELETE ON SP FOR EACH STATEMENT EXECUTE FUNCTION note();
+    DELETE FROM SP WHERE qty > 10000;
+  sql: SELECT * FROM fired;
+  distractors: [[1, 0], [0, 0], [1, 12]]
+  tags: [quiz-style, trap]
+  explanation: "No row has qty > 10000, so the DELETE removes nothing, but a FOR EACH STATEMENT trigger still fires once for the statement. A FOR EACH ROW trigger would have fired zero times."
+
+- id: w9-q-shape-drop-column
+  type: query_shape
+  topics: [ddl.alter]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  setup: ALTER TABLE S DROP city;
+  sql: SELECT * FROM S;
+  distractors: [[4, 6], [3, 5], [4, 5]]
+  tags: [quiz-style]
+
+- id: w9-q-shape-before-null
+  type: query_shape
+  topics: [ddl.triggers]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [S] }
+  setup: |
+    CREATE FUNCTION skip_athens() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+    BEGIN IF NEW.city = 'ATHENS' THEN RETURN NULL; END IF; RETURN NEW; END; $$;
+    CREATE TRIGGER t BEFORE INSERT ON S FOR EACH ROW EXECUTE FUNCTION skip_athens();
+    INSERT INTO S VALUES ('S7', 'PAPPAS', 10, 'ATHENS'), ('S8', 'NG', 30, 'GUELPH');
+  sql: SELECT * FROM S;
+  distractors: [[4, 8], [4, 6], [5, 7]]
+  tags: [quiz-style, trap]
+  explanation: "Returning NULL from a BEFORE row trigger silently skips that row: S7 isn't inserted, S8 is."
+
+# ---------------------------------------------------------------- concepts
+
+- id: w9-q-ctas-copies
+  type: mcq
+  topics: [ddl.copy]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "What does CREATE TABLE S2 AS SELECT * FROM S; copy into S2?"
+  options:
+    - "The columns, their types and the rows, but not the primary key or other constraints"
+    - "The columns, the rows and the primary key"
+    - "Only the columns, not the rows"
+    - "Everything, including foreign keys that refer to S"
+  answer: 0
+  explanation: "CREATE TABLE … AS copies structure and data only. Keys have to be added again with ALTER TABLE."
+
+- id: w9-q-where-1-2
+  type: mcq
+  topics: [ddl.copy]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "Why would you write CREATE TABLE S_after_delete AS (SELECT * FROM S WHERE 1 = 2);?"
+  options:
+    - "To create an empty table with the same columns as S"
+    - "To copy only the first two rows of S"
+    - "To create a table with S's primary key but no rows"
+    - "It's a syntax error, because 1 = 2 isn't a column"
+  answer: 0
+  explanation: "1 = 2 is never true, so no rows qualify; the new table gets S's columns and nothing else (no keys either)."
+
+- id: w9-q-pk-implies
+  type: true_false
+  topics: [ddl.constraints]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "A primary key column must also be declared UNIQUE and NOT NULL, or Postgres will allow duplicates and nulls in it."
+  answer: false
+  explanation: "A primary key is UNIQUE and NOT NULL by definition."
+
+- id: w9-q-unique-nulls
+  type: true_false
+  topics: [ddl.constraints]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "A column declared UNIQUE can hold null in more than one row."
+  answer: true
+  explanation: "Nulls aren't considered equal to each other for UNIQUE, so several are allowed. A primary key allows none."
+
+- id: w9-q-composite-pk
+  type: mcq
+  topics: [ddl.constraints]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "How is SP's composite primary key (sno, pno) declared in CREATE TABLE SP?"
+  options:
+    - "As a table constraint after the columns: PRIMARY KEY (sno, pno)"
+    - "By writing PRIMARY KEY after both sno and pno"
+    - "By writing PRIMARY KEY after sno and UNIQUE after pno"
+    - "It can't be; composite keys need ALTER TABLE"
+  answer: 0
+  explanation: "A table has one primary key. Two column-level PRIMARY KEYs is an error (\"multiple primary keys … are not allowed\")."
+
+- id: w9-q-cascade
+  type: mcq
+  topics: [ddl.drop]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "SP has a foreign key on S. What does DROP TABLE S CASCADE; do?"
+  options:
+    - "Drops S and SP's foreign key constraint; SP and its rows remain"
+    - "Drops S and SP"
+    - "Drops S and deletes SP's rows for those suppliers, keeping SP"
+    - "Fails, because SP depends on S"
+  answer: 0
+  explanation: "CASCADE removes dependent objects, which here is the constraint, not the referencing table. Without CASCADE (RESTRICT, the default), the drop fails."
+
+- id: w9-q-restrict-default
+  type: true_false
+  topics: [ddl.drop]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In Postgres, DROP TABLE behaves as RESTRICT unless you say CASCADE."
+  answer: true
+  explanation: "RESTRICT is the default: the drop is refused if another object depends on the table."
+
+- id: w9-q-recycle
+  type: true_false
+  topics: [ddl.drop, ddl.transactions]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "After DROP TABLE has been committed in Postgres, FLASHBACK TABLE … TO BEFORE DROP brings the table back."
+  answer: false
+  explanation: "That's Oracle's Recycle Bin. Postgres has none: before COMMIT, ROLLBACK undoes the drop; after it, only a backup."
+
+- id: w9-q-truncate-rollback
+  type: mcq
+  topics: [ddl.truncate, ddl.transactions]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "You run BEGIN; TRUNCATE TABLE Course; ROLLBACK; What happens to Course's rows?"
+  options:
+    - "In Postgres they're restored; in Oracle, TRUNCATE can't be rolled back"
+    - "They're gone in both Postgres and Oracle, because TRUNCATE is DDL"
+    - "They're restored in both Postgres and Oracle"
+    - "Postgres refuses TRUNCATE inside a transaction"
+  answer: 0
+  explanation: "Postgres DDL is transactional. In Oracle, TRUNCATE commits on its own and not even FLASHBACK TABLE recovers the rows."
+
+- id: w9-q-delete-vs-truncate
+  type: mcq
+  topics: [ddl.truncate]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "You need to remove only the shipments with qty below 100 from SP. Which statement do you use?"
+  options:
+    - "DELETE FROM SP WHERE qty < 100;"
+    - "TRUNCATE TABLE SP WHERE qty < 100;"
+    - "DROP TABLE SP WHERE qty < 100;"
+    - "ALTER TABLE SP DROP qty < 100;"
+  answer: 0
+  explanation: "Only DELETE has a WHERE clause. TRUNCATE empties the whole table; DROP removes it."
+
+- id: w9-q-truncate-fast
+  type: mcq
+  topics: [ddl.truncate]
+  difficulty: 2
+  tags: [quiz-style, all-none-option]
+  prompt: "Which of the following is true of TRUNCATE TABLE in Postgres?"
+  options:
+    - "It removes every row and keeps the table's definition."
+    - "It's usually faster than DELETE on a large table, because it doesn't scan the rows."
+    - "With RESTART IDENTITY it also resets the table's identity/serial sequences."
+    - "All of the given choices"
+    - "None of the given choices"
+  answer: 3
+  explanation: "All three come from the lecture."
+
+- id: w9-q-del-trunc-drop-not
+  type: mcq
+  topics: [ddl.truncate, ddl.drop]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: "Which statement about DELETE, TRUNCATE and DROP TABLE in Postgres is **not** true?"
+  options:
+    - "After TRUNCATE, the table still exists."
+    - "DELETE can remove selected rows; TRUNCATE can't."
+    - "DROP TABLE keeps the table's definition so it can be refilled."
+    - "All three can be rolled back inside an uncommitted transaction."
+  answer: 2
+  explanation: "DROP removes the table and its definition. TRUNCATE is the one that keeps the definition."
+
+- id: w9-q-alter-not-null
+  type: mcq
+  topics: [ddl.alter]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "Why can't ALTER TABLE EMP ADD phone VARCHAR(12) NOT NULL; run on an EMP that already has rows?"
+  options:
+    - "The new column is null in every existing row, which breaks NOT NULL immediately."
+    - "ALTER TABLE can't add more than one constraint at a time."
+    - "VARCHAR columns can't be NOT NULL."
+    - "A table with a primary key can't get new columns."
+  answer: 0
+  explanation: "That's why the lecture says NOT NULL isn't allowed on a newly added attribute (unless a DEFAULT fills the existing rows)."
+
+- id: w9-q-circular
+  type: mcq
+  topics: [ddl.alter, ddl.constraints]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "EMP(empid, …, dno) has dno referring to DEPT, and DEPT(dno, dname, mgrid) has mgrid referring to EMP. How do you create both with all their foreign keys?"
+  options:
+    - "Create EMP without its foreign key to DEPT, create DEPT, then ALTER TABLE EMP ADD CONSTRAINT … FOREIGN KEY (dno) REFERENCES DEPT"
+    - "Create both in one CREATE TABLE statement"
+    - "It can't be done; two tables can't refer to each other"
+    - "Create EMP with the foreign key; Postgres creates DEPT automatically"
+  answer: 0
+  explanation: "Whichever table comes first can't name the other yet, so one foreign key is added afterwards with ALTER TABLE."
+
+- id: w9-q-schema
+  type: mcq
+  topics: [ddl.schema]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "After CREATE SCHEMA for3530; SET SEARCH_PATH TO for3530; where does CREATE TABLE S (…) put S?"
+  options:
+    - "In the for3530 schema"
+    - "In every schema"
+    - "Nowhere until you write for3530.S"
+    - "In a new database called for3530"
+  answer: 0
+  explanation: "The search path decides which schema unqualified names refer to."
+
+- id: w9-q-decimal
+  type: mcq
+  topics: [ddl.create]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "A column is declared DECIMAL(5, 2). Which is the largest value it can hold?"
+  options: ["999.99", "99999.99", "99.999", "5.2"]
+  answer: 0
+  explanation: "5 digits in all, 2 of them after the decimal point, so 3 before it."
+
+- id: w9-q-char-varchar
+  type: mcq
+  topics: [ddl.create]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "What's the difference between CHAR(9) and VARCHAR(9)?"
+  options:
+    - "CHAR(9) always stores 9 characters (padding with spaces); VARCHAR(9) stores up to 9"
+    - "CHAR(9) is for one character; VARCHAR(9) for nine"
+    - "VARCHAR(9) always stores 9 characters; CHAR(9) stores up to 9"
+    - "There's no difference"
+  answer: 0
+  explanation: "Fixed length vs varying length."
+
+- id: w9-q-check-null
+  type: mcq
+  topics: [ddl.constraints]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  prompt: "TEST has ATTR1 NUMERIC CHECK (ATTR1 > 0). What happens to INSERT INTO TEST VALUES (NULL);?"
+  options:
+    - "It's accepted: NULL > 0 is unknown, and CHECK only refuses rows where the condition is false"
+    - "It's refused, because NULL isn't greater than 0"
+    - "It's accepted, and ATTR1 is stored as 0"
+    - "It's refused, because CHECK columns are automatically NOT NULL"
+  answer: 0
+  explanation: "To refuse nulls too, add NOT NULL."
+
+- id: w9-q-trigger-auto
+  type: true_false
+  topics: [ddl.triggers]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "A trigger runs automatically when its event happens on the table; the user never calls it."
+  answer: true
+  explanation: "It's attached to the table, not called explicitly."
+
+- id: w9-q-trigger-function-first
+  type: true_false
+  topics: [ddl.triggers]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In Postgres, the trigger function must exist before CREATE TRIGGER can use it."
+  answer: true
+  explanation: "Step 1 is CREATE FUNCTION … RETURNS TRIGGER; step 2 is CREATE TRIGGER … EXECUTE FUNCTION."
+
+- id: w9-q-drop-trigger
+  type: true_false
+  topics: [ddl.triggers]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "DROP TRIGGER log_supplier_insert ON S; also drops the trigger function log_supplier()."
+  answer: false
+  explanation: "The function stays until DROP FUNCTION log_supplier();."
+
+- id: w9-q-row-count
+  type: mcq
+  topics: [ddl.triggers]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "A DELETE statement removes 5 rows from S. How many times do an AFTER DELETE … FOR EACH ROW trigger and an AFTER DELETE … FOR EACH STATEMENT trigger fire?"
+  options: ["5 and 1", "1 and 5", "5 and 5", "1 and 1"]
+  answer: 0
+  explanation: "Row-level: once per affected row. Statement-level: once per statement, however many rows (even none)."
+
+- id: w9-q-new-old
+  type: mcq
+  topics: [ddl.triggers]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "In a row-level DELETE trigger on S, which variable holds the supplier being deleted?"
+  options: ["OLD", "NEW", "Both OLD and NEW", "Neither; DELETE triggers can't see the row"]
+  answer: 0
+  explanation: "INSERT has NEW, UPDATE has both, DELETE has OLD (NEW is null)."
+
+- id: w9-q-before-after
+  type: mcq
+  topics: [ddl.triggers]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "You want a trigger to convert every inserted city to capitals before the row is stored. Which timing do you use?"
+  options: ["BEFORE INSERT … FOR EACH ROW", "AFTER INSERT … FOR EACH ROW", "AFTER INSERT … FOR EACH STATEMENT", "INSTEAD OF INSERT"]
+  answer: 0
+  explanation: "A BEFORE row trigger can change NEW and return it; by AFTER, the row is already written. INSTEAD OF is for views."
+
+- id: w9-q-before-null
+  type: mcq
+  topics: [ddl.triggers]
+  difficulty: 3
+  tags: [quiz-style, trap]
+  prompt: "A BEFORE INSERT … FOR EACH ROW trigger function returns NULL for some row. What happens?"
+  options:
+    - "That row isn't inserted, and no error is raised"
+    - "The row is inserted with every column null"
+    - "The whole INSERT statement fails with an error"
+    - "Nothing; the return value of a trigger function is always ignored"
+  answer: 0
+  explanation: "For BEFORE row triggers, NULL means skip this row. (For AFTER triggers, the return value is ignored.)"
+
+- id: w9-q-trigger-signature
+  type: mcq
+  topics: [ddl.triggers, ddl.functions]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "What must a Postgres trigger function look like?"
+  options:
+    - "No declared parameters, and RETURNS TRIGGER"
+    - "One parameter for the row, and RETURNS VOID"
+    - "Any parameters, and RETURNS the table's row type"
+    - "It must be written in plain SQL, not PL/pgSQL"
+  answer: 0
+  explanation: "It reads the row through NEW and OLD, not parameters."
+
+- id: w9-q-prefer-constraint
+  type: mcq
+  topics: [ddl.triggers, ddl.constraints]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: "Which of these is **not** a good job for a trigger, because a built-in constraint does it?"
+  options:
+    - "Refusing a negative quantity in SP"
+    - "Logging every supplier that's inserted, with the date"
+    - "Keeping a history table of deleted suppliers"
+    - "Updating a summary table of totals whenever SP changes"
+  answer: 0
+  explanation: "A simple rule on one row's values is a CHECK constraint. The others are auditing, history and summary maintenance, the uses the lecture gives for triggers."
+
+- id: w9-q-eca
+  type: mcq
+  topics: [ddl.triggers]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In CREATE TRIGGER log_supplier_insert AFTER INSERT ON S FOR EACH ROW EXECUTE FUNCTION log_supplier();, what are the event, condition and action?"
+  options:
+    - "Event: INSERT on S; condition: none; action: log_supplier()"
+    - "Event: AFTER; condition: FOR EACH ROW; action: INSERT"
+    - "Event: log_supplier(); condition: INSERT; action: S"
+    - "Event: S; condition: AFTER; action: FOR EACH ROW"
+  answer: 0
+  explanation: "Trigger = event + optional condition (WHEN) + action. AFTER and FOR EACH ROW are its timing and granularity."
+
+# ---------------------------------------------------------------- matching
+
+- id: w9-q-match-remove
+  type: matching
+  topics: [ddl.truncate, ddl.drop]
+  difficulty: 1
+  points: 2
+  tags: [ddl-match, quiz-style]
+  prompt: "Match each description to the statement."
+  left:
+    - "Removes only the rows that satisfy a condition"
+    - "Removes every row; the empty table remains"
+    - "Removes the table, its rows and its definition"
+  right: [DELETE, TRUNCATE, DROP TABLE, ALTER TABLE]
+  answer: [0, 1, 2]
+  explanation: "Delete rows, empty the table, remove the table."
+
+- id: w9-q-match-trigger-terms
+  type: matching
+  topics: [ddl.triggers]
+  difficulty: 2
+  points: 2
+  tags: [ddl-match, quiz-style]
+  prompt: "Match each trigger term to its description. A description may be used more than once, or not at all."
+  left:
+    - "AFTER UPDATE"
+    - "OLD"
+    - "FOR EACH STATEMENT"
+    - "INSTEAD OF"
+    - "INSERT"
+  right:
+    - "Runs once the operation has succeeded"
+    - "The row's values before the change"
+    - "Runs once for the whole SQL statement"
+    - "Used for triggers on views"
+    - "An event that can cause a trigger to run"
+    - "Removes the trigger from a table"
+  answer: [0, 1, 2, 3, 4]
+  explanation: "DROP TRIGGER is what removes a trigger; INSERT is one of the events (with UPDATE, DELETE and TRUNCATE)."
+
+- id: w9-q-match-constraints
+  type: matching
+  topics: [ddl.constraints]
+  difficulty: 2
+  points: 2
+  tags: [ddl-match, quiz-style]
+  prompt: "Match each insert into SHIPMENT(sno, pno, qty) to the constraint that refuses it. SHIPMENT has PRIMARY KEY (sno, pno), FOREIGN KEY (sno) REFERENCES S, CHECK (qty > 0), and a row ('S1', 'P1', 50) already exists."
+  left:
+    - "('S1', 'P1', 80)"
+    - "('S9', 'P2', 80)"
+    - "('S2', 'P2', -5)"
+    - "(NULL, 'P3', 10)"
+  right: [Primary key (duplicate), Primary key (null), Foreign key, CHECK]
+  answer: [0, 2, 3, 1]
+  explanation: "A repeated key, a supplier that doesn't exist, a non-positive quantity, and a null key attribute (entity integrity)."
+
+- id: w9-q-match-tool
+  type: matching
+  topics: [ddl.triggers, ddl.constraints]
+  difficulty: 2
+  points: 2
+  tags: [ddl-match, quiz-style]
+  prompt: "Match each requirement to the simplest tool for it."
+  left:
+    - "Every supplier must have a name."
+    - "A part's weight must be positive."
+    - "When a supplier is deleted, delete its shipments too."
+    - "Record who changed a supplier's status, and when."
+  right: [NOT NULL, CHECK, "Foreign key with ON DELETE CASCADE", Trigger]
+  answer: [0, 1, 2, 3]
+  explanation: "The lecture's advice: use the built-in constraint when one fits; triggers are for auditing, history and rules constraints can't express."
+
+- id: w9-q-match-alter
+  type: matching
+  topics: [ddl.alter]
+  difficulty: 2
+  points: 2
+  tags: [ddl-match, quiz-style]
+  prompt: "Match each statement to what it does."
+  left:
+    - "ALTER TABLE Test ADD b INTEGER;"
+    - "ALTER TABLE Test ALTER b TYPE TEXT;"
+    - "ALTER TABLE Test DROP b;"
+    - "ALTER TABLE Test ADD CONSTRAINT pk1 PRIMARY KEY (a);"
+  right:
+    - "Adds a column, null in every existing row"
+    - "Changes a column's data type"
+    - "Removes a column and its values"
+    - "Declares a as the primary key, checking existing rows"
+  answer: [0, 1, 2, 3]
+  explanation: "ADD, ALTER … TYPE, DROP and ADD CONSTRAINT."
+
+# ---------------------------------------------------------------- direct practice
+
+- id: w9-q-term-returns-trigger
+  type: short
+  topics: [ddl.triggers]
+  difficulty: 1
+  tags: [term]
+  prompt: "A Postgres trigger function is declared with RETURNS ______."
+  answers: [TRIGGER]
+  explanation: "RETURNS TRIGGER, with no declared parameters."
+
+- id: w9-q-term-plpgsql
+  type: short
+  topics: [ddl.functions]
+  difficulty: 1
+  tags: [term]
+  prompt: "Which LANGUAGE do the lecture's Postgres functions use? (LANGUAGE ______)"
+  answers: [plpgsql, PL/pgSQL, pl/pgsql]
+  explanation: "PL/pgSQL, written LANGUAGE plpgsql."
+
+- id: w9-q-term-rollback
+  type: short
+  topics: [ddl.transactions]
+  difficulty: 1
+  tags: [term]
+  prompt: "Which command undoes all the changes in a transaction that hasn't been committed?"
+  answers: [ROLLBACK, rollback;, ROLLBACK;]
+  explanation: "ROLLBACK undoes; COMMIT makes the changes permanent."
+
+- id: w9-q-term-old
+  type: short
+  topics: [ddl.triggers]
+  difficulty: 1
+  tags: [term]
+  prompt: "In a row-level UPDATE trigger, which variable holds the row's values before the update?"
+  answers: [OLD]
+  explanation: "OLD before, NEW after."
+
+- id: w9-q-term-search-path
+  type: short
+  topics: [ddl.schema]
+  difficulty: 1
+  tags: [term]
+  prompt: "Complete the statement that makes for3530 the schema unqualified names refer to: SET ______ TO for3530;"
+  answers: [SEARCH_PATH, search_path]
+  explanation: "SET SEARCH_PATH TO for3530;"
+
+- id: w9-q-order-trigger
+  type: order_steps
+  topics: [ddl.triggers]
+  difficulty: 1
+  style: direct
+  prompt: Put the steps for adding an audit trigger to S in order.
+  items:
+    - "Create the log table (e.g. CREATE TABLE log_transaction …)"
+    - "Create the trigger function (CREATE FUNCTION … RETURNS TRIGGER)"
+    - "Create the trigger (CREATE TRIGGER … ON S … EXECUTE FUNCTION …)"
+    - "Insert into S; the trigger adds the log row"
+  explanation: "The function needs its table to exist when it runs, and the trigger needs the function to exist when it's created."
+
+- id: w9-q-sql-empty-copy
+  type: sql
+  topics: [ddl.copy]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  prompt: "Write one statement that creates a table S_EMPTY with the same columns as S and no rows."
+  reference: CREATE TABLE S_EMPTY AS SELECT * FROM S WHERE 1 = 2;
+  check: "SELECT (SELECT COUNT(*) FROM S_EMPTY) AS rows, (SELECT string_agg(column_name, ', ' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_name = 's_empty') AS cols;"
+  explanation: "The check reads the new table's row count and column names."
+
+- id: w9-q-sql-add-column
+  type: sql
+  topics: [ddl.alter]
+  difficulty: 1
+  dataset: supplier-parts
+  show: { tables: [S] }
+  prompt: "Write a statement that adds a column email, of type VARCHAR(40), to S."
+  reference: ALTER TABLE S ADD email VARCHAR(40);
+  check: "SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = 's' ORDER BY ordinal_position;"
+  explanation: "ALTER TABLE … ADD; the new column is null in every row."
+
+- id: w9-q-sql-function
+  type: sql
+  topics: [ddl.functions]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [SP] }
+  prompt: "Write a PL/pgSQL function total_qty(s_no VARCHAR) that returns the total quantity a supplier ships (null if none)."
+  reference: |
+    CREATE OR REPLACE FUNCTION total_qty(s_no VARCHAR)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+      t INTEGER;
+    BEGIN
+      SELECT SUM(qty) INTO t FROM SP WHERE sno = s_no;
+      RETURN t;
+    END;
+    $$;
+  check: "SELECT sno, total_qty(sno) AS total FROM S ORDER BY sno;"
+  explanation: "The check calls your function for every supplier and compares the totals."
+
+- id: w9-q-sql-trigger
+  type: sql
+  topics: [ddl.triggers]
+  difficulty: 3
+  dataset: supplier-parts
+  show: { tables: [S] }
+  prompt: "Create an empty table S_after_delete with S's columns, then write the trigger function save_old() and an AFTER DELETE … FOR EACH ROW trigger on S that copies each deleted supplier into S_after_delete. (The check then deletes S5 and S6.)"
+  reference: |
+    CREATE TABLE S_after_delete AS SELECT * FROM S WHERE 1 = 2;
+    CREATE OR REPLACE FUNCTION save_old()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+      INSERT INTO S_after_delete VALUES (OLD.sno, OLD.sname, OLD.status, OLD.city);
+      RETURN OLD;
+    END;
+    $$;
+    CREATE TRIGGER save_on_delete AFTER DELETE ON S FOR EACH ROW EXECUTE FUNCTION save_old();
+  check: "DELETE FROM SP WHERE sno IN ('S5', 'S6'); DELETE FROM S WHERE sno IN ('S5', 'S6'); SELECT * FROM S_after_delete ORDER BY sno;"
+  hints:
+    - "CREATE TABLE S_after_delete AS SELECT * FROM S WHERE 1 = 2; makes the empty table."
+    - "In a DELETE trigger the row is in OLD."
+  explanation: "OLD holds the deleted row. S5 has shipments, so the check deletes them from SP first (the foreign key would refuse otherwise)."
+
+# ---------------------------------------------------------------- bonus (the instructor confirmed it will appear on an upcoming quiz; carry it forward each week)
+
+- id: w9-q-bonus-director
+  type: short
+  topics: [course.bonus]
+  difficulty: 1
+  tags: [bonus]
+  prompt: "Bonus: who is the Director of the School of Computer Science (SoCS) at the University of Guelph?"
+  answers: [Minglun Gong, Dr. Minglun Gong, Dr Minglun Gong, Prof. Minglun Gong, Professor Minglun Gong, Gong, Dr. Gong, Dr Gong, Prof. Gong, Professor Gong, Gong Minglun]
+  explanation: "Minglun Gong, Professor and Director of the School of Computer Science (from the school's people page)."

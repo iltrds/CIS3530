@@ -1,0 +1,247 @@
+- id: w9-ex-create
+  title: Creating tables with every kind of constraint
+  topics: [ddl.create, ddl.constraints]
+  dataset: supplier-parts
+  question: "Create a table SHIPMENT recording which supplier ships which part on which date, in what quantity. A shipment is identified by supplier, part and date; quantities must be positive; the supplier and part must exist. Then try rows that break each rule."
+  steps:
+    - title: The table
+      body: "A composite primary key is one table constraint. The foreign keys refer to S and P, and CHECK refuses non-positive quantities."
+      sql: |
+        CREATE TABLE SHIPMENT (
+          sno      VARCHAR(5),
+          pno      VARCHAR(6),
+          shipdate DATE,
+          qty      INTEGER NOT NULL CHECK (qty > 0),
+          PRIMARY KEY (sno, pno, shipdate),
+          FOREIGN KEY (sno) REFERENCES S (sno),
+          FOREIGN KEY (pno) REFERENCES P (pno)
+        );
+        INSERT INTO SHIPMENT VALUES ('S1', 'P1', '2026-11-02', 100);
+        SELECT * FROM SHIPMENT;
+    - title: Entity integrity - no null in the key
+      sql: |
+        CREATE TABLE SHIPMENT (sno VARCHAR(5), pno VARCHAR(6), shipdate DATE, qty INTEGER, PRIMARY KEY (sno, pno, shipdate));
+        INSERT INTO SHIPMENT VALUES ('S1', 'P1', NULL, 100);
+      expectError: true
+    - title: Referential integrity - the supplier must exist
+      sql: |
+        CREATE TABLE SHIPMENT (sno VARCHAR(5) REFERENCES S (sno), pno VARCHAR(6), shipdate DATE, qty INTEGER, PRIMARY KEY (sno, pno, shipdate));
+        INSERT INTO SHIPMENT VALUES ('S9', 'P1', '2026-11-02', 100);
+      expectError: true
+    - title: CHECK - quantities must be positive
+      sql: |
+        CREATE TABLE SHIPMENT (sno VARCHAR(5), pno VARCHAR(6), shipdate DATE, qty INTEGER CHECK (qty > 0), PRIMARY KEY (sno, pno, shipdate));
+        INSERT INTO SHIPMENT VALUES ('S1', 'P1', '2026-11-02', 0);
+      expectError: true
+    - title: Two PRIMARY KEYs is an error, not a composite key
+      body: "A table has one primary key. Declaring it on two columns separately is refused."
+      sql: CREATE TABLE BAD (sno VARCHAR(5) PRIMARY KEY, pno VARCHAR(6) PRIMARY KEY);
+      expectError: true
+  pitfalls:
+    - "UNIQUE lets several rows be null in that column; a primary key allows no nulls at all."
+
+- id: w9-ex-copy
+  title: Copying a table with CREATE TABLE … AS
+  topics: [ddl.copy, ddl.constraints]
+  dataset: supplier-parts
+  question: "Make a copy of S, then an empty table with S's structure, and check what was and wasn't copied."
+  steps:
+    - title: Structure and rows
+      sql: |
+        CREATE TABLE S2 AS SELECT * FROM S;
+        SELECT * FROM S2;
+    - title: The key isn't copied
+      body: "S2 has no primary key, so a duplicate sno goes straight in. S would refuse it."
+      sql: |
+        CREATE TABLE S2 AS SELECT * FROM S;
+        INSERT INTO S2 SELECT * FROM S WHERE sno = 'S1';
+        SELECT sno, COUNT(*) AS copies FROM S2 GROUP BY sno HAVING COUNT(*) > 1;
+    - title: Structure only, with WHERE 1 = 2
+      body: "The condition is never true, so no rows are copied: an empty table shaped like S, handy for a log or a history of deleted rows."
+      sql: |
+        CREATE TABLE S_after_delete AS (SELECT * FROM S WHERE 1 = 2);
+        SELECT COUNT(*) AS rows_copied FROM S_after_delete;
+  pitfalls:
+    - "If the copy needs a key, add it afterwards: ALTER TABLE S2 ADD PRIMARY KEY (sno);"
+
+- id: w9-ex-drop
+  title: DROP TABLE with a foreign key in the way
+  topics: [ddl.drop]
+  dataset: supplier-parts
+  question: "SP has a foreign key on S. What happens to DROP TABLE S, and how do RESTRICT and CASCADE differ?"
+  steps:
+    - title: Refused (RESTRICT is the default)
+      sql: DROP TABLE S;
+      expectError: true
+    - title: CASCADE drops S and SP's foreign key, not SP
+      body: "SP keeps all its rows; only its constraint referring to S is gone."
+      sql: |
+        DROP TABLE S CASCADE;
+        SELECT COUNT(*) AS sp_rows FROM SP;
+    - title: IF EXISTS on a table that isn't there
+      body: "No error: Postgres just notes that it skipped it."
+      sql: |
+        DROP TABLE IF EXISTS NO_SUCH_TABLE;
+        SELECT 'still running' AS status;
+    - title: And the same drop rolled back
+      body: "Every step on this site runs inside a transaction that's rolled back, which is why S is still here for the next example. In psql you'd write BEGIN; DROP TABLE S CASCADE; … ROLLBACK;"
+      sql: SELECT COUNT(*) AS s_rows FROM S;
+
+- id: w9-ex-alter
+  title: ALTER TABLE, and the circular foreign keys that need it
+  topics: [ddl.alter, ddl.constraints]
+  dataset: ddl-company
+  question: "EMP.dno refers to DEPT and DEPT.mgrid refers to EMP. Build the two tables from scratch, then try a few more changes to a table that already has rows."
+  steps:
+    - title: Creating EMP first can't name DEPT yet
+      sql: |
+        CREATE TABLE EMP2 (empid INT PRIMARY KEY, dno INT REFERENCES DEPT2 (dno));
+      expectError: true
+    - title: Create both, then add the missing foreign key
+      body: "EMP2 can refer to itself (superid) in its own definition. Its foreign key to DEPT2 is added once DEPT2 exists."
+      sql: |
+        CREATE TABLE EMP2 (empid INT PRIMARY KEY, fname VARCHAR(15), lname VARCHAR(15), salary INT, dno INT, superid INT REFERENCES EMP2 (empid));
+        CREATE TABLE DEPT2 (dno INT PRIMARY KEY, dname VARCHAR(15), mgrid INT REFERENCES EMP2 (empid));
+        ALTER TABLE EMP2 ADD CONSTRAINT fk_dept FOREIGN KEY (dno) REFERENCES DEPT2 (dno);
+        SELECT conname, contype FROM pg_constraint WHERE conrelid = 'emp2'::regclass AND contype IN ('p', 'f') ORDER BY conname;
+    - title: A new column is null in every existing row
+      sql: |
+        ALTER TABLE EMP ADD bonus INTEGER;
+        SELECT empid, fname, bonus FROM EMP;
+    - title: …so it can't be NOT NULL
+      sql: ALTER TABLE EMP ADD phone VARCHAR(12) NOT NULL;
+      expectError: true
+    - title: A CHECK that existing rows break is refused
+      body: "Adding a constraint checks the rows already there. Eve earns 52000."
+      sql: ALTER TABLE EMP ADD CONSTRAINT ch_sal CHECK (salary > 60000);
+      expectError: true
+    - title: Changing a type, dropping a column
+      sql: |
+        ALTER TABLE EMP ALTER salary TYPE NUMERIC(9, 2), DROP lname;
+        SELECT * FROM EMP ORDER BY empid;
+
+- id: w9-ex-truncate
+  title: DELETE, TRUNCATE and DROP side by side
+  topics: [ddl.truncate, ddl.transactions, ddl.drop]
+  dataset: supplier-parts
+  question: "Remove data from SP three ways and compare what's left. Then try TRUNCATE on S, which SP refers to."
+  steps:
+    - title: DELETE can choose rows
+      sql: |
+        DELETE FROM SP WHERE qty < 300;
+        SELECT COUNT(*) AS rows_left FROM SP;
+    - title: TRUNCATE empties the table, which still exists
+      sql: |
+        TRUNCATE TABLE SP;
+        SELECT COUNT(*) AS rows_left FROM SP;
+    - title: DROP removes the table itself
+      sql: |
+        DROP TABLE SP;
+        SELECT COUNT(*) FROM SP;
+      expectError: true
+    - title: TRUNCATE is refused on a table a foreign key refers to…
+      sql: TRUNCATE TABLE S;
+      expectError: true
+    - title: …unless the referencing table goes too
+      sql: |
+        TRUNCATE TABLE S, SP;
+        SELECT (SELECT COUNT(*) FROM S) AS s_rows, (SELECT COUNT(*) FROM SP) AS sp_rows;
+  pitfalls:
+    - "In Postgres all three can be rolled back inside a transaction. In Oracle, TRUNCATE can't."
+
+- id: w9-ex-function
+  title: A user-defined function, find_max_qty
+  topics: [ddl.functions]
+  dataset: supplier-parts
+  question: "Write a function find_max_qty that returns the largest quantity a supplier ships, given the supplier's number."
+  steps:
+    - title: Declare a variable, fill it with SELECT … INTO, return it
+      sql: |
+        CREATE OR REPLACE FUNCTION find_max_qty(s_no VARCHAR)
+        RETURNS INTEGER
+        LANGUAGE plpgsql
+        AS $$
+        DECLARE
+          m INTEGER;
+        BEGIN
+          SELECT MAX(qty) INTO m FROM SP WHERE sno = s_no;
+          RETURN m;
+        END;
+        $$;
+        SELECT sno, find_max_qty(sno) AS max_qty FROM S ORDER BY sno;
+  pitfalls:
+    - "A supplier with no shipments gets null: MAX over no rows is null."
+
+- id: w9-ex-trigger
+  title: An audit trigger on S
+  topics: [ddl.triggers, ddl.functions]
+  dataset: supplier-parts
+  question: "Whenever a supplier is added to S, record its number in a log table automatically. Then count how often row-level and statement-level triggers fire."
+  steps:
+    - title: Step 1, the trigger function
+      body: "It takes no parameters and RETURNS TRIGGER. NEW is the row being inserted."
+      sql: |
+        CREATE TABLE log_transaction (sno VARCHAR(5), logged_at DATE);
+        CREATE OR REPLACE FUNCTION log_supplier()
+        RETURNS TRIGGER
+        LANGUAGE plpgsql
+        AS $$
+        BEGIN
+          INSERT INTO log_transaction VALUES (NEW.sno, CURRENT_DATE);
+          RETURN NEW;
+        END;
+        $$;
+        SELECT 'function created' AS status;
+    - title: Step 2, the trigger - and it fires on its own
+      sql: |
+        CREATE TABLE log_transaction (sno VARCHAR(5), logged_at DATE);
+        CREATE OR REPLACE FUNCTION log_supplier() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN INSERT INTO log_transaction VALUES (NEW.sno, CURRENT_DATE); RETURN NEW; END; $$;
+        CREATE TRIGGER log_supplier_insert
+        AFTER INSERT ON S
+        FOR EACH ROW
+        EXECUTE FUNCTION log_supplier();
+        INSERT INTO S VALUES ('S7', 'PATEL', 20, 'GUELPH');
+        SELECT sno FROM log_transaction;
+    - title: Row-level fires per row; statement-level fires once
+      body: "One DELETE removes S5's six shipments. A FOR EACH ROW trigger fires six times; a FOR EACH STATEMENT trigger fires once."
+      sql: |
+        CREATE TABLE fired (kind TEXT);
+        CREATE FUNCTION note_row() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN INSERT INTO fired VALUES ('row'); RETURN OLD; END; $$;
+        CREATE FUNCTION note_stmt() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN INSERT INTO fired VALUES ('statement'); RETURN NULL; END; $$;
+        CREATE TRIGGER per_row AFTER DELETE ON SP FOR EACH ROW EXECUTE FUNCTION note_row();
+        CREATE TRIGGER per_stmt AFTER DELETE ON SP FOR EACH STATEMENT EXECUTE FUNCTION note_stmt();
+        DELETE FROM SP WHERE sno = 'S5';
+        SELECT kind, COUNT(*) AS times FROM fired GROUP BY kind ORDER BY kind;
+    - title: Dropping the trigger leaves the function
+      sql: |
+        CREATE FUNCTION log_supplier() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END; $$;
+        CREATE TRIGGER log_supplier_insert AFTER INSERT ON S FOR EACH ROW EXECUTE FUNCTION log_supplier();
+        DROP TRIGGER log_supplier_insert ON S;
+        SELECT proname FROM pg_proc WHERE proname = 'log_supplier';
+  pitfalls:
+    - "In a DELETE trigger there's no NEW, only OLD. For an AFTER trigger the return value is ignored, so RETURN OLD or RETURN NULL is the clearer choice."
+
+- id: w9-ex-before
+  title: A BEFORE trigger that changes the row
+  topics: [ddl.triggers]
+  dataset: supplier-parts
+  question: "S stores cities in capitals. Make inserts store the city in capitals even when someone types it in lower case, and ignore inserts with a negative status."
+  steps:
+    - title: BEFORE can change NEW, or skip the row
+      body: "Returning the changed NEW writes the changed row; returning NULL skips it without an error."
+      sql: |
+        CREATE FUNCTION clean_supplier() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN
+          IF NEW.status < 0 THEN
+            RETURN NULL;
+          END IF;
+          NEW.city := UPPER(NEW.city);
+          RETURN NEW;
+        END;
+        $$;
+        CREATE TRIGGER clean_before_insert BEFORE INSERT ON S FOR EACH ROW EXECUTE FUNCTION clean_supplier();
+        INSERT INTO S VALUES ('S8', 'NG', 30, 'guelph'), ('S9', 'BAD', -5, 'paris');
+        SELECT sno, city FROM S WHERE sno IN ('S8', 'S9');
+  pitfalls:
+    - "The negative-status rule would be a CHECK constraint in real life (it would raise an error instead of silently skipping); this just shows what BEFORE triggers can do."
