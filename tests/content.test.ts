@@ -13,8 +13,8 @@ test("all content validates and every answer key runs", async () => {
 
 test("every week has enough questions for its in-class quiz format", async () => {
   const { out } = await compile();
-  const m = out!.manifest as { blueprints: Blueprint[]; weeks: { number: number; quizFormat: string }[] };
-  for (const w of m.weeks) {
+  const m = out!.manifest as { blueprints: Blueprint[]; weeks: { number: number; quizFormat: string; kind?: string }[] };
+  for (const w of m.weeks.filter((x) => x.kind !== "lab")) {
     const bp = m.blueprints.find((b) => b.id === w.quizFormat)!;
     const pool = (out!.weeks[w.number] as { questions: CQuestion[] }).questions;
     const { shortfalls, items } = assemble(bp, pool, 1);
@@ -46,7 +46,8 @@ test("a diagram group's slots all share one diagram or relation", async () => {
 // some direct questions (writing queries, definitions) for rounded practice.
 test("every week is mostly conceptual but keeps some direct questions", async () => {
   const { out } = await compile();
-  for (const [n, w] of Object.entries(out!.weeks) as [string, { questions: CQuestion[] }][]) {
+  for (const [n, w] of Object.entries(out!.weeks) as [string, { questions: CQuestion[]; week: { kind?: string } }][]) {
+    if (w.week.kind === "lab") continue; // lab-exam pages are all hands-on SQL
     const total = w.questions.length;
     const direct = w.questions.filter((q) => q.style === "direct").length;
     const conceptual = total - direct;

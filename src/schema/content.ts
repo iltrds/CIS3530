@@ -17,6 +17,8 @@ export const Column = z.object({
   type: ColumnType.default("text"),
   pk: z.boolean().default(false),
   notNull: z.boolean().default(false),
+  /** Exact SQL type to create the column with (e.g. VARCHAR(3), NUMERIC(5,2)); defaults from `type`. */
+  sql: z.string().optional(),
 });
 
 export const ForeignKey = z.object({
@@ -123,7 +125,13 @@ export type ErAttribute = z.infer<typeof ErAttribute>;
 // ---------------------------------------------------------------- weeks
 
 export const Week = z.object({
-  number: z.number().int().min(1).max(14),
+  number: z.number().int().min(1).max(30),
+  /** "lab": a lab-exam practice page (numbered 21+), listed under Lab exam rather than Weeks. */
+  kind: z.enum(["week", "lab"]).default("week"),
+  /** Short name shown instead of "Week N" (labs). */
+  label: z.string().optional(),
+  /** Labs: the dataset the sandbox button opens in the SQL playground. */
+  sandbox: z.string().optional(),
   title: z.string(),
   summary: z.string(),
   status: z.enum(["draft", "published"]).default("draft"),

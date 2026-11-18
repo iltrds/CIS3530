@@ -143,6 +143,16 @@ export function App() {
           <a href="#/playground" aria-current={current("playground")}>
             <span className="nav-label">Query playground</span>
           </a>
+          {ctx.m.labs.length > 0 && (
+            <>
+              <div className="nav-group">Lab exam</div>
+              {ctx.m.labs.map((w) => (
+                <a key={w.number} href={`#/week/${w.number}`} aria-current={weekNum === w.number ? "page" : undefined}>
+                  <span className="nav-label">{w.title}</span>
+                </a>
+              ))}
+            </>
+          )}
           <div className="nav-group">Weeks</div>
           {ctx.m.weeks.map((w) => (
             <a key={w.number} href={`#/week/${w.number}`} aria-current={weekNum === w.number ? "page" : undefined}>

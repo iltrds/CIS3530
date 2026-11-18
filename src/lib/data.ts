@@ -10,6 +10,9 @@ export interface Topic {
 }
 export interface WeekMeta {
   number: number;
+  kind?: "week" | "lab";
+  label?: string;
+  sandbox?: string;
   title: string;
   summary: string;
   topics: string[];
@@ -61,7 +64,9 @@ export interface Manifest {
     events: CourseEvent[];
   };
   topics: Topic[];
+  /** Course weeks only; lab-exam pages are split off into `labs` when the manifest loads. */
   weeks: WeekMeta[];
+  labs: WeekMeta[];
   datasets: { id: string; title: string; description: string; source: string; hidden: boolean; tables: string[] }[];
   blueprints: Blueprint[];
 }
@@ -127,7 +132,17 @@ function get<T>(file: string): Promise<T> {
   return p as Promise<T>;
 }
 
-export const loadManifest = () => get<Manifest>("manifest.json");
+let manifestP: Promise<Manifest> | undefined;
+export const loadManifest = () =>
+  (manifestP ??= get<Manifest>("manifest.json").then((m) => {
+    const all = m.weeks;
+    return { ...m, weeks: all.filter((w) => w.kind !== "lab"), labs: all.filter((w) => w.kind === "lab") };
+  }));
+
+/** "Week 3", or a lab page's own label. */
+export function weekLabel(m: Pick<Manifest, "labs"> | undefined, n: number): string {
+  return m?.labs?.find((w) => w.number === n)?.label ?? `Week ${n}`;
+}
 export const loadWeek = (n: number) => get<WeekData>(`week-${String(n).padStart(2, "0")}.json`);
 export const loadDatasets = () => get<Dataset[]>("datasets.json");
 export const loadSearch = () => get<{ id: string; kind: string; week: number; title: string; text: string; href: string }[]>("search.json");
@@ -141,7 +156,7 @@ export async function loadDataset(id: string): Promise<Dataset> {
 
 export async function loadAllWeeks(): Promise<WeekData[]> {
   const m = await loadManifest();
-  return Promise.all(m.weeks.map((w) => loadWeek(w.number)));
+  return Promise.all([...m.weeks, ...m.labs].map((w) => loadWeek(w.number)));
 }
 
 /** Tiny async hook: re-runs when deps change, exposes data/error. */

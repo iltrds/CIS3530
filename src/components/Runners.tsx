@@ -8,7 +8,7 @@ import { recordAttempt, recordRun } from "../lib/store.ts";
 import { questionLabel, type QuizItem } from "../lib/quiz.ts";
 import { onSqlStatus, sqlStatus, sqlErrorReason } from "../lib/sql.ts";
 import type { Manifest } from "../lib/data.ts";
-import { topicLabel } from "../lib/data.ts";
+import { topicLabel, weekLabel } from "../lib/data.ts";
 
 function SqlLoading() {
   const [s, set] = useState(sqlStatus());
@@ -25,7 +25,7 @@ function QHead({ n, item, m }: { n?: number; item: QuizItem; m?: Manifest }) {
       <div className="q-num">{n !== undefined ? `Question ${n}` : questionLabel(q)}</div>
       <div className="q-meta">
         {n !== undefined && <>{questionLabel(q)} · </>}
-        Week {q.week} · {q.style === "direct" ? "Direct" : "Conceptual"}
+        {weekLabel(m, q.week)} · {q.style === "direct" ? "Direct" : "Conceptual"}
         {m && <> · {q.topics.map((t) => topicLabel(m, t)).join(", ")}</>} · {item.points} point{item.points === 1 ? "" : "s"}
       </div>
     </div>

@@ -1,0 +1,122 @@
+- id: le1-ex-rerun
+  title: Why create_LE1.sql fails the second time
+  topics: [lab.le1, ddl.drop]
+  dataset: lab-le1
+  question: "The script starts with DROP TABLE IF EXISTS manuSupp. Run it once and it works; run it again and it stops with an error. Why, and how do you fix it?"
+  steps:
+    - title: The first DROP is refused
+      body: "On a second run the tables already exist, and combine has a foreign key to manuSupp. Postgres won't drop a table that another table still refers to."
+      sql: DROP TABLE IF EXISTS manuSupp;
+      expectError: true
+    - title: "Fix 1: drop the referencing table first"
+      body: "Drop combine (which refers to the other three) before the tables it refers to. Then the rest of the script runs."
+      sql: |
+        DROP TABLE IF EXISTS combine;
+        DROP TABLE IF EXISTS manuSupp;
+        DROP TABLE IF EXISTS items;
+        DROP TABLE IF EXISTS proj;
+        SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema();
+    - title: "Fix 2: CASCADE"
+      body: "CASCADE drops the foreign-key constraint on combine (not combine's rows). combine stays, but no longer checks its supplier numbers."
+      sql: |
+        DROP TABLE IF EXISTS manuSupp CASCADE;
+        SELECT conname FROM pg_constraint WHERE conrelid = 'combine'::regclass AND contype = 'f' ORDER BY conname;
+  pitfalls:
+    - "Unquoted names fold to lower case: manuSupp is really manusupp, and proJNo is projno. That's why the last foreign key (proJNo) works even though combine's column is spelled projNo."
+
+- id: le1-ex-keys-join
+  title: Join on the keys, not NATURAL JOIN
+  topics: [lab.le1, sql.joins]
+  dataset: lab-le1
+  question: "List each supplier name with the name of each item it supplies."
+  steps:
+    - title: The trap
+      body: "manuSupp, items and proj all have a CITY column. NATURAL JOIN matches every column with the same name, so it also demands the supplier and the item be in the same city. Most rows disappear."
+      sql: SELECT DISTINCT sname, iname FROM manuSupp NATURAL JOIN combine NATURAL JOIN items;
+    - title: Explicit join conditions
+      body: "Join combine to each table on its key. DISTINCT because a supplier can send the same item to several projects."
+      sql: |
+        SELECT DISTINCT s.sname, i.iname
+        FROM combine c
+        JOIN manuSupp s ON c.manuSupitemNo = s.manuSupitemNo
+        JOIN items i ON c.itemNo = i.itemNo
+        ORDER BY s.sname, i.iname;
+  pitfalls:
+    - "USING (manuSupitemNo) or USING (itemNo) is fine; it's only NATURAL JOIN that picks up CITY."
+
+- id: le1-ex-division
+  title: '"Every": suppliers who supply every item'
+  topics: [lab.le1, sql.division, sql.correlated, sql.having]
+  dataset: lab-le1
+  question: "List the suppliers who supply every item (to at least one project)."
+  steps:
+    - title: NOT EXISTS (all items EXCEPT this supplier's items)
+      body: "If nothing is left after removing the supplier's items from all items, the supplier supplies them all."
+      sql: |
+        SELECT s.manuSupitemNo, s.sname FROM manuSupp s
+        WHERE NOT EXISTS (
+          SELECT itemNo FROM items
+          EXCEPT
+          SELECT itemNo FROM combine c WHERE c.manuSupitemNo = s.manuSupitemNo);
+    - title: Double NOT EXISTS
+      body: "There's no item that this supplier doesn't supply."
+      sql: |
+        SELECT s.manuSupitemNo, s.sname FROM manuSupp s
+        WHERE NOT EXISTS (
+          SELECT * FROM items i
+          WHERE NOT EXISTS (
+            SELECT * FROM combine c
+            WHERE c.manuSupitemNo = s.manuSupitemNo AND c.itemNo = i.itemNo));
+    - title: Counting
+      body: "Count the supplier's distinct items and compare with the number of items. DISTINCT matters: M5 sends I2 to two projects."
+      sql: |
+        SELECT manuSupitemNo FROM combine
+        GROUP BY manuSupitemNo
+        HAVING COUNT(DISTINCT itemNo) = (SELECT COUNT(*) FROM items);
+  pitfalls:
+    - "Don't write = 6. The marker runs your query on other rows too."
+
+- id: le1-ex-group
+  title: GROUP BY, HAVING and the biggest total
+  topics: [lab.le1, sql.group-by, sql.having]
+  dataset: lab-le1
+  question: "Give each supplier's total quantity, then only those over 1000, then just the largest."
+  steps:
+    - title: Totals per supplier
+      body: "Every column in SELECT that isn't inside an aggregate must be in GROUP BY."
+      sql: |
+        SELECT s.manuSupitemNo, s.sname, SUM(c.qty) AS total
+        FROM manuSupp s JOIN combine c ON s.manuSupitemNo = c.manuSupitemNo
+        GROUP BY s.manuSupitemNo, s.sname
+        ORDER BY total DESC;
+    - title: HAVING filters groups
+      body: "WHERE runs before grouping and can't see SUM; HAVING runs after."
+      sql: |
+        SELECT manuSupitemNo, SUM(qty) AS total FROM combine
+        GROUP BY manuSupitemNo HAVING SUM(qty) > 1000;
+    - title: The largest, ties included
+      body: ">= ALL keeps every supplier tied for the top. LIMIT 1 would silently drop a tie."
+      sql: |
+        SELECT manuSupitemNo, SUM(qty) AS total FROM combine
+        GROUP BY manuSupitemNo
+        HAVING SUM(qty) >= ALL (SELECT SUM(qty) FROM combine GROUP BY manuSupitemNo);
+
+- id: le1-ex-trigger
+  title: A trigger that logs deletions
+  topics: [lab.le1, ddl.triggers, ddl.functions]
+  dataset: lab-le1
+  question: "Keep a copy of every combine row that gets deleted."
+  steps:
+    - title: Log table, function, trigger
+      body: "WHERE 1 = 2 copies the structure without rows. The trigger function sees the deleted row as OLD."
+      sql: |
+        CREATE TABLE combine_log AS SELECT * FROM combine WHERE 1 = 2;
+        CREATE OR REPLACE FUNCTION log_combine_delete() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN
+          INSERT INTO combine_log VALUES (OLD.manuSupitemNo, OLD.itemNo, OLD.projNo, OLD.qty);
+          RETURN OLD;
+        END;
+        $$;
+        CREATE TRIGGER combine_deleted AFTER DELETE ON combine FOR EACH ROW EXECUTE FUNCTION log_combine_delete();
+        DELETE FROM combine WHERE projNo = 'J6';
+        SELECT * FROM combine_log;

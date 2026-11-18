@@ -1,0 +1,10 @@
+number: 22
+kind: lab
+label: "Lab exam: schema 2"
+sandbox: lab-le2
+title: "Lab exam schema 2: Movie, Reviewer, Rating"
+summary: Practice for the lab exam on the movie-ratings schema from create_and_insert_LE2.sql. Open the sandbox to experiment (changes stick until you reset), work through the questions, or take a timed mock lab exam.
+status: published
+quizFormat: lab-mock
+topics: [lab.le2, sql.select-from-where, sql.joins, sql.subqueries, sql.group-by, sql.having, sql.aggregates, sql.set-ops, sql.modify, ddl.alter, ddl.constraints, ddl.functions, ddl.triggers]
+sources: [create_and_insert_LE2.sql]

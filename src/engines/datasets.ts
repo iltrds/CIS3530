@@ -5,7 +5,7 @@ export interface DatasetLike {
   id: string;
   tables: {
     name: string;
-    columns: { name: string; type: string; pk: boolean; notNull: boolean }[];
+    columns: { name: string; type: string; pk: boolean; notNull: boolean; sql?: string }[];
     foreignKeys: { columns: string[]; references: { table: string; columns: string[] } }[];
     unique: string[][];
     rows: Value[][];
@@ -40,7 +40,7 @@ export function toSql(ds: DatasetLike, opts: { withForeignKeys?: boolean } = {})
   const s = schemaName(ds.id);
   const out: string[] = [`DROP SCHEMA IF EXISTS ${s} CASCADE;`, `CREATE SCHEMA ${s};`, `SET search_path TO ${s};`];
   for (const t of ds.tables) {
-    const cols = t.columns.map((c) => `  ${c.name} ${sqlType(c.type)}${c.notNull ? " NOT NULL" : ""}`);
+    const cols = t.columns.map((c) => `  ${c.name} ${c.sql ?? sqlType(c.type)}${c.notNull ? " NOT NULL" : ""}`);
     const pk = t.columns.filter((c) => c.pk).map((c) => c.name);
     if (pk.length) cols.push(`  PRIMARY KEY (${pk.join(", ")})`);
     for (const u of t.unique) cols.push(`  UNIQUE (${u.join(", ")})`);

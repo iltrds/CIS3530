@@ -1,0 +1,75 @@
+- id: le2-ex-no-keys
+  title: What having no keys means
+  topics: [lab.le2, ddl.constraints, ddl.alter]
+  dataset: lab-le2
+  question: "The script creates Movie, Reviewer and Rating with no primary or foreign keys. What does that allow, and what happens when you try to add keys afterwards?"
+  steps:
+    - title: Duplicates and dangling references go straight in
+      body: "Nothing stops a second movie 101, or a rating for a movie that doesn't exist."
+      sql: |
+        INSERT INTO Movie VALUES (101, 'Gone with the Wind', 1939, 'Victor Fleming');
+        INSERT INTO Rating VALUES (999, 999, 9, NULL);
+        SELECT mID, COUNT(*) FROM Movie GROUP BY mID HAVING COUNT(*) > 1;
+    - title: A foreign key needs a key to point at
+      body: "Rating.mID can't reference Movie.mID while Movie.mID isn't a primary key or UNIQUE."
+      sql: ALTER TABLE Rating ADD FOREIGN KEY (mID) REFERENCES Movie (mID);
+      expectError: true
+    - title: Add the primary key first, then the foreign key
+      sql: |
+        ALTER TABLE Movie ADD PRIMARY KEY (mID);
+        ALTER TABLE Rating ADD FOREIGN KEY (mID) REFERENCES Movie (mID);
+        SELECT conname, contype FROM pg_constraint WHERE conrelid IN ('movie'::regclass, 'rating'::regclass) AND contype IN ('p', 'f') ORDER BY conname;
+    - title: (rID, mID) is not a key of Rating
+      body: "Reviewers can rate a movie more than once, so this pair repeats and the key is refused."
+      sql: ALTER TABLE Rating ADD PRIMARY KEY (rID, mID);
+      expectError: true
+  pitfalls:
+    - "The script drops and recreates the tables, so it's safe to run again. Without foreign keys, the drop order doesn't matter (unlike schema 1)."
+
+- id: le2-ex-rated-twice
+  title: Self-join - the reviewer who liked it more the second time
+  topics: [lab.le2, sql.joins]
+  dataset: lab-le2
+  question: "Find each reviewer who rated the same movie twice and gave it a higher rating the second time."
+  steps:
+    - title: Pair each rating with every other rating of the same movie by the same reviewer
+      sql: |
+        SELECT r1.rID, r1.mID, r1.stars AS first, r2.stars AS second, r1.ratingDate, r2.ratingDate
+        FROM Rating r1 JOIN Rating r2 ON r1.rID = r2.rID AND r1.mID = r2.mID
+        WHERE r1.ratingDate < r2.ratingDate;
+    - title: Keep the ones that went up, and add the names
+      sql: |
+        SELECT name, title
+        FROM Rating r1 JOIN Rating r2 ON r1.rID = r2.rID AND r1.mID = r2.mID
+        JOIN Reviewer ON r1.rID = Reviewer.rID
+        JOIN Movie ON r1.mID = Movie.mID
+        WHERE r1.ratingDate < r2.ratingDate AND r1.stars < r2.stars;
+  pitfalls:
+    - "Michael Walsh rated Raiders twice but went down (4 then 2), so he's left out."
+
+- id: le2-ex-zero
+  title: Counting including zero, and the NULL pitfalls
+  topics: [lab.le2, sql.joins, sql.group-by, sql.subqueries]
+  dataset: lab-le2
+  question: "Count each reviewer's ratings, keeping reviewers with none. Then see how NULL breaks = and NOT IN."
+  steps:
+    - title: LEFT JOIN and COUNT(column)
+      body: "Add a reviewer with no ratings to see the difference. COUNT(*) counts the padded row; COUNT(Rating.mID) skips the null."
+      sql: |
+        INSERT INTO Reviewer VALUES (209, 'Roger Ebert');
+        SELECT name, COUNT(*) AS wrong, COUNT(Rating.mID) AS right
+        FROM Reviewer LEFT JOIN Rating ON Reviewer.rID = Rating.rID
+        GROUP BY Reviewer.rID, name ORDER BY name;
+    - title: = NULL matches nothing
+      body: "Comparing with NULL is unknown, never true, so this returns no rows."
+      sql: SELECT title FROM Movie WHERE director = NULL;
+    - title: IS NULL does
+      sql: SELECT title FROM Movie WHERE director IS NULL;
+    - title: NOT IN with a null in the list
+      body: "Directors of movies before 1950 are Victor Fleming and Snow White's null. Every NOT IN test against a list containing a null is unknown, so nothing comes back."
+      sql: SELECT title FROM Movie WHERE director NOT IN (SELECT director FROM Movie WHERE year < 1950);
+    - title: NOT EXISTS gets it right
+      sql: SELECT title FROM Movie m WHERE NOT EXISTS (SELECT * FROM Movie m2 WHERE m2.director = m.director AND m2.year < 1950);
+    - title: Averages need ROUND
+      body: "AVG on integers gives a long decimal. ROUND(…, 2) for the display; compare against AVG itself."
+      sql: SELECT mID, AVG(stars), ROUND(AVG(stars), 2) FROM Rating GROUP BY mID ORDER BY mID;

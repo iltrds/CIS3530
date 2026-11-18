@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import type { Ctx } from "../App.tsx";
 import { Html, DataTable, SchemaDiagram, DatasetTable } from "../components/Relations.tsx";
 import { href } from "../lib/router.ts";
-import { loadDatasets, topicLabel, useAsync, type Example } from "../lib/data.ts";
+import { loadDatasets, topicLabel, useAsync, weekLabel, type Example } from "../lib/data.ts";
 
 export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) {
   const w = ctx.weeks.find((x) => x.week.number === n);
   if (!w) return <p>There's no Week {n} yet.</p>;
+  const lab = w.week.kind === "lab";
   const tabs: [string, string][] = [
     ["notes", "Notes"],
     ["examples", `Worked examples (${w.examples.length})`],
@@ -15,9 +16,24 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
   return (
     <div>
       <div className="page-head">
-        <div className="muted">Week {n}</div>
+        <div className="muted">{weekLabel(ctx.m, n)}</div>
         <h1>{w.week.title}</h1>
         <p>{w.week.summary}</p>
+        {lab ? (
+          <div className="row">
+            {w.week.sandbox && (
+              <a className="btn primary" href={href("/playground", { ds: w.week.sandbox, lang: "sql" })}>
+                Open the SQL sandbox
+              </a>
+            )}
+            <a className="btn" href={href("/quiz/run", { mode: "practice", weeks: n, count: "all" })}>
+              Practise all {w.questions.length} questions
+            </a>
+            <a className="btn" href={href("/quiz/run", { bp: w.week.quizFormat, week: n })}>
+              Mock lab exam
+            </a>
+          </div>
+        ) : (
         <div className="row">
           <a className="btn primary" href={href("/flashcards", { week: n })}>
             Flash cards ({w.flashcards.length})
@@ -35,6 +51,7 @@ export function WeekPage({ ctx, n, tab }: { ctx: Ctx; n: number; tab: string }) 
             Quiz simulator
           </a>
         </div>
+        )}
       </div>
       <nav className="tabs" aria-label="Week sections">
         {tabs.map(([id, label]) => (

@@ -1,0 +1,67 @@
+id: lab-le2-alt
+title: "Lab exam schema 2 (hidden grading instance)"
+description: >
+  Same schema as lab-le2 with different rows: a movie nobody rated, a reviewer with no ratings, another null director, and re-ratings that go both up and down, so answers that only work on the original rows are caught.
+hidden: true
+alternateOf: [lab-le2]
+tables:
+  - name: Movie
+    columns:
+      - { name: mID, type: int, sql: "int" }
+      - { name: title, sql: "text" }
+      - { name: year, type: int, sql: "int" }
+      - { name: director, sql: "text" }
+    rows:
+      - [101, "Gone with the Wind", 1939, "Victor Fleming"]
+      - [102, "Star Wars", 1977, "George Lucas"]
+      - [103, "The Sound of Music", 1965, "Robert Wise"]
+      - [104, "E.T.", 1982, "Steven Spielberg"]
+      - [105, "Titanic", 1997, "James Cameron"]
+      - [106, "Snow White", 1937, null]
+      - [107, "Avatar", 2009, "James Cameron"]
+      - [108, "Raiders of the Lost Ark", 1981, "Steven Spielberg"]
+      - [109, "Up", 2009, "Pete Docter"]
+      - [110, "Nosferatu", 1922, null]
+  - name: Reviewer
+    columns:
+      - { name: rID, type: int, sql: "int" }
+      - { name: name, sql: "text" }
+    rows:
+      - [201, "Sarah Martinez"]
+      - [202, "Daniel Lewis"]
+      - [203, "Michael Walsh"]
+      - [204, "Mike Anderson"]
+      - [205, "Chris Jackson"]
+      - [206, "Elizabeth Thomas"]
+      - [207, "John Moore"]
+      - [208, "Ashley White"]
+      - [209, "Roger Ebert"]
+      - [210, "Pauline Kael"]
+  - name: Rating
+    columns:
+      - { name: rID, type: int, sql: "int" }
+      - { name: mID, type: int, sql: "int" }
+      - { name: stars, type: int, sql: "int" }
+      - { name: ratingDate, type: date, sql: "date" }
+    rows:
+      - [201, 101, 2, "2011-01-22"]
+      - [201, 101, 4, "2011-01-27"]
+      - [202, 106, 4, null]
+      - [202, 107, 3, "2011-10-02"]
+      - [203, 103, 4, "2011-01-20"]
+      - [203, 103, 3, "2011-01-28"]
+      - [203, 108, 4, "2011-01-12"]
+      - [204, 101, 3, "2011-01-09"]
+      - [205, 101, 3, "2011-01-27"]
+      - [205, 102, 5, "2011-01-27"]
+      - [205, 105, 4, "2011-01-27"]
+      - [205, 104, 2, "2011-01-22"]
+      - [205, 108, 4, null]
+      - [206, 107, 3, "2011-01-15"]
+      - [206, 106, 5, "2011-01-19"]
+      - [207, 107, 5, "2011-01-20"]
+      - [207, 110, 1, "2011-02-01"]
+      - [207, 110, 3, "2011-02-03"]
+      - [208, 104, 3, "2011-01-02"]
+      - [209, 102, 4, "2011-03-01"]
+      - [209, 105, 2, "2011-03-01"]

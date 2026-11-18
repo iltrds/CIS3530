@@ -1,0 +1,352 @@
+# Lab exam practice, schema 2. Every answer is run against the original rows and a hidden second set.
+
+# ---------------------------------------------------------------- single table
+
+- id: le2-q-spielberg
+  type: sql
+  topics: [lab.le2, sql.select-from-where]
+  difficulty: 1
+  dataset: lab-le2
+  show: { tables: [Movie] }
+  prompt: "List the titles of all movies directed by Steven Spielberg."
+  reference: SELECT title FROM Movie WHERE director = 'Steven Spielberg';
+
+- id: le2-q-good-years
+  type: sql
+  topics: [lab.le2, sql.joins, sql.distinct-order]
+  difficulty: 2
+  dataset: lab-le2
+  compare: ordered
+  show: { tables: [Movie, Rating] }
+  prompt: "List every year (once each, ascending) that has a movie which received a rating of 4 or 5."
+  reference: SELECT DISTINCT year FROM Movie JOIN Rating ON Movie.mID = Rating.mID WHERE stars >= 4 ORDER BY year;
+
+- id: le2-q-null-dates
+  type: sql
+  topics: [lab.le2, sql.where, sql.joins]
+  difficulty: 1
+  dataset: lab-le2
+  show: { tables: [Reviewer, Rating] }
+  prompt: "List the names of reviewers who have a rating with no date."
+  reference: SELECT DISTINCT name FROM Reviewer JOIN Rating ON Reviewer.rID = Rating.rID WHERE ratingDate IS NULL;
+  explanation: "= NULL is never true. Use IS NULL."
+
+- id: le2-q-full-list
+  type: sql
+  topics: [lab.le2, sql.joins, sql.distinct-order]
+  difficulty: 2
+  dataset: lab-le2
+  compare: ordered
+  show: { diagram: true }
+  prompt: "List every rating as (reviewer name, movie title, stars, ratingDate), sorted by reviewer name, then title, then stars."
+  reference: |
+    SELECT name, title, stars, ratingDate
+    FROM Rating JOIN Reviewer ON Rating.rID = Reviewer.rID JOIN Movie ON Rating.mID = Movie.mID
+    ORDER BY name, title, stars;
+
+# ---------------------------------------------------------------- self-joins
+
+- id: le2-q-rerated-higher
+  type: sql
+  topics: [lab.le2, sql.joins]
+  difficulty: 3
+  dataset: lab-le2
+  show: { diagram: true }
+  prompt: "For every case where the same reviewer rated the same movie twice and gave it a higher rating the second time (by date), give the reviewer's name and the movie's title."
+  reference: |
+    SELECT name, title
+    FROM Rating r1 JOIN Rating r2 ON r1.rID = r2.rID AND r1.mID = r2.mID
+    JOIN Reviewer ON r1.rID = Reviewer.rID
+    JOIN Movie ON r1.mID = Movie.mID
+    WHERE r1.ratingDate < r2.ratingDate AND r1.stars < r2.stars;
+  explanation: "Pair Rating with itself on (rID, mID): r1 is the earlier rating and r2 the later one. In the hidden rows somebody re-rates a movie lower, which must not be listed."
+
+- id: le2-q-reviewer-pairs
+  type: sql
+  topics: [lab.le2, sql.joins]
+  difficulty: 3
+  dataset: lab-le2
+  show: { diagram: true }
+  prompt: "List every pair of reviewers who rated the same movie, as (name1, name2) with name1 alphabetically before name2, each pair once."
+  reference: |
+    SELECT DISTINCT a.name, b.name
+    FROM Rating r1 JOIN Rating r2 ON r1.mID = r2.mID
+    JOIN Reviewer a ON r1.rID = a.rID
+    JOIN Reviewer b ON r2.rID = b.rID
+    WHERE a.name < b.name;
+
+# ---------------------------------------------------------------- aggregates
+
+- id: le2-q-max-stars
+  type: sql
+  topics: [lab.le2, sql.group-by]
+  difficulty: 2
+  dataset: lab-le2
+  compare: ordered
+  show: { tables: [Movie, Rating] }
+  prompt: "For each movie that has at least one rating, give its title and highest number of stars, sorted by title."
+  reference: SELECT title, MAX(stars) FROM Movie JOIN Rating ON Movie.mID = Rating.mID GROUP BY Movie.mID, title ORDER BY title;
+
+- id: le2-q-spread
+  type: sql
+  topics: [lab.le2, sql.group-by]
+  difficulty: 2
+  dataset: lab-le2
+  compare: ordered
+  show: { tables: [Movie, Rating] }
+  prompt: "For each rated movie, give its title and its rating spread (highest stars minus lowest). Sort by spread from largest to smallest, then by title."
+  reference: |
+    SELECT title, MAX(stars) - MIN(stars) AS spread
+    FROM Movie JOIN Rating ON Movie.mID = Rating.mID
+    GROUP BY Movie.mID, title
+    ORDER BY spread DESC, title;
+
+- id: le2-q-well-rated
+  type: sql
+  topics: [lab.le2, sql.having]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "List the title and average stars (rounded to 2 decimals) of every movie whose average rating is at least 3.5."
+  reference: |
+    SELECT title, ROUND(AVG(stars), 2)
+    FROM Movie JOIN Rating ON Movie.mID = Rating.mID
+    GROUP BY Movie.mID, title
+    HAVING AVG(stars) >= 3.5;
+  explanation: "Filter on AVG(stars) itself, not on the rounded value, so 3.495 isn't let through."
+
+- id: le2-q-best-average
+  type: sql
+  topics: [lab.le2, sql.having, sql.subqueries]
+  difficulty: 3
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "List the title(s) of the movie(s) with the highest average rating (all of them, if there's a tie)."
+  reference: |
+    SELECT title FROM Movie JOIN Rating ON Movie.mID = Rating.mID
+    GROUP BY Movie.mID, title
+    HAVING AVG(stars) >= ALL (SELECT AVG(stars) FROM Rating GROUP BY mID);
+
+- id: le2-q-before-after
+  type: sql
+  topics: [lab.le2, sql.aggregates, sql.subqueries]
+  difficulty: 3
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "Work out each movie's average rating. Then find the average of those averages for movies released before 1980, and for movies released in 1980 or later. Give the first minus the second, rounded to 2 decimals (one number)."
+  reference: |
+    SELECT ROUND(
+      (SELECT AVG(a) FROM (SELECT AVG(stars) AS a FROM Rating JOIN Movie USING (mID) WHERE year < 1980 GROUP BY mID) pre)
+      - (SELECT AVG(a) FROM (SELECT AVG(stars) AS a FROM Rating JOIN Movie USING (mID) WHERE year >= 1980 GROUP BY mID) post),
+      2);
+  explanation: "Average the per-movie averages, not the raw ratings: a movie with more ratings mustn't count for more."
+
+- id: le2-q-directors
+  type: sql
+  topics: [lab.le2, sql.having]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie] }
+  prompt: "List each director who directed more than one movie, with the number of movies. Leave out movies with no director."
+  reference: SELECT director, COUNT(*) FROM Movie WHERE director IS NOT NULL GROUP BY director HAVING COUNT(*) > 1;
+  explanation: "GROUP BY puts all the nulls in one group. In the hidden rows there are two movies with no director, so without the IS NOT NULL a null 'director' shows up."
+
+- id: le2-q-count-including-zero
+  type: sql
+  topics: [lab.le2, sql.joins, sql.group-by]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Reviewer, Rating] }
+  prompt: "For every reviewer, give the name and the number of ratings they've made. Reviewers with no ratings appear with 0."
+  reference: SELECT name, COUNT(Rating.mID) FROM Reviewer LEFT JOIN Rating ON Reviewer.rID = Rating.rID GROUP BY Reviewer.rID, name;
+  explanation: "LEFT JOIN keeps reviewers with no ratings; COUNT(Rating.mID) counts 0 for them, while COUNT(*) would count the null-padded row as 1."
+
+# ---------------------------------------------------------------- subqueries, NOT, set operators
+
+- id: le2-q-gwtw
+  type: sql
+  topics: [lab.le2, sql.subqueries]
+  difficulty: 1
+  dataset: lab-le2
+  compare: bag
+  show: { diagram: true }
+  prompt: "List the names of all reviewers who rated Gone with the Wind, each once."
+  reference: |
+    SELECT name FROM Reviewer
+    WHERE rID IN (SELECT rID FROM Rating WHERE mID IN (SELECT mID FROM Movie WHERE title = 'Gone with the Wind'));
+
+- id: le2-q-not-sarah
+  type: sql
+  topics: [lab.le2, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le2
+  show: { diagram: true }
+  prompt: "List the titles of all movies not reviewed by Sarah Martinez (including movies nobody reviewed)."
+  reference: |
+    SELECT title FROM Movie
+    WHERE mID NOT IN (SELECT mID FROM Rating JOIN Reviewer ON Rating.rID = Reviewer.rID WHERE name = 'Sarah Martinez');
+
+- id: le2-q-never-low
+  type: sql
+  topics: [lab.le2, sql.subqueries, sql.correlated]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Reviewer, Rating] }
+  prompt: "List the names of reviewers who never gave a rating below 3. Reviewers with no ratings count too."
+  reference: SELECT name FROM Reviewer r WHERE NOT EXISTS (SELECT * FROM Rating x WHERE x.rID = r.rID AND x.stars < 3);
+
+- id: le2-q-names-union
+  type: sql
+  topics: [lab.le2, sql.set-ops]
+  difficulty: 1
+  dataset: lab-le2
+  compare: ordered
+  show: { tables: [Movie, Reviewer] }
+  prompt: "Return all reviewer names and movie titles together in one column, alphabetically."
+  reference: SELECT name FROM Reviewer UNION SELECT title FROM Movie ORDER BY 1;
+
+- id: le2-q-null-trap
+  type: query_choices
+  topics: [lab.le2, sql.subqueries]
+  difficulty: 3
+  dataset: lab-le2
+  multi: true
+  show: { tables: [Movie] }
+  tags: [trap]
+  prompt: "We want the titles of movies whose director did not direct any movie released before 1980. A movie with no director counts (there's no director who did). Which queries give exactly that?"
+  reference: |
+    SELECT title FROM Movie m
+    WHERE NOT EXISTS (SELECT * FROM Movie m2 WHERE m2.director = m.director AND m2.year < 1980);
+  candidates:
+    - query: SELECT title FROM Movie m WHERE NOT EXISTS (SELECT * FROM Movie m2 WHERE m2.director = m.director AND m2.year < 1980);
+    - query: SELECT title FROM Movie WHERE director NOT IN (SELECT director FROM Movie WHERE year < 1980);
+      why: "Snow White's null director is in the subquery's result, so NOT IN is never true and nothing comes back."
+    - query: SELECT title FROM Movie WHERE director NOT IN (SELECT director FROM Movie WHERE year < 1980 AND director IS NOT NULL);
+      why: "Close, but a movie with a null director gives NULL NOT IN (…), which is unknown, so it's left out."
+    - query: SELECT title FROM Movie EXCEPT SELECT title FROM Movie WHERE director IN (SELECT director FROM Movie WHERE year < 1980);
+    - query: SELECT title FROM Movie WHERE director <> ALL (SELECT director FROM Movie WHERE year < 1980);
+      why: "<> ALL is the same as NOT IN and has the same problem with the null."
+
+# ---------------------------------------------------------------- changing data (checked by a query afterwards)
+
+- id: le2-q-insert-reviewer
+  type: sql
+  topics: [lab.le2, sql.modify]
+  difficulty: 1
+  dataset: lab-le2
+  show: { tables: [Reviewer] }
+  prompt: "Add reviewer 211, Gene Siskel."
+  reference: INSERT INTO Reviewer VALUES (211, 'Gene Siskel');
+  check: SELECT * FROM Reviewer ORDER BY rID;
+
+- id: le2-q-update-years
+  type: sql
+  topics: [lab.le2, sql.modify, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "Add 25 to the release year of every movie whose average rating is 4 or more."
+  reference: UPDATE Movie SET year = year + 25 WHERE mID IN (SELECT mID FROM Rating GROUP BY mID HAVING AVG(stars) >= 4);
+  check: SELECT * FROM Movie ORDER BY mID;
+
+- id: le2-q-delete-ratings
+  type: sql
+  topics: [lab.le2, sql.modify, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "Delete every rating below 4 stars for movies released before 1970 or after 2000."
+  reference: DELETE FROM Rating WHERE stars < 4 AND mID IN (SELECT mID FROM Movie WHERE year < 1970 OR year > 2000);
+  check: SELECT * FROM Rating ORDER BY rID, mID, stars;
+
+- id: le2-q-unknown-director
+  type: sql
+  topics: [lab.le2, sql.modify]
+  difficulty: 1
+  dataset: lab-le2
+  show: { tables: [Movie] }
+  prompt: "Set the director to 'Unknown' for every movie that has no director."
+  reference: UPDATE Movie SET director = 'Unknown' WHERE director IS NULL;
+  check: SELECT * FROM Movie ORDER BY mID;
+
+# ---------------------------------------------------------------- DDL: keys, constraints, functions, triggers
+
+- id: le2-q-movie-pk
+  type: sql
+  topics: [lab.le2, ddl.alter, ddl.constraints]
+  difficulty: 1
+  dataset: lab-le2
+  show: { tables: [Movie] }
+  prompt: "Make mID the primary key of Movie (the table already exists)."
+  reference: ALTER TABLE Movie ADD PRIMARY KEY (mID);
+  check: "SELECT kcu.column_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema WHERE tc.table_name = 'movie' AND tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = current_schema();"
+
+- id: le2-q-stars-check
+  type: sql
+  topics: [lab.le2, ddl.alter, ddl.constraints]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Rating] }
+  prompt: "Add a constraint named stars_range to Rating so that stars must be from 1 to 5."
+  reference: ALTER TABLE Rating ADD CONSTRAINT stars_range CHECK (stars BETWEEN 1 AND 5);
+  check: "SELECT conname FROM pg_constraint WHERE conrelid = 'rating'::regclass AND contype = 'c';"
+
+- id: le2-q-runs
+  type: sql_runs
+  topics: [lab.le2, ddl.alter, ddl.constraints]
+  difficulty: 3
+  dataset: lab-le2
+  show: { diagram: true }
+  prompt: "The tables were created with no keys at all. Starting from the original script each time, which of these statements run without an error?"
+  candidates:
+    - sql: ALTER TABLE Movie ADD PRIMARY KEY (mID);
+    - sql: ALTER TABLE Reviewer ADD PRIMARY KEY (rID);
+    - sql: ALTER TABLE Rating ADD PRIMARY KEY (rID, mID);
+      why: "Sarah Martinez rated Gone with the Wind twice, so (201, 101) appears twice."
+    - sql: ALTER TABLE Rating ADD PRIMARY KEY (rID, mID, ratingDate);
+      why: "Two ratings have no date, and a primary key column can't be null."
+    - sql: ALTER TABLE Rating ADD FOREIGN KEY (mID) REFERENCES Movie (mID);
+      why: "A foreign key must refer to a primary key or UNIQUE column, and Movie.mID is neither yet."
+    - sql: INSERT INTO Rating VALUES (999, 999, 9, NULL);
+
+- id: le2-q-avg-function
+  type: sql
+  topics: [lab.le2, ddl.functions]
+  difficulty: 3
+  dataset: lab-le2
+  show: { tables: [Rating] }
+  prompt: "Write a PL/pgSQL function avg_stars(m INTEGER) that returns movie m's average rating rounded to 2 decimals (null if it has no ratings)."
+  reference: |
+    CREATE OR REPLACE FUNCTION avg_stars(m INTEGER)
+    RETURNS NUMERIC
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+      a NUMERIC;
+    BEGIN
+      SELECT ROUND(AVG(stars), 2) INTO a FROM Rating WHERE mID = m;
+      RETURN a;
+    END;
+    $$;
+  check: SELECT mID, avg_stars(mID) FROM Movie ORDER BY mID;
+
+- id: le2-q-cascade-trigger
+  type: sql
+  topics: [lab.le2, ddl.triggers]
+  difficulty: 3
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "There's no foreign key, so deleting a movie leaves its ratings behind. Write a trigger function and a FOR EACH ROW trigger on Movie that deletes a movie's ratings whenever the movie is deleted. (The check then deletes Avatar.)"
+  reference: |
+    CREATE OR REPLACE FUNCTION delete_movie_ratings()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+      DELETE FROM Rating WHERE mID = OLD.mID;
+      RETURN OLD;
+    END;
+    $$;
+    CREATE TRIGGER movie_deleted AFTER DELETE ON Movie FOR EACH ROW EXECUTE FUNCTION delete_movie_ratings();
+  check: "DELETE FROM Movie WHERE title = 'Avatar'; SELECT * FROM Rating ORDER BY rID, mID, stars;"
+  hints: ["The deleted movie is OLD; its id is OLD.mID.", "BEFORE DELETE works too, as long as the function returns OLD."]

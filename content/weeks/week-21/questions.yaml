@@ -1,0 +1,415 @@
+# Lab exam practice, schema 1. Every answer is run against the original rows and a hidden second set.
+
+# ---------------------------------------------------------------- single table
+
+- id: le1-q-paris-suppliers
+  type: sql
+  topics: [lab.le1, sql.select-from-where]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "List the names of suppliers located in PARIS."
+  reference: SELECT sname FROM manuSupp WHERE city = 'PARIS';
+
+- id: le1-q-red-heavy
+  type: sql
+  topics: [lab.le1, sql.where]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [items] }
+  prompt: "List the item number and name of every RED item that weighs more than 13."
+  reference: SELECT itemNo, iname FROM items WHERE color = 'RED' AND weight > 13;
+
+- id: le1-q-status-range
+  type: sql
+  topics: [lab.le1, sql.where]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "List the supplier numbers of suppliers whose status is from 15 to 25, inclusive."
+  reference: SELECT manuSupitemNo FROM manuSupp WHERE status BETWEEN 15 AND 25;
+
+- id: le1-q-projects-sorted
+  type: sql
+  topics: [lab.le1, sql.distinct-order]
+  difficulty: 1
+  dataset: lab-le1
+  compare: ordered
+  show: { tables: [proj] }
+  prompt: "List every project's number, name and city, sorted by city and then by project name."
+  reference: SELECT proJNo, proJNAME, city FROM proj ORDER BY city, proJNAME;
+
+- id: le1-q-colors
+  type: sql
+  topics: [lab.le1, sql.distinct-order]
+  difficulty: 1
+  dataset: lab-le1
+  compare: bag
+  show: { tables: [items] }
+  prompt: "List each item color once."
+  reference: SELECT DISTINCT color FROM items;
+  explanation: "Compared as a bag, so each color must appear exactly once: that needs DISTINCT."
+
+- id: le1-q-s-names
+  type: sql
+  topics: [lab.le1, sql.where]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [items] }
+  prompt: "List the numbers and names of items whose name starts with S."
+  reference: SELECT itemNo, iname FROM items WHERE iname LIKE 'S%';
+
+# ---------------------------------------------------------------- joins
+
+- id: le1-q-supply-i3
+  type: sql
+  topics: [lab.le1, sql.joins]
+  difficulty: 2
+  dataset: lab-le1
+  compare: bag
+  show: { diagram: true }
+  prompt: "List the names of suppliers who supply item I3 to at least one project, each name once."
+  reference: SELECT DISTINCT sname FROM manuSupp NATURAL JOIN combine WHERE itemNo = 'I3';
+  explanation: "M2 supplies I3 to seven projects; without DISTINCT, JONES appears seven times."
+
+- id: le1-q-big-shipments
+  type: sql
+  topics: [lab.le1, sql.joins]
+  difficulty: 2
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "For every combine row with a quantity of 500 or more, list the supplier name, item name, project name and quantity."
+  reference: |
+    SELECT s.sname, i.iname, p.proJNAME, c.qty
+    FROM combine c
+    JOIN manuSupp s ON c.manuSupitemNo = s.manuSupitemNo
+    JOIN items i ON c.itemNo = i.itemNo
+    JOIN proj p ON c.projNo = p.proJNo
+    WHERE c.qty >= 500;
+  explanation: "All three tables share CITY with each other, so a NATURAL JOIN of all four would also force the supplier, item and project to be in the same city. Join on the keys explicitly."
+
+- id: le1-q-m1-projects
+  type: sql
+  topics: [lab.le1, sql.joins]
+  difficulty: 1
+  dataset: lab-le1
+  compare: bag
+  show: { diagram: true }
+  prompt: "List the names of the projects that supplier M1 supplies, each once."
+  reference: SELECT DISTINCT proJNAME FROM proj JOIN combine ON proj.proJNo = combine.projNo WHERE combine.manuSupitemNo = 'M1';
+
+- id: le1-q-same-city
+  type: sql
+  topics: [lab.le1, sql.joins]
+  difficulty: 2
+  dataset: lab-le1
+  compare: bag
+  show: { diagram: true }
+  prompt: "List each (supplier number, project number) pair, once, where the supplier supplies something to a project in the supplier's own city."
+  reference: |
+    SELECT DISTINCT c.manuSupitemNo, c.projNo
+    FROM combine c
+    JOIN manuSupp s ON c.manuSupitemNo = s.manuSupitemNo
+    JOIN proj p ON c.projNo = p.proJNo
+    WHERE s.city = p.city;
+
+- id: le1-q-london-items
+  type: sql
+  topics: [lab.le1, sql.joins, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le1
+  compare: bag
+  show: { diagram: true }
+  prompt: "List the numbers of items supplied to at least one project located in LONDON, each once."
+  reference: SELECT DISTINCT itemNo FROM combine WHERE projNo IN (SELECT proJNo FROM proj WHERE city = 'LONDON');
+
+- id: le1-q-natural-trap
+  type: query_choices
+  topics: [lab.le1, sql.joins]
+  difficulty: 3
+  dataset: lab-le1
+  show: { diagram: true }
+  tags: [trap]
+  prompt: "Which query lists the name of each supplier together with the name of each item it supplies (no repeats)?"
+  reference: SELECT DISTINCT sname, iname FROM manuSupp s JOIN combine c ON s.manuSupitemNo = c.manuSupitemNo JOIN items i ON c.itemNo = i.itemNo;
+  candidates:
+    - query: SELECT DISTINCT sname, iname FROM manuSupp NATURAL JOIN combine NATURAL JOIN items;
+      why: "manuSupp and items both have CITY, so the natural join also requires the supplier and item to be in the same city."
+    - query: SELECT DISTINCT sname, iname FROM (manuSupp NATURAL JOIN combine) JOIN items USING (itemNo);
+    - query: SELECT DISTINCT sname, iname FROM manuSupp, combine, items WHERE manuSupp.manuSupitemNo = combine.manuSupitemNo;
+      why: "Missing the join condition on itemNo: every supplier is paired with every item."
+    - query: SELECT sname, iname FROM manuSupp JOIN combine USING (manuSupitemNo) JOIN items USING (itemNo);
+      why: "No DISTINCT: a supplier supplying the same item to several projects repeats."
+
+# ---------------------------------------------------------------- none / not
+
+- id: le1-q-no-red
+  type: sql
+  topics: [lab.le1, sql.subqueries, sql.correlated]
+  difficulty: 2
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the names of suppliers who do not supply any RED item (to any project). Suppliers who supply nothing at all count too."
+  reference: |
+    SELECT sname FROM manuSupp s
+    WHERE NOT EXISTS (
+      SELECT * FROM combine c JOIN items i ON c.itemNo = i.itemNo
+      WHERE c.manuSupitemNo = s.manuSupitemNo AND i.color = 'RED');
+
+- id: le1-q-unused-items
+  type: sql
+  topics: [lab.le1, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the numbers of items that aren't supplied to project J1."
+  reference: SELECT itemNo FROM items WHERE itemNo NOT IN (SELECT itemNo FROM combine WHERE projNo = 'J1');
+
+# ---------------------------------------------------------------- aggregates
+
+- id: le1-q-total-i3
+  type: sql
+  topics: [lab.le1, sql.aggregates]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "What is the total quantity of item I3 supplied, over all suppliers and projects? (One number.)"
+  reference: SELECT SUM(qty) FROM combine WHERE itemNo = 'I3';
+
+- id: le1-q-per-supplier
+  type: sql
+  topics: [lab.le1, sql.group-by]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "For each supplier number that appears in combine, give the number of combine rows and the total quantity."
+  reference: SELECT manuSupitemNo, COUNT(*), SUM(qty) FROM combine GROUP BY manuSupitemNo;
+
+- id: le1-q-items-per-project
+  type: sql
+  topics: [lab.le1, sql.group-by]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "For each project number in combine, give how many different items are supplied to it."
+  reference: SELECT projNo, COUNT(DISTINCT itemNo) FROM combine GROUP BY projNo;
+  explanation: "COUNT(DISTINCT itemNo): J4 gets I1 from two suppliers, which is still one item."
+
+- id: le1-q-busy-projects
+  type: sql
+  topics: [lab.le1, sql.having]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "List the numbers of projects supplied by more than two different suppliers."
+  reference: SELECT projNo FROM combine GROUP BY projNo HAVING COUNT(DISTINCT manuSupitemNo) > 2;
+
+- id: le1-q-top-supplier
+  type: sql
+  topics: [lab.le1, sql.having, sql.subqueries]
+  difficulty: 3
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the name(s) of the supplier(s) with the largest total quantity supplied (all of them, if there's a tie)."
+  reference: |
+    SELECT sname FROM manuSupp
+    WHERE manuSupitemNo IN (
+      SELECT manuSupitemNo FROM combine GROUP BY manuSupitemNo
+      HAVING SUM(qty) >= ALL (SELECT SUM(qty) FROM combine GROUP BY manuSupitemNo));
+
+- id: le1-q-avg-weight
+  type: sql
+  topics: [lab.le1, sql.group-by]
+  difficulty: 2
+  dataset: lab-le1
+  compare: ordered
+  show: { tables: [items] }
+  prompt: "For each item color, give the color and the average weight rounded to 2 decimals, sorted by color."
+  reference: SELECT color, ROUND(AVG(weight), 2) FROM items GROUP BY color ORDER BY color;
+
+- id: le1-q-heaviest
+  type: sql
+  topics: [lab.le1, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [items] }
+  prompt: "List the number and name of the heaviest item(s)."
+  reference: SELECT itemNo, iname FROM items WHERE weight = (SELECT MAX(weight) FROM items);
+
+# ---------------------------------------------------------------- every (division)
+
+- id: le1-q-all-items
+  type: sql
+  topics: [lab.le1, sql.division, sql.correlated]
+  difficulty: 3
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the names of suppliers who supply every item (to some project or other)."
+  reference: |
+    SELECT sname FROM manuSupp s
+    WHERE NOT EXISTS (
+      SELECT itemNo FROM items
+      EXCEPT
+      SELECT itemNo FROM combine c WHERE c.manuSupitemNo = s.manuSupitemNo);
+  explanation: "Division: no item is missing from the supplier's items. The hidden rows have a seventh item, so a query that hard-codes COUNT = 6 is marked wrong; compare with (SELECT COUNT(*) FROM items) instead."
+
+- id: le1-q-all-red-to-project
+  type: sql
+  topics: [lab.le1, sql.division, sql.having]
+  difficulty: 3
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the numbers of projects that are supplied with every RED item."
+  reference: |
+    SELECT c.projNo FROM combine c JOIN items i ON c.itemNo = i.itemNo
+    WHERE i.color = 'RED'
+    GROUP BY c.projNo
+    HAVING COUNT(DISTINCT c.itemNo) = (SELECT COUNT(*) FROM items WHERE color = 'RED');
+
+- id: le1-q-like-m2
+  type: sql
+  topics: [lab.le1, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "List the names of suppliers, other than M2, who supply at least one item that M2 supplies."
+  reference: |
+    SELECT sname FROM manuSupp
+    WHERE manuSupitemNo <> 'M2'
+      AND manuSupitemNo IN (SELECT manuSupitemNo FROM combine WHERE itemNo IN (SELECT itemNo FROM combine WHERE manuSupitemNo = 'M2'));
+
+# ---------------------------------------------------------------- set operators
+
+- id: le1-q-cities-union
+  type: sql
+  topics: [lab.le1, sql.set-ops]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp, proj] }
+  prompt: "List every city that has a supplier or a project (each once)."
+  reference: SELECT city FROM manuSupp UNION SELECT city FROM proj;
+
+- id: le1-q-cities-except
+  type: sql
+  topics: [lab.le1, sql.set-ops]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp, proj] }
+  prompt: "List the cities that have a project but no supplier."
+  reference: SELECT city FROM proj EXCEPT SELECT city FROM manuSupp;
+
+# ---------------------------------------------------------------- changing data (checked by a query afterwards)
+
+- id: le1-q-insert-supplier
+  type: sql
+  topics: [lab.le1, sql.modify]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "Add supplier M8, named KHAN, with status 25, located in GUELPH."
+  reference: INSERT INTO manuSupp VALUES ('M8', 'KHAN', 25, 'GUELPH');
+  check: SELECT * FROM manuSupp ORDER BY manuSupitemNo;
+
+- id: le1-q-update-london
+  type: sql
+  topics: [lab.le1, sql.modify]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "Increase the status of every supplier located in LONDON by 10."
+  reference: UPDATE manuSupp SET status = status + 10 WHERE city = 'LONDON';
+  check: SELECT * FROM manuSupp ORDER BY manuSupitemNo;
+
+- id: le1-q-delete-oslo
+  type: sql
+  topics: [lab.le1, sql.modify, sql.subqueries]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine, proj] }
+  prompt: "Delete every combine row for projects located in OSLO."
+  reference: DELETE FROM combine WHERE projNo IN (SELECT proJNo FROM proj WHERE city = 'OSLO');
+  check: SELECT * FROM combine ORDER BY manuSupitemNo, itemNo, projNo;
+
+- id: le1-q-runs
+  type: sql_runs
+  topics: [lab.le1, sql.modify, ddl.constraints]
+  difficulty: 2
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "Starting from the original rows each time, which of these statements run without an error?"
+  candidates:
+    - sql: INSERT INTO combine VALUES ('M1', 'I2', 'J3', 150);
+    - sql: INSERT INTO combine VALUES ('M1', 'I1', 'J1', 50);
+      why: "(M1, I1, J1) is already in combine: duplicate primary key."
+    - sql: INSERT INTO combine VALUES ('M9', 'I1', 'J1', 50);
+      why: "There's no supplier M9: foreign key violation."
+    - sql: INSERT INTO manuSupp VALUES ('M100', 'NEW', 10, 'ROME');
+      why: "manuSupitemNo is VARCHAR(3)."
+    - sql: DELETE FROM manuSupp WHERE manuSupitemNo = 'M1';
+      why: "M1 still has combine rows that refer to it."
+    - sql: DELETE FROM combine WHERE manuSupitemNo = 'M1';
+
+# ---------------------------------------------------------------- DDL, functions and triggers
+
+- id: le1-q-ctas-totals
+  type: sql
+  topics: [lab.le1, ddl.copy, sql.group-by]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "Create a table item_totals with columns itemNo and total, holding each item's total quantity supplied, in one statement."
+  reference: CREATE TABLE item_totals AS SELECT itemNo, SUM(qty) AS total FROM combine GROUP BY itemNo;
+  check: SELECT itemNo, total FROM item_totals ORDER BY itemNo;
+
+- id: le1-q-alter-email
+  type: sql
+  topics: [lab.le1, ddl.alter]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "Add a column email of type VARCHAR(30) to manuSupp."
+  reference: ALTER TABLE manuSupp ADD email VARCHAR(30);
+  check: "SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = 'manusupp' AND table_schema = current_schema() ORDER BY ordinal_position;"
+
+- id: le1-q-function
+  type: sql
+  topics: [lab.le1, ddl.functions]
+  difficulty: 3
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "Write a PL/pgSQL function supplier_total(s VARCHAR) that returns the total quantity supplied by supplier s (null if none)."
+  reference: |
+    CREATE OR REPLACE FUNCTION supplier_total(s VARCHAR)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+      t INTEGER;
+    BEGIN
+      SELECT SUM(qty) INTO t FROM combine WHERE manuSupitemNo = s;
+      RETURN t;
+    END;
+    $$;
+  check: SELECT manuSupitemNo, supplier_total(manuSupitemNo) FROM manuSupp ORDER BY manuSupitemNo;
+
+- id: le1-q-trigger
+  type: sql
+  topics: [lab.le1, ddl.triggers]
+  difficulty: 3
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "Create a table combine_log with the same columns as combine and no rows, then a trigger function and an AFTER DELETE … FOR EACH ROW trigger on combine that copies every deleted combine row into combine_log. (The check then deletes supplier M4's rows.)"
+  reference: |
+    CREATE TABLE combine_log AS SELECT * FROM combine WHERE 1 = 2;
+    CREATE OR REPLACE FUNCTION log_combine_delete()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+      INSERT INTO combine_log VALUES (OLD.manuSupitemNo, OLD.itemNo, OLD.projNo, OLD.qty);
+      RETURN OLD;
+    END;
+    $$;
+    CREATE TRIGGER combine_deleted AFTER DELETE ON combine FOR EACH ROW EXECUTE FUNCTION log_combine_delete();
+  check: "DELETE FROM combine WHERE manuSupitemNo = 'M4'; SELECT * FROM combine_log ORDER BY itemNo, projNo;"
+  hints: ["In a DELETE trigger the row is in OLD.", "CREATE TABLE … AS SELECT * FROM combine WHERE 1 = 2 makes the empty copy."]

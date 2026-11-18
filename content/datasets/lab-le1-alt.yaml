@@ -1,0 +1,81 @@
+id: lab-le1-alt
+title: Lab exam schema 1 (hidden grading instance)
+description: Same schema as lab-le1 with different rows, including a supplier, an item and a project that appear in no combine row, so answers that only work on the original rows are caught.
+hidden: true
+alternateOf: [lab-le1]
+tables:
+  - name: manuSupp
+    columns:
+      - { name: manuSupitemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: SNAME, sql: "VARCHAR(10)" }
+      - { name: STATUS, type: int, sql: "INTEGER" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [M1, SMITH, 20, LONDON]
+      - [M2, JONES, 10, PARIS]
+      - [M3, BLAKE, 30, ROME]
+      - [M4, CLARK, 20, LONDON]
+      - [M5, ADAMS, 30, ATHENS]
+      - [M6, PATEL, 25, GUELPH]
+      - [M7, NG, 15, OSLO]
+  - name: items
+    columns:
+      - { name: itemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: INAME, sql: "VARCHAR(10)" }
+      - { name: COLOR, sql: "VARCHAR(5)" }
+      - { name: WEIGHT, type: numeric, sql: "NUMERIC(5,2)" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [I1, NUT, RED, 12.0, LONDON]
+      - [I2, BOLT, GREEN, 17.0, PARIS]
+      - [I3, SCREW, BLUE, 17.0, ROME]
+      - [I4, SCREW, RED, 14.0, LONDON]
+      - [I5, CAN, BLUE, 12.0, PARIS]
+      - [I6, COG, RED, 19.0, LONDON]
+      - [I7, CAM, GREEN, 9.5, OSLO]
+  - name: proj
+    columns:
+      - { name: proJNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: proJNAME, sql: "VARCHAR(10)" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [J1, SORTER, PARIS]
+      - [J2, DISPLAY, ROME]
+      - [J3, OCR, ATHENS]
+      - [J4, CONSOLE, ATHENS]
+      - [J5, RAID, LONDON]
+      - [J6, EDS, OSLO]
+      - [J7, TAPE, LONDON]
+      - [J8, VAULT, GUELPH]
+  - name: combine
+    columns:
+      - { name: manuSupitemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: itemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: projNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: QTY, type: int, sql: "INTEGER" }
+    foreignKeys:
+      - { columns: [manuSupitemNo], references: { table: manuSupp, columns: [manuSupitemNo] } }
+      - { columns: [itemNo], references: { table: items, columns: [itemNo] } }
+      - { columns: [projNo], references: { table: proj, columns: [proJNo] } }
+    rows:
+      - [M1, I1, J1, 300]
+      - [M1, I4, J5, 200]
+      - [M1, I6, J7, 150]
+      - [M2, I2, J1, 100]
+      - [M2, I3, J2, 400]
+      - [M2, I5, J1, 250]
+      - [M3, I3, J2, 500]
+      - [M3, I3, J6, 100]
+      - [M3, I1, J3, 200]
+      - [M4, I6, J5, 700]
+      - [M4, I1, J5, 100]
+      - [M5, I1, J4, 100]
+      - [M5, I2, J4, 300]
+      - [M5, I3, J4, 200]
+      - [M5, I4, J4, 600]
+      - [M5, I5, J4, 50]
+      - [M5, I6, J4, 400]
+      - [M5, I6, J3, 100]
+      - [M5, I7, J4, 75]
+      - [M7, I2, J6, 350]
+      - [M7, I5, J2, 120]

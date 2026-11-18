@@ -1,0 +1,82 @@
+id: lab-le1
+title: "Lab exam schema 1: manuSupp, items, proj, combine"
+description: >
+  Copied exactly from create_LE1.sql and insert_LE1.sql: suppliers (manuSupp), items, projects (proj), and combine,
+  which records which supplier supplies which item to which project, and how many. Values are uppercase
+  ('LONDON', 'RED'). Postgres folds unquoted names to lower case, so manuSupp is really manusupp and proJNo is projno.
+source: create_LE1.sql and insert_LE1.sql (lab exam practice files)
+tables:
+  - name: manuSupp
+    columns:
+      - { name: manuSupitemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: SNAME, sql: "VARCHAR(10)" }
+      - { name: STATUS, type: int, sql: "INTEGER" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [M1, SMITH, 20, LONDON]
+      - [M2, JONES, 10, PARIS]
+      - [M3, BLAKE, 30, PARIS]
+      - [M4, CLARK, 20, LONDON]
+      - [M5, ADAMS, 30, ATHENS]
+  - name: items
+    columns:
+      - { name: itemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: INAME, sql: "VARCHAR(10)" }
+      - { name: COLOR, sql: "VARCHAR(5)" }
+      - { name: WEIGHT, type: numeric, sql: "NUMERIC(5,2)" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [I1, NUT, RED, 12.0, LONDON]
+      - [I2, BOLT, GREEN, 17.0, PARIS]
+      - [I3, SCREW, BLUE, 17.0, ROME]
+      - [I4, SCREW, RED, 14.0, LONDON]
+      - [I5, CAN, BLUE, 12.0, PARIS]
+      - [I6, COG, RED, 19.0, LONDON]
+  - name: proj
+    columns:
+      - { name: proJNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: proJNAME, sql: "VARCHAR(10)" }
+      - { name: CITY, sql: "VARCHAR(10)" }
+    rows:
+      - [J1, SORTER, PARIS]
+      - [J2, DISPLAY, ROME]
+      - [J3, OCR, ATHENS]
+      - [J4, CONSOLE, ATHENS]
+      - [J5, RAID, LONDON]
+      - [J6, EDS, OSLO]
+      - [J7, TAPE, LONDON]
+  - name: combine
+    columns:
+      - { name: manuSupitemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: itemNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: projNo, pk: true, sql: "VARCHAR(3)" }
+      - { name: QTY, type: int, sql: "INTEGER" }
+    foreignKeys:
+      - { columns: [manuSupitemNo], references: { table: manuSupp, columns: [manuSupitemNo] } }
+      - { columns: [itemNo], references: { table: items, columns: [itemNo] } }
+      - { columns: [projNo], references: { table: proj, columns: [proJNo] } }
+    rows:
+      - [M1, I1, J1, 200]
+      - [M1, I1, J4, 700]
+      - [M2, I3, J1, 400]
+      - [M2, I3, J2, 200]
+      - [M2, I3, J3, 200]
+      - [M2, I3, J4, 500]
+      - [M2, I3, J5, 600]
+      - [M2, I3, J6, 400]
+      - [M2, I3, J7, 800]
+      - [M2, I5, J2, 100]
+      - [M3, I3, J1, 200]
+      - [M3, I4, J2, 500]
+      - [M4, I6, J3, 300]
+      - [M4, I6, J7, 300]
+      - [M5, I2, J2, 200]
+      - [M5, I2, J4, 100]
+      - [M5, I5, J5, 500]
+      - [M5, I5, J7, 100]
+      - [M5, I6, J2, 200]
+      - [M5, I1, J4, 100]
+      - [M5, I3, J4, 200]
+      - [M5, I4, J4, 800]
+      - [M5, I5, J4, 400]
+      - [M5, I6, J4, 500]

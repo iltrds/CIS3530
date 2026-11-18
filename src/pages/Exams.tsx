@@ -7,7 +7,7 @@ import { answerText, assemble, newSeed, questionLabel, TYPE_LABELS } from "../li
 import { href, navigate } from "../lib/router.ts";
 
 export function ExamsPage({ ctx, path, query }: { ctx: Ctx; path: string[]; query: URLSearchParams }) {
-  const exams = ctx.m.blueprints.filter((b) => b.kind === "exam");
+  const exams = ctx.m.blueprints.filter((b) => b.kind === "exam" && b.covers === "released");
   if (path[0] === "run" || path[0] === "print") {
     const bp = exams.find((b) => b.id === query.get("id"));
     if (!bp) return <p className="error">No exam called {query.get("id")}.</p>;

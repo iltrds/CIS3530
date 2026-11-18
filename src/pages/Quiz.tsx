@@ -4,7 +4,7 @@ import { PracticeSession, TestRunner } from "../components/Runners.tsx";
 import { assemble, build, newSeed, TYPE_LABELS, type QuizItem } from "../lib/quiz.ts";
 import { href, navigate } from "../lib/router.ts";
 import { useProgress } from "../lib/store.ts";
-import { topicLabel } from "../lib/data.ts";
+import { topicLabel, weekLabel } from "../lib/data.ts";
 
 const list = (s: string | null) => (s ? s.split(",").filter(Boolean) : []);
 
@@ -29,7 +29,7 @@ function QuizRun({ ctx, query }: { ctx: Ctx; query: URLSearchParams }) {
       if (!bp) return { error: `No quiz called ${bpId}.` };
       const week = Number(query.get("week")) || ctx.m.weeks[ctx.m.weeks.length - 1]!.number;
       const { items, shortfalls } = assemble(bp, pool.filter((q) => q.week === week), seed);
-      return { kind: "test" as const, items, shortfalls, title: `${bp.title}: Week ${week}`, bp, weeks: [week] };
+      return { kind: "test" as const, items, shortfalls, title: `${bp.title}: ${weekLabel(ctx.m, week)}`, bp, weeks: [week] };
     }
     const mode = query.get("mode") ?? "practice";
     if (mode === "single") {
@@ -50,7 +50,7 @@ function QuizRun({ ctx, query }: { ctx: Ctx; query: URLSearchParams }) {
       style: (query.get("style") ?? "") as "conceptual" | "direct" | "",
     };
     const items = build(pool, settings, seed);
-    const title = settings.topics.length === 1 ? topicLabel(ctx.m, settings.topics[0]!) : settings.weeks.length === 1 ? `Week ${settings.weeks[0]} practice` : "Practice";
+    const title = settings.topics.length === 1 ? topicLabel(ctx.m, settings.topics[0]!) : settings.weeks.length === 1 ? `${weekLabel(ctx.m, settings.weeks[0]!)} practice` : "Practice";
     return { kind: mode === "test" ? ("test" as const) : ("practice" as const), items, title, timed: Number(query.get("time")) || undefined };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

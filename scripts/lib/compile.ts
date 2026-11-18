@@ -600,8 +600,8 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
   }
 
   // a week that teaches SQL must be quizzed with query-reading questions (degree/cardinality, valid/equivalent queries)
-  for (const w of weekMeta as { number: number; quizFormat: string; topics: string[] }[]) {
-    if (!w.topics.some((t) => t.startsWith("sql."))) continue;
+  for (const w of weekMeta as { number: number; quizFormat: string; topics: string[]; kind?: string }[]) {
+    if (w.kind === "lab" || !w.topics.some((t) => t.startsWith("sql."))) continue;
     const bp = blueprints.find((b) => b.id === w.quizFormat);
     const tags = new Set(bp?.slots.flatMap((sl) => sl.requireTags) ?? []);
     const hasShape = [...tags].some((t) => t.startsWith("query-shape"));
