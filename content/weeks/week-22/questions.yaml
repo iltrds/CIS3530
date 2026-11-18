@@ -5,6 +5,7 @@
 - id: le2-q-spielberg
   type: sql
   topics: [lab.le2, sql.select-from-where]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le2
   show: { tables: [Movie] }
@@ -14,6 +15,7 @@
 - id: le2-q-good-years
   type: sql
   topics: [lab.le2, sql.joins, sql.distinct-order]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   compare: ordered
@@ -24,6 +26,7 @@
 - id: le2-q-null-dates
   type: sql
   topics: [lab.le2, sql.where, sql.joins]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le2
   show: { tables: [Reviewer, Rating] }
@@ -34,6 +37,7 @@
 - id: le2-q-full-list
   type: sql
   topics: [lab.le2, sql.joins, sql.distinct-order]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   compare: ordered
@@ -49,6 +53,7 @@
 - id: le2-q-rerated-higher
   type: sql
   topics: [lab.le2, sql.joins]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le2
   show: { diagram: true }
@@ -64,6 +69,7 @@
 - id: le2-q-reviewer-pairs
   type: sql
   topics: [lab.le2, sql.joins]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le2
   show: { diagram: true }
@@ -80,6 +86,7 @@
 - id: le2-q-max-stars
   type: sql
   topics: [lab.le2, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   compare: ordered
@@ -90,6 +97,7 @@
 - id: le2-q-spread
   type: sql
   topics: [lab.le2, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   compare: ordered
@@ -104,6 +112,7 @@
 - id: le2-q-well-rated
   type: sql
   topics: [lab.le2, sql.having]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   show: { tables: [Movie, Rating] }
@@ -118,6 +127,7 @@
 - id: le2-q-best-average
   type: sql
   topics: [lab.le2, sql.having, sql.subqueries]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le2
   show: { tables: [Movie, Rating] }
@@ -130,6 +140,7 @@
 - id: le2-q-before-after
   type: sql
   topics: [lab.le2, sql.aggregates, sql.subqueries]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le2
   show: { tables: [Movie, Rating] }
@@ -144,6 +155,7 @@
 - id: le2-q-directors
   type: sql
   topics: [lab.le2, sql.having]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   show: { tables: [Movie] }
@@ -154,6 +166,7 @@
 - id: le2-q-count-including-zero
   type: sql
   topics: [lab.le2, sql.joins, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   show: { tables: [Reviewer, Rating] }
@@ -166,6 +179,7 @@
 - id: le2-q-gwtw
   type: sql
   topics: [lab.le2, sql.subqueries]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le2
   compare: bag
@@ -178,6 +192,7 @@
 - id: le2-q-not-sarah
   type: sql
   topics: [lab.le2, sql.subqueries]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   show: { diagram: true }
@@ -189,6 +204,7 @@
 - id: le2-q-never-low
   type: sql
   topics: [lab.le2, sql.subqueries, sql.correlated]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le2
   show: { tables: [Reviewer, Rating] }
@@ -198,6 +214,7 @@
 - id: le2-q-names-union
   type: sql
   topics: [lab.le2, sql.set-ops]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le2
   compare: ordered
@@ -350,3 +367,90 @@
     CREATE TRIGGER movie_deleted AFTER DELETE ON Movie FOR EACH ROW EXECUTE FUNCTION delete_movie_ratings();
   check: "DELETE FROM Movie WHERE title = 'Avatar'; SELECT * FROM Rating ORDER BY rID, mID, stars;"
   hints: ["The deleted movie is OLD; its id is OLD.mID.", "BEFORE DELETE works too, as long as the function returns OLD."]
+
+# ---------------------------------------------------------------- more queries in the exam's style
+
+- id: le2-q-cameron-reviewers
+  type: sql
+  topics: [lab.le2, sql.joins]
+  tags: [lab-query]
+  difficulty: 1
+  dataset: lab-le2
+  compare: bag
+  show: { diagram: true }
+  prompt: "List the names of reviewers who rated at least one James Cameron movie, each once."
+  reference: |
+    SELECT DISTINCT name FROM Reviewer
+    JOIN Rating ON Reviewer.rID = Rating.rID
+    JOIN Movie ON Rating.mID = Movie.mID
+    WHERE director = 'James Cameron';
+
+- id: le2-q-director-best
+  type: sql
+  topics: [lab.le2, sql.correlated, sql.joins]
+  tags: [lab-query]
+  difficulty: 3
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "For each director, give the director, the title of their movie(s) with the highest rating any of their movies received, and that rating. Ignore movies with no director."
+  reference: |
+    SELECT m.director, m.title, r.stars
+    FROM Movie m JOIN Rating r ON m.mID = r.mID
+    WHERE m.director IS NOT NULL
+      AND r.stars = (SELECT MAX(r2.stars) FROM Movie m2 JOIN Rating r2 ON m2.mID = r2.mID WHERE m2.director = m.director)
+    GROUP BY m.director, m.title, r.stars;
+  explanation: "The correlated subquery finds the director's top rating; GROUP BY (or DISTINCT) removes repeats when that top rating was given more than once."
+
+- id: le2-q-all-spielberg
+  type: sql
+  topics: [lab.le2, sql.division, sql.correlated]
+  tags: [lab-query]
+  difficulty: 3
+  dataset: lab-le2
+  show: { diagram: true }
+  prompt: "List the names of reviewers who rated every movie directed by Steven Spielberg."
+  reference: |
+    SELECT name FROM Reviewer v
+    WHERE NOT EXISTS (
+      SELECT mID FROM Movie WHERE director = 'Steven Spielberg'
+      EXCEPT
+      SELECT mID FROM Rating r WHERE r.rID = v.rID);
+
+- id: le2-q-above-overall
+  type: sql
+  topics: [lab.le2, sql.having, sql.subqueries]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "List the titles of movies whose average rating is higher than the average of all ratings."
+  reference: |
+    SELECT title FROM Movie JOIN Rating ON Movie.mID = Rating.mID
+    GROUP BY Movie.mID, title
+    HAVING AVG(stars) > (SELECT AVG(stars) FROM Rating);
+
+- id: le2-q-few-ratings
+  type: sql
+  topics: [lab.le2, sql.joins, sql.having]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le2
+  show: { tables: [Movie, Rating] }
+  prompt: "List the title and number of ratings of every movie with fewer than 2 ratings, including movies with none."
+  reference: SELECT title, COUNT(Rating.mID) FROM Movie LEFT JOIN Rating ON Movie.mID = Rating.mID GROUP BY Movie.mID, title HAVING COUNT(Rating.mID) < 2;
+
+- id: le2-q-latest-rating
+  type: sql
+  topics: [lab.le2, sql.group-by, sql.joins]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le2
+  compare: ordered
+  show: { tables: [Reviewer, Rating] }
+  prompt: "For each reviewer with at least one dated rating, give the name and the date of their most recent rating, newest first, then by name."
+  reference: |
+    SELECT name, MAX(ratingDate) AS latest
+    FROM Reviewer JOIN Rating ON Reviewer.rID = Rating.rID
+    WHERE ratingDate IS NOT NULL
+    GROUP BY Reviewer.rID, name
+    ORDER BY latest DESC, name;

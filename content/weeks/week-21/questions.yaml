@@ -5,6 +5,7 @@
 - id: le1-q-paris-suppliers
   type: sql
   topics: [lab.le1, sql.select-from-where]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [manuSupp] }
@@ -14,6 +15,7 @@
 - id: le1-q-red-heavy
   type: sql
   topics: [lab.le1, sql.where]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [items] }
@@ -23,6 +25,7 @@
 - id: le1-q-status-range
   type: sql
   topics: [lab.le1, sql.where]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [manuSupp] }
@@ -32,6 +35,7 @@
 - id: le1-q-projects-sorted
   type: sql
   topics: [lab.le1, sql.distinct-order]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   compare: ordered
@@ -42,6 +46,7 @@
 - id: le1-q-colors
   type: sql
   topics: [lab.le1, sql.distinct-order]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   compare: bag
@@ -53,6 +58,7 @@
 - id: le1-q-s-names
   type: sql
   topics: [lab.le1, sql.where]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [items] }
@@ -64,6 +70,7 @@
 - id: le1-q-supply-i3
   type: sql
   topics: [lab.le1, sql.joins]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   compare: bag
@@ -75,6 +82,7 @@
 - id: le1-q-big-shipments
   type: sql
   topics: [lab.le1, sql.joins]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { diagram: true }
@@ -91,6 +99,7 @@
 - id: le1-q-m1-projects
   type: sql
   topics: [lab.le1, sql.joins]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   compare: bag
@@ -101,6 +110,7 @@
 - id: le1-q-same-city
   type: sql
   topics: [lab.le1, sql.joins]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   compare: bag
@@ -116,6 +126,7 @@
 - id: le1-q-london-items
   type: sql
   topics: [lab.le1, sql.joins, sql.subqueries]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   compare: bag
@@ -146,6 +157,7 @@
 - id: le1-q-no-red
   type: sql
   topics: [lab.le1, sql.subqueries, sql.correlated]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { diagram: true }
@@ -159,6 +171,7 @@
 - id: le1-q-unused-items
   type: sql
   topics: [lab.le1, sql.subqueries]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { diagram: true }
@@ -170,6 +183,7 @@
 - id: le1-q-total-i3
   type: sql
   topics: [lab.le1, sql.aggregates]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [combine] }
@@ -179,6 +193,7 @@
 - id: le1-q-per-supplier
   type: sql
   topics: [lab.le1, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { tables: [combine] }
@@ -188,6 +203,7 @@
 - id: le1-q-items-per-project
   type: sql
   topics: [lab.le1, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { tables: [combine] }
@@ -198,6 +214,7 @@
 - id: le1-q-busy-projects
   type: sql
   topics: [lab.le1, sql.having]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { tables: [combine] }
@@ -207,6 +224,7 @@
 - id: le1-q-top-supplier
   type: sql
   topics: [lab.le1, sql.having, sql.subqueries]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le1
   show: { diagram: true }
@@ -220,6 +238,7 @@
 - id: le1-q-avg-weight
   type: sql
   topics: [lab.le1, sql.group-by]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   compare: ordered
@@ -230,6 +249,7 @@
 - id: le1-q-heaviest
   type: sql
   topics: [lab.le1, sql.subqueries]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { tables: [items] }
@@ -241,6 +261,7 @@
 - id: le1-q-all-items
   type: sql
   topics: [lab.le1, sql.division, sql.correlated]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le1
   show: { diagram: true }
@@ -256,6 +277,7 @@
 - id: le1-q-all-red-to-project
   type: sql
   topics: [lab.le1, sql.division, sql.having]
+  tags: [lab-query]
   difficulty: 3
   dataset: lab-le1
   show: { diagram: true }
@@ -269,6 +291,7 @@
 - id: le1-q-like-m2
   type: sql
   topics: [lab.le1, sql.subqueries]
+  tags: [lab-query]
   difficulty: 2
   dataset: lab-le1
   show: { diagram: true }
@@ -283,6 +306,7 @@
 - id: le1-q-cities-union
   type: sql
   topics: [lab.le1, sql.set-ops]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [manuSupp, proj] }
@@ -292,6 +316,7 @@
 - id: le1-q-cities-except
   type: sql
   topics: [lab.le1, sql.set-ops]
+  tags: [lab-query]
   difficulty: 1
   dataset: lab-le1
   show: { tables: [manuSupp, proj] }
@@ -413,3 +438,78 @@
     CREATE TRIGGER combine_deleted AFTER DELETE ON combine FOR EACH ROW EXECUTE FUNCTION log_combine_delete();
   check: "DELETE FROM combine WHERE manuSupitemNo = 'M4'; SELECT * FROM combine_log ORDER BY itemNo, projNo;"
   hints: ["In a DELETE trigger the row is in OLD.", "CREATE TABLE … AS SELECT * FROM combine WHERE 1 = 2 makes the empty copy."]
+
+# ---------------------------------------------------------------- more queries in the exam's style
+
+- id: le1-q-project-totals-zero
+  type: sql
+  topics: [lab.le1, sql.joins, sql.group-by]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [proj, combine] }
+  prompt: "List every project's name and the total quantity supplied to it. A project with nothing supplied shows 0."
+  reference: SELECT p.proJNAME, COALESCE(SUM(c.qty), 0) FROM proj p LEFT JOIN combine c ON p.proJNo = c.projNo GROUP BY p.proJNo, p.proJNAME;
+  explanation: "LEFT JOIN keeps projects with no combine rows; SUM over nothing is NULL, so COALESCE turns it into 0."
+
+- id: le1-q-wide-suppliers
+  type: sql
+  topics: [lab.le1, sql.having, sql.distinct-order]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le1
+  compare: ordered
+  show: { diagram: true }
+  prompt: "List the name of each supplier that supplies at least 3 different projects, with the number of projects, most projects first."
+  reference: |
+    SELECT s.sname, COUNT(DISTINCT c.projNo) AS projects
+    FROM manuSupp s JOIN combine c ON s.manuSupitemNo = c.manuSupitemNo
+    GROUP BY s.manuSupitemNo, s.sname
+    HAVING COUNT(DISTINCT c.projNo) >= 3
+    ORDER BY projects DESC;
+
+- id: le1-q-above-avg-status
+  type: sql
+  topics: [lab.le1, sql.subqueries]
+  tags: [lab-query]
+  difficulty: 1
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "List the names of suppliers whose status is higher than the average status of all suppliers."
+  reference: SELECT sname FROM manuSupp WHERE status > (SELECT AVG(status) FROM manuSupp);
+
+- id: le1-q-same-city-pairs
+  type: sql
+  topics: [lab.le1, sql.joins]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [manuSupp] }
+  prompt: "List every pair of suppliers located in the same city, as (supplier number 1, supplier number 2) with the first number smaller, each pair once."
+  reference: SELECT a.manuSupitemNo, b.manuSupitemNo FROM manuSupp a JOIN manuSupp b ON a.city = b.city WHERE a.manuSupitemNo < b.manuSupitemNo;
+
+- id: le1-q-i3-not-i5
+  type: sql
+  topics: [lab.le1, sql.set-ops]
+  tags: [lab-query]
+  difficulty: 2
+  dataset: lab-le1
+  show: { tables: [combine] }
+  prompt: "List the numbers of projects that are supplied with item I3 but not with item I5."
+  reference: SELECT projNo FROM combine WHERE itemNo = 'I3' EXCEPT SELECT projNo FROM combine WHERE itemNo = 'I5';
+
+- id: le1-q-heavy-suppliers
+  type: sql
+  topics: [lab.le1, sql.joins, sql.group-by]
+  tags: [lab-query]
+  difficulty: 3
+  dataset: lab-le1
+  show: { diagram: true }
+  prompt: "For each supplier, give its name and the total weight it has shipped (quantity × item weight, summed over its combine rows). Only include suppliers whose total weight is over 20000."
+  reference: |
+    SELECT s.sname, SUM(c.qty * i.weight)
+    FROM manuSupp s
+    JOIN combine c ON s.manuSupitemNo = c.manuSupitemNo
+    JOIN items i ON c.itemNo = i.itemNo
+    GROUP BY s.manuSupitemNo, s.sname
+    HAVING SUM(c.qty * i.weight) > 20000;

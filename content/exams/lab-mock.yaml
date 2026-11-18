@@ -2,14 +2,13 @@ id: lab-mock
 title: Mock lab exam
 label: Mock lab exam
 description: >
-  Hands-on SQL on one lab-exam schema, run against real Postgres in your browser and marked at the end: eight
-  queries or changes to write (SELECT, INSERT/UPDATE/DELETE, DDL, a function or trigger) and one "which of these
-  statements run?" question. Opened from a Lab exam page.
+  The lab exam's format: two SQL queries to write against one lab-exam schema, run on real Postgres in your
+  browser and marked at the end (each answer is also checked against a hidden second set of rows). Opened from a
+  Lab exam page; start it again for a different pair.
 kind: exam
 covers: one_week
-timeLimitMin: 50
+timeLimitMin: 30
 feedback: end
 style: any
 slots:
-  - { name: Write SQL, types: [sql], count: 8, points: 1 }
-  - { name: Will it run?, types: [multi, mcq], count: 1, points: 1, requireTags: [sql-runs], optional: true }
+  - { name: Write the query, types: [sql], count: 2, points: 1, requireTags: [lab-query] }

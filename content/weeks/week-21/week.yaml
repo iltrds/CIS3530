@@ -3,7 +3,7 @@ kind: lab
 label: "Lab exam: schema 1"
 sandbox: lab-le1
 title: "Lab exam schema 1: manuSupp, items, proj, combine"
-summary: Practice for the lab exam on the supplier–item–project schema from create_LE1.sql and insert_LE1.sql. Open the sandbox to experiment (changes stick until you reset), work through the questions, or take a timed mock lab exam.
+summary: Practice for the lab exam on the supplier–item–project schema from create_LE1.sql and insert_LE1.sql. Open the sandbox to experiment (changes stick until you reset), work through the questions, or take a mock lab exam. The real exam is two SQL queries to write, so the mock gives you two (SELECT queries only), and most of the practice questions are queries too.
 status: published
 quizFormat: lab-mock
 topics: [lab.le1, sql.select-from-where, sql.joins, sql.subqueries, sql.group-by, sql.having, sql.correlated, sql.division, sql.set-ops, sql.modify, ddl.create, ddl.alter, ddl.functions, ddl.triggers]
