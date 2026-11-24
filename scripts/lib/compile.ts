@@ -15,6 +15,7 @@ import type { CQuestion, TableData } from "../../src/engines/grading.ts";
 import { figureHtml, renderEr } from "./er.ts";
 import { chainOf, instanceSvg, judgeInstance } from "./instances.ts";
 import { describeNF, FDSet, fmtFD, fmtMVD, instanceBreaks, instanceBreaksMVD, judgeClaim, parseFD, parseMVD, parseRelation, type Claim, type NF } from "./fd.ts";
+import { fmtNum, findProblems, parseSchedule, problemLabel, runSchedule, sameDb, serialResults, serialSchedule, valueOf, type Problem as TxProblem, type Step } from "./schedule.ts";
 import { buildChoices, buildShape, choicesExplanation, codeBlock, esc, judgeCandidate, shapeExplanation, tableHtml, type CandidateRun } from "./query-questions.ts";
 
 export const ROOT = new URL("../../", import.meta.url).pathname;
@@ -463,6 +464,135 @@ export async function compile(opts: { includeDrafts?: boolean; onlyWeek?: number
           out.prompt = context + md(lead);
           out.explanation = (out.explanation ?? "") + md(q.explanation);
           out.tags = [...new Set([...q.tags, "fd", `fd-${q.mode}`, `context:${ctx}`])];
+          break;
+        }
+        case "schedule": {
+          let steps: Step[];
+          try {
+            if (q.serial && q.schedule) throw new Error("give either serial or schedule, not both");
+            if (q.serial) {
+              if (!q.txns) throw new Error("serial needs txns");
+              steps = serialSchedule(q.txns, q.serial);
+            } else if (q.schedule) steps = parseSchedule(q.schedule);
+            else throw new Error("give a schedule (or txns and a serial order)");
+            if (q.txns && q.schedule) {
+              for (const [t, ops] of Object.entries(q.txns)) {
+                const mine = steps.filter((s) => s.tx === t).map((s) => s.text.replace(/\s+/g, ""));
+                const want = ops.map((o) => o.replace(/\s+/g, ""));
+                if (mine.join("|") !== want.join("|")) throw new Error(`the schedule doesn't run ${t}'s steps in order: it has ${mine.join(", ")}`);
+              }
+            }
+          } catch (e) {
+            fail(file, where, (e as Error).message);
+            break;
+          }
+          let run;
+          try {
+            run = runSchedule(q.initial, steps);
+          } catch (e) {
+            fail(file, where, (e as Error).message);
+            break;
+          }
+          const items = Object.keys(q.initial);
+          const txs = run.txs;
+          const nRows = Math.max(...steps.map((s) => s.row)) + 1;
+          const rowLabel = (r: number) => (q.showTime ? `t${r + 1}` : `${r + 1}`);
+          const cell = (r: number, t: string) => steps.filter((s) => s.row === r && s.tx === t).map((s) => esc(s.text)).join("<br>");
+          const head = (extra: string[]) => `<thead><tr><th scope="col"><span>${q.showTime ? "time" : "#"}</span></th>${txs.map((t) => `<th scope="col"><span>${esc(t)}</span></th>`).join("")}${extra.map((x) => `<th scope="col"><span>${esc(x)}</span></th>`).join("")}</tr></thead>`;
+          const schedHtml = q.serial
+            ? ""
+            : `<table class="data sched">${head([])}<tbody>${Array.from({ length: nRows }, (_, r) => `<tr><td>${rowLabel(r)}</td>${txs.map((t) => `<td>${cell(r, t)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+          const defs = q.txns ?? Object.fromEntries(txs.map((t) => [t, steps.filter((s) => s.tx === t).map((s) => s.text)]));
+          const txnHtml =
+            q.showTxns || q.serial
+              ? `<div class="txn-defs">${Object.entries(defs)
+                  .map(([t, ops]) => `<table class="data txn"><thead><tr><th scope="col"><span>${esc(t)}</span></th></tr></thead><tbody>${ops.map((o) => `<tr><td>${esc(o)}</td></tr>`).join("")}</tbody></table>`)
+                  .join("")}</div>`
+              : "";
+          const initHtml = q.showInitial ? `<p class="fd-head">Before the transactions run: ${items.map((x) => `${esc(x)} = ${fmtNum(q.initial[x])}`).join(", ")}.</p>` : "";
+          const serialHtml = q.serial ? `<p class="fd-head">They run one after the other: ${q.serial.map(esc).join(" first, then ")}${q.serial.length > 2 ? "" : ""}.</p>` : "";
+          const ctx = q.context ?? `sched-${q.id}`;
+          const context = `<section class="tx-context" data-ctx="${esc(ctx)}">${initHtml}${txnHtml}${serialHtml}${schedHtml}</section>`;
+          // the worked trace, for the explanation
+          let lastRow = -1;
+          const traceRows = run.trace.map((tr) => {
+            const first = tr.step.row !== lastRow;
+            lastRow = tr.step.row;
+            return `<tr>${`<td>${first ? rowLabel(tr.step.row) : ""}</td>`}${txs.map((t) => `<td>${t === tr.step.tx ? esc(tr.step.text) : ""}</td>`).join("")}${items.map((x) => `<td class="num">${fmtNum(tr.db.get(x))}</td>`).join("")}<td>${esc(tr.note)}</td></tr>`;
+          });
+          const traceHtml = `<p>Step by step (the item columns show the database after each step):</p><div class="sched-trace"><table class="data sched">${head([...items, "what happens"])}<tbody>${traceRows.join("")}</tbody></table></div>`;
+          const finalTxt = items.map((x) => `${x} = ${fmtNum(run.final.get(x))}`).join(", ");
+          const relabel = (t: string) => t.replace(/step (\d+)/g, (_, n: string) => (q.showTime ? `t${steps[Number(n) - 1]!.row + 1}` : `step ${steps[Number(n) - 1]!.row + 1}`));
+          let lead = q.prompt.trim();
+          let expl = "";
+          switch (q.mode) {
+            case "value": {
+              if (!q.ask) {
+                fail(file, where, "value mode needs ask (an expression such as A + B)");
+                break;
+              }
+              let v: number;
+              try {
+                v = valueOf(q.ask, run.final);
+              } catch (e) {
+                fail(file, where, (e as Error).message);
+                break;
+              }
+              out.type = "numeric";
+              out.answer = v;
+              out.tolerance = 0.005;
+              lead ||= `What is the value of ${q.ask} after ${q.serial ? "both transactions have run" : "this schedule"}?`;
+              expl = `<p><strong>${esc(q.ask)} = ${fmtNum(v)}</strong> (${esc(finalTxt)}).</p>` + traceHtml;
+              break;
+            }
+            case "values": {
+              out.type = "blanks";
+              out.strictCase = false;
+              out.parts = items.map((x) => {
+                const v = run.final.get(x);
+                const a = fmtNum(v);
+                return { text: `Final value of ${esc(x)}:`, answer: a, accept: v === undefined ? ["gone", "deleted", "none"] : [`${a}.0`, `$${a}`, `${a}.00`] };
+              });
+              lead ||= `Give the final value of each data item after ${q.serial ? "both transactions have run" : "this schedule"}.`;
+              expl = `<p><strong>${esc(finalTxt)}</strong>.</p>` + traceHtml;
+              break;
+            }
+            case "problem": {
+              const found = findProblems(steps);
+              const kinds = [...new Set(found.map((f) => f.kind))];
+              const order: TxProblem[] = ["dirty", "unrepeatable", "phantom", "lost"];
+              out.options = [...order.map((k) => problemLabel[k]), "None of these: the schedule has none of these problems"];
+              const idx = kinds.map((k) => order.indexOf(k)).sort();
+              if (q.multi) {
+                out.type = "multi";
+                out.answer = idx.length ? idx : [4];
+              } else {
+                if (idx.length > 1) fail(file, where, `the schedule has ${kinds.map((k) => problemLabel[k]).join(" and ")}; use multi: true or change it`);
+                out.type = "mcq";
+                out.answer = idx.length ? idx[0]! : 4;
+              }
+              lead ||= q.multi ? "Which problems does this schedule have?" : "Which problem does this schedule have?";
+              if (q.multi) {
+                const n = Array.isArray(out.answer) ? out.answer.length : 1;
+                lead += `\n\n<p class="select-count">Select ${n} correct answer${n === 1 ? "" : "s"}</p>`;
+              }
+              expl = (found.length ? `<ul class="why-list">${found.map((f) => `<li><strong>${esc(problemLabel[f.kind])}:</strong> ${esc(relabel(f.text))}</li>`).join("")}</ul>` : `<p>None of the four problems: no transaction reads another's uncommitted write that is later undone, reads an item twice with a change in between, or overwrites a write it never saw.</p>`) + traceHtml;
+              break;
+            }
+            case "serial_match": {
+              const ser = serialResults(q.initial, steps);
+              const match = ser.filter((s) => sameDb(s.final, run.final));
+              out.type = "true_false";
+              out.answer = match.length > 0;
+              lead ||= "This schedule leaves the data items with the same values as running the transactions one after the other (in some order). True or false?";
+              expl =
+                `<p>${match.length ? "True" : "False"}. This schedule gives ${esc(finalTxt)}. ${ser.map((s) => `${s.order.join(" then ")} gives ${items.map((x) => `${x} = ${fmtNum(s.final.get(x))}`).join(", ")}`).join("; ")}.</p>` + traceHtml;
+              break;
+            }
+          }
+          out.prompt = context + md(lead);
+          out.explanation = expl + md(q.explanation);
+          out.tags = [...new Set([...q.tags, "schedule", `schedule-${q.mode}`, `context:${ctx}`])];
           break;
         }
         case "sql_runs": {

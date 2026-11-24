@@ -1,0 +1,111 @@
+- id: w10-fc-transaction
+  topic: tx.basics
+  front: What is a transaction?
+  back: "A sequence of one or more changes that together do one logical piece of work and that aren't permanent until the transaction commits. It's all or nothing."
+- id: w10-fc-commit-rollback
+  topic: tx.basics
+  front: COMMIT vs ROLLBACK?
+  back: "COMMIT makes the transaction's changes permanent. ROLLBACK undoes all of them."
+- id: w10-fc-autocommit
+  topic: tx.basics
+  front: What happens to an INSERT run in Postgres without BEGIN?
+  back: "It's a transaction on its own and is committed as soon as it succeeds (autocommit). A later ROLLBACK can't undo it."
+- id: w10-fc-begin-end
+  topic: tx.basics
+  front: How do you group several statements into one transaction in Postgres?
+  back: "BEGIN; … statements … COMMIT; (END; means the same as COMMIT)."
+- id: w10-fc-error-in-block
+  topic: tx.basics
+  front: "Inside BEGIN … COMMIT, one statement fails. What happens?"
+  back: "Postgres ignores every later statement in the block, and the closing COMMIT/END rolls back. Nothing from the block is kept, including the statements that worked."
+  tags: [trap]
+- id: w10-fc-consistent-during
+  topic: tx.basics
+  front: Must the database be consistent in the middle of a transaction?
+  back: "No. It must be consistent before and after; part way through (money taken from A, not yet added to B) it may not be."
+- id: w10-fc-logs
+  topic: tx.logs
+  front: Which three places does a change go, in order?
+  back: "1. the redo log, 2. the undo entries, 3. the database tables."
+- id: w10-fc-commit-logs
+  topic: tx.logs
+  front: What does COMMIT do with the logs?
+  back: "The changes are already in the tables and the redo log; COMMIT removes the undo entries (and a checkpoint is logged)."
+- id: w10-fc-rollback-logs
+  topic: tx.logs
+  front: What does ROLLBACK do with the logs?
+  back: "Writes the redo log (so the rollback can be reconstructed), applies the undo entries to restore the old values, then deletes the undo entries."
+- id: w10-fc-checkpoint
+  topic: tx.logs
+  front: How is a checkpoint used in recovery?
+  back: "Anything before the checkpoint is restored from a backup; anything after it is recovered with the REDO and UNDO logs."
+- id: w10-fc-acid
+  topic: tx.acid
+  front: What does ACID stand for?
+  back: Atomicity, Consistency, Isolation, Durability.
+- id: w10-fc-atomicity
+  topic: tx.acid
+  front: Atomicity
+  back: "The transaction happens entirely or not at all. An error or failure part way through rolls back everything it did."
+- id: w10-fc-consistency
+  topic: tx.acid
+  front: Consistency (ACID)
+  back: "A transaction takes the database from one consistent state to another: it doesn't break integrity constraints such as keys and CHECKs."
+- id: w10-fc-isolation
+  topic: tx.acid
+  front: Isolation, and which component provides it
+  back: "Concurrent transactions don't affect each other; each behaves as if it ran alone. The concurrency control unit provides it."
+- id: w10-fc-durability
+  topic: tx.acid
+  front: Durability, and which component provides it
+  back: "Committed changes stay, even after a crash. The recovery manager provides it, rolling forward (REDO) and back (UNDO)."
+- id: w10-fc-interleaved-parallel
+  topic: tx.concurrency
+  front: Interleaved vs parallel processing?
+  back: "Interleaved: one CPU alternates between pieces of the transactions. Parallel: several CPUs run them at the same time."
+- id: w10-fc-data-item
+  topic: tx.concurrency
+  front: What can a data item be?
+  back: "A record, a disk block, or one attribute value of a record. The theory doesn't depend on the size."
+- id: w10-fc-read-write
+  topic: tx.concurrency
+  front: Read(X) and Write(X)?
+  back: "Read(X) copies database item X into the program variable X. Write(X) copies the variable back into the database item. Arithmetic in between changes only the variable."
+- id: w10-fc-schedule
+  topic: tx.concurrency
+  front: What is a schedule, and what rule must it follow?
+  back: "An ordering of all the operations of the transactions. Operations of different transactions may be interleaved, but each transaction's operations stay in their original order."
+- id: w10-fc-serial
+  topic: tx.schedules
+  front: What is a serial schedule?
+  back: "One that runs the transactions one after another with no interleaving. Different serial orders can give different results; each is considered correct."
+- id: w10-fc-dirty
+  topic: tx.problems
+  front: Dirty data and dirty read?
+  back: "Dirty data is written by a transaction that hasn't committed. A dirty read reads it; if the writer then rolls back or fails, the reader used a value that never really existed."
+- id: w10-fc-unrepeatable
+  topic: tx.problems
+  front: Unrepeatable read?
+  back: "A transaction reads the same item twice and gets different values because another transaction updated it in between."
+- id: w10-fc-phantom
+  topic: tx.problems
+  front: Phantom read?
+  back: "A transaction reads a set of rows twice and sees more or fewer rows because another transaction inserted or deleted rows in between."
+- id: w10-fc-lost-update
+  topic: tx.problems
+  front: Lost update?
+  back: "A write–write conflict: T2 read the old value, T1 writes, then T2 writes its result and overwrites T1's update without ever seeing it."
+- id: w10-fc-unrep-vs-phantom
+  topic: tx.problems
+  front: How do you tell an unrepeatable read from a phantom read?
+  back: "Unrepeatable: the same row now has a different value (an UPDATE). Phantom: rows appeared or vanished (an INSERT or DELETE)."
+  tags: [trap]
+- id: w10-fc-check-transfer
+  topic: tx.schedules
+  front: Quick check that an interleaving of transfers went wrong?
+  back: "Transfers keep A + B the same in every serial order. If the interleaving changes the total, an update was lost."
+- id: w10-fc-bonus-director
+  topic: course.bonus
+  front: Who is the Director of the School of Computer Science (SoCS) at the University of Guelph?
+  back: Minglun Gong. The instructor has said this will be a surprise bonus question on an upcoming quiz.
+  tags: [trap]

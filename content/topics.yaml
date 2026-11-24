@@ -84,5 +84,11 @@
 - { id: ddl.transactions, label: "Transactions: COMMIT and ROLLBACK", week: 9 }
 - { id: ddl.functions, label: "User-defined functions (PL/pgSQL)", week: 9 }
 - { id: ddl.triggers, label: "Triggers", week: 9 }
+- { id: tx.basics, label: "Transactions: BEGIN, COMMIT, ROLLBACK and autocommit", week: 10 }
+- { id: tx.logs, label: "Undo and redo logs, checkpoints and recovery", week: 10 }
+- { id: tx.acid, label: "ACID properties", week: 10 }
+- { id: tx.concurrency, label: "Concurrent transactions: interleaving, data items, Read/Write, schedules", week: 10 }
+- { id: tx.problems, label: "Dirty, unrepeatable and phantom reads; lost updates", week: 10 }
+- { id: tx.schedules, label: "Working out what a schedule does", week: 10 }
 - { id: lab.le1, label: "Lab exam schema 1 (manuSupp, items, proj, combine)", week: 21 }
 - { id: lab.le2, label: "Lab exam schema 2 (Movie, Reviewer, Rating)", week: 22 }

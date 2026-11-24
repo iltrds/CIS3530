@@ -1,0 +1,20 @@
+id: in-class-tx
+title: Quiz, transactions format
+label: Transactions format
+description: >
+  A guess at the Week 10 quiz in the style of the CourseLink quizzes: four 1-point concept questions (multiple
+  choice or True/False), a 2-point "work out the schedule" question, a 1-point "which problem is this?" question
+  and a 2-point matching. Replace it with the real format once you've seen the quiz.
+kind: quiz
+covers: one_week
+timeLimitMin: 15
+strictAnswers: true
+feedback: end
+style: conceptual
+slots:
+  - { name: Concepts, types: [mcq, true_false], count: 4, points: 1, preferTags: [quiz-style, negated-stem, all-none-option, trap] }
+  - { name: Schedule, types: [numeric, blanks], count: 1, points: 2, requireTags: [schedule-value, schedule-values] }
+  - { name: Schedule, types: [mcq, multi], count: 1, points: 1, requireTags: [schedule-problem] }
+  - { name: Matching, types: [matching], count: 1, points: 2, requireTags: [tx-match] }
+  # the instructor confirmed a surprise bonus question on an upcoming quiz; carried into every new week until it appears
+  - { name: "Bonus", types: [short], count: 1, points: 1, requireTags: [bonus], style: any, optional: true }

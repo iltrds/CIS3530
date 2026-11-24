@@ -349,6 +349,30 @@ export const Question = z.discriminatedUnion("type", [
   }),
   z.object({
     ...QBase,
+    type: z.literal("schedule"),
+    /** Starting values of the data items, e.g. { A: 1000, B: 2000 }. */
+    initial: z.record(z.string(), z.number()),
+    /** Each transaction's steps on its own (shown side by side when showTxns is on; needed for serial). */
+    txns: z.record(z.string(), z.array(z.string())).optional(),
+    /** Run the transactions one after another in this order instead of giving a schedule. */
+    serial: z.array(z.string()).optional(),
+    /** The interleaving, one time slot per row: "T1: Read(A)", or "T1: Begin | T2: Write(X)" for two steps in one slot. */
+    schedule: z.array(z.string()).optional(),
+    showTxns: z.boolean().default(false),
+    /** Label rows t1, t2, … (and refer to them that way in explanations). */
+    showTime: z.boolean().default(false),
+    showInitial: z.boolean().default(true),
+    /** Questions with the same context share one schedule in a quiz section. */
+    context: z.string().optional(),
+    /** value: a number (ask is an expression over the final values). values: one blank per item. problem: which concurrency problem occurs. serial_match: true/false, is the result the same as some serial order? */
+    mode: z.enum(["value", "values", "problem", "serial_match"]),
+    ask: z.string().optional(),
+    /** problem mode: select every problem that occurs instead of exactly one. */
+    multi: z.boolean().default(false),
+    prompt: z.string().default(""),
+  }),
+  z.object({
+    ...QBase,
     type: z.literal("sql"),
     reference: z.string(),
     compare: z.enum(["set", "bag", "ordered"]).default("set"),

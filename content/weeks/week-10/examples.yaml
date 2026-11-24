@@ -1,0 +1,144 @@
+- id: w10-ex-atomic
+  title: All or nothing in Postgres
+  topics: [tx.basics, tx.acid]
+  question: "A table `pairs(x, y)` has primary key (x, y) and already holds (1, 0) and (1, 1). What's in it after each of these sessions?"
+  steps:
+    - title: A block that commits
+      body: |
+        ```sql
+        BEGIN;
+        INSERT INTO pairs VALUES (2, 0);
+        INSERT INTO pairs VALUES (2, 1);
+        COMMIT;
+        ```
+        Both inserts work and COMMIT makes them permanent: four rows, (1, 0), (1, 1), (2, 0), (2, 1).
+    - title: A block that rolls back on purpose
+      body: |
+        ```sql
+        BEGIN;
+        INSERT INTO pairs VALUES (3, 0);
+        DELETE FROM pairs WHERE x = 1;
+        ROLLBACK;
+        ```
+        ROLLBACK undoes both statements. Still the same four rows.
+    - title: A block with an error in the middle
+      body: |
+        ```sql
+        BEGIN;
+        INSERT INTO pairs VALUES (4, 0);   -- works
+        INSERT INTO pairs VALUES (1, 1);   -- ERROR: duplicate key
+        INSERT INTO pairs VALUES (4, 1);   -- ERROR: current transaction is aborted
+        COMMIT;                            -- Postgres replies ROLLBACK
+        ```
+        After the error Postgres ignores everything until the block ends, and the COMMIT becomes a rollback. (4, 0) is undone too, even though it worked: still four rows. That's atomicity.
+    - title: The same statements without BEGIN
+      body: |
+        ```sql
+        INSERT INTO pairs VALUES (4, 0);   -- committed straight away
+        INSERT INTO pairs VALUES (1, 1);   -- ERROR: duplicate key (only this statement fails)
+        INSERT INTO pairs VALUES (4, 1);   -- committed straight away
+        ROLLBACK;                          -- WARNING: there is no transaction in progress
+        ```
+        Each statement is its own transaction (autocommit), so (4, 0) and (4, 1) stay: six rows. ROLLBACK has nothing to undo.
+  pitfalls:
+    - "END is the same as COMMIT. When the block has hit an error, both of them roll back."
+
+- id: w10-ex-logs
+  title: What COMMIT and ROLLBACK do with the logs
+  topics: [tx.logs, tx.acid]
+  question: "A transaction updates a row. Trace what happens in the redo log, the undo entries and the table, first if it commits, then if it rolls back."
+  steps:
+    - title: While the transaction runs
+      body: "The change goes to the redo log (how to replay it), then the undo entries (the old value, to reverse it), then the table itself. The table already holds the new value."
+    - title: COMMIT
+      body: "Nothing needs writing to the table, since the change is already there and in the redo log. COMMIT discards the undo entries, so the change can't be reversed any more, and a checkpoint is logged."
+    - title: ROLLBACK instead
+      body: "ROLLBACK records itself in the redo log, applies the undo entries to put the old value back into the table, and then deletes the undo entries."
+    - title: After a crash
+      body: "Recovery restores what came before the last checkpoint from a backup, then uses the redo log to roll forward committed work after it and the undo entries to roll back unfinished work. That is how committed changes survive (durability) and unfinished ones disappear (atomicity)."
+
+- id: w10-ex-bank
+  title: "Interleaving two transfers: when the total goes wrong"
+  topics: [tx.concurrency, tx.schedules, tx.problems]
+  question: |
+    A = 800 and B = 1500. T1 moves $100 from A to B. T2 moves 20% of A to B.
+
+    | T1 | T2 |
+    |---|---|
+    | Read(A) | Read(A) |
+    | A = A - 100 | Temp = A * 0.2 |
+    | Write(A) | A = A - Temp |
+    | Read(B) | Write(A) |
+    | B = B + 100 | Read(B) |
+    | Write(B) | B = B + Temp |
+    | | Write(B) |
+
+    Work out A, B and A + B for both serial orders and for an interleaving.
+  steps:
+    - title: T1 then T2
+      body: "T1 leaves A = 700, B = 1600. T2 reads A = 700, so Temp = 140: A = 560, B = 1740. **A + B = 2300.**"
+    - title: T2 then T1
+      body: "T2 reads A = 800, Temp = 160: A = 640, B = 1660. Then T1: A = 540, B = 1760. **A + B = 2300.** Different values from the other order, but the same total, and both are correct."
+    - title: A harmless interleaving
+      body: "Run T1's three A steps, then T2's four A steps, then T1's B steps, then T2's B steps. T2 still reads A after T1 wrote it, and B after T1 wrote it, so the result is exactly T1 then T2: A = 560, B = 1740."
+    - title: A harmful interleaving
+      body: |
+        | T1 | T2 | A | B |
+        |---|---|---|---|
+        | Read(A) | | 800 | 1500 |
+        | A = A - 100 | | 800 | 1500 |
+        | | Read(A) | 800 | 1500 |
+        | | Temp = A * 0.2 *(160)* | 800 | 1500 |
+        | | A = A - Temp | 800 | 1500 |
+        | | Write(A) | 640 | 1500 |
+        | | Read(B) | 640 | 1500 |
+        | Write(A) | | 700 | 1500 |
+        | Read(B) | | 700 | 1500 |
+        | B = B + 100 | | 700 | 1500 |
+        | Write(B) | | 700 | 1600 |
+        | | B = B + Temp | 700 | 1600 |
+        | | Write(B) | 700 | 1660 |
+
+        A = 700, B = 1660, **A + B = 2360**: $60 appeared from nowhere. T1 overwrote T2's write of A (T2's −160 is lost), and T2 overwrote T1's write of B (T1's +100 is lost). Two lost updates.
+  pitfalls:
+    - "Each transaction computes with the value *it* read. T2's Temp stays 160 even after T1 changes A."
+
+- id: w10-ex-dirty
+  title: A dirty read, time slot by time slot
+  topics: [tx.problems, tx.schedules]
+  question: |
+    X = 200. What does X end up as, and what went wrong?
+
+    | time | T1 | T2 |
+    |---|---|---|
+    | t1 | | Begin |
+    | t2 | | Read(X) |
+    | t3 | | X = X + 80 |
+    | t4 | Begin | Write(X) |
+    | t5 | Read(X) | |
+    | t6 | X = X - 30 | Rollback |
+    | t7 | Write(X) | |
+    | t8 | Commit | |
+  steps:
+    - title: T2's write is dirty
+      body: "At t4, T2 writes X = 280 but hasn't committed."
+    - title: T1 reads it
+      body: "At t5, T1 reads 280: a dirty read. It computes 250 in its own memory."
+    - title: T2 rolls back
+      body: "At t6, T2's rollback puts X back to 200. T1 doesn't know: its variable still says 250."
+    - title: T1 writes and commits
+      body: "At t7, T1 writes 250 and commits. X = **250**, but with T2 undone, the right answer is 200 − 30 = 170. T1 built on a value that officially never existed."
+
+- id: w10-ex-name-it
+  title: Naming the problem
+  topics: [tx.problems]
+  question: "For each short schedule (A = 5 at the start), name the problem."
+  steps:
+    - title: "T1: Read(A), A = 9, Write(A); T2: Read(A), Commit; T1: Failure"
+      body: "**Dirty read.** T2 read and committed A = 9, written by T1, which then failed, so A went back to 5."
+    - title: "T2: Read(A); T1: Read(A), A = A * 3, Write(A); T2: Read(A)"
+      body: "**Unrepeatable read.** T2 reads A twice and gets 5, then 15, because T1 updated it in between."
+    - title: "T2: Read(A); T1: Delete(A); T2: Read(A)"
+      body: "**Phantom read.** The second time T2 looks, the row is gone. Rows appearing or disappearing is the phantom case; a changed value is the unrepeatable case."
+    - title: "T1: Read(A); T2: Read(A), A = A + 4, Write(A); T1: A = A - 1, Write(A)"
+      body: "**Lost update.** T1 computes 5 − 1 = 4 from its old read and overwrites T2's 9. Serially A would be 8; it ends at 4."

@@ -352,5 +352,6 @@ function oncePerSection(html: string, shown: Map<string, number>, n: number): st
   };
   return html
     .replace(/<figure class="er-figure" data-er="([^"]+)"[\s\S]*?<\/figure>/g, (fig, id: string) => once(`er:${id}`, fig, "ER model"))
-    .replace(/<section class="fd-context" data-ctx="([^"]+)">[\s\S]*?<\/section>/g, (sec, id: string) => once(`fd:${id}`, sec, "relation"));
+    .replace(/<section class="fd-context" data-ctx="([^"]+)">[\s\S]*?<\/section>/g, (sec, id: string) => once(`fd:${id}`, sec, "relation"))
+    .replace(/<section class="tx-context" data-ctx="([^"]+)">[\s\S]*?<\/section>/g, (sec, id: string) => once(`tx:${id}`, sec, "schedule"));
 }

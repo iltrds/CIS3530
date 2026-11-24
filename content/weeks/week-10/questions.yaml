@@ -1,0 +1,889 @@
+# ---------------------------------------------------------------- transactions in Postgres
+
+- id: w10-q-block-error
+  type: mcq
+  topics: [tx.basics, tx.acid]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: |
+    Table `member(mid PRIMARY KEY, name NOT NULL)` is empty. A user runs:
+
+    ```sql
+    BEGIN;
+    INSERT INTO member VALUES (10, 'Ana');
+    INSERT INTO member VALUES (11, 'Ben');
+    INSERT INTO member VALUES (12, NULL);
+    END;
+    ```
+
+    What does `SELECT * FROM member;` return afterwards?
+  options:
+    - "No rows"
+    - "Ana and Ben"
+    - "Ana, Ben and a row for 12 with a null name"
+    - "Ana only"
+  answer: 0
+  explanation: "The third insert breaks NOT NULL. Inside a BEGIN block that dooms the whole transaction: END rolls it back, so Ana and Ben are undone too (atomicity)."
+
+- id: w10-q-autocommit-error
+  type: mcq
+  topics: [tx.basics]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: |
+    Table `member(mid PRIMARY KEY, name NOT NULL)` is empty. In Postgres, a user runs (no BEGIN):
+
+    ```sql
+    INSERT INTO member VALUES (10, 'Ana');
+    INSERT INTO member VALUES (11, 'Ben');
+    INSERT INTO member VALUES (11, 'Cy');
+    ROLLBACK;
+    ```
+
+    What does `SELECT * FROM member;` return afterwards?
+  options:
+    - "No rows: ROLLBACK undoes all three inserts"
+    - "Ana and Ben"
+    - "Ana, Ben and Cy"
+    - "Ana only: ROLLBACK undoes the last successful insert"
+  answer: 1
+  explanation: "Without BEGIN, each statement is its own transaction and commits when it succeeds. The third fails on its own (duplicate key). ROLLBACK then has nothing to undo; Postgres warns that no transaction is in progress."
+
+- id: w10-q-rows-left
+  type: numeric
+  topics: [tx.basics]
+  difficulty: 2
+  prompt: |
+    Table `pairs(x, y)` with primary key (x, y) holds 3 rows, including (1, 2). How many rows does it hold after this?
+
+    ```sql
+    BEGIN;
+    INSERT INTO pairs VALUES (5, 0);
+    INSERT INTO pairs VALUES (5, 1);
+    COMMIT;
+    BEGIN;
+    INSERT INTO pairs VALUES (6, 0);
+    INSERT INTO pairs VALUES (1, 2);
+    INSERT INTO pairs VALUES (6, 1);
+    COMMIT;
+    INSERT INTO pairs VALUES (7, 0);
+    ```
+  answer: 6
+  explanation: "The first block commits its 2 rows (5). The second block hits a duplicate key at (1, 2), so its COMMIT rolls back and (6, 0) is undone (still 5). The last insert autocommits: 6."
+
+- id: w10-q-commit-then-rollback
+  type: mcq
+  topics: [tx.basics]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    Table T is empty.
+
+    ```sql
+    BEGIN;
+    INSERT INTO T VALUES (1);
+    COMMIT;
+    BEGIN;
+    INSERT INTO T VALUES (2);
+    ROLLBACK;
+    ```
+
+    Which rows does T hold?
+  options: ["1 only", "2 only", "1 and 2", "Neither"]
+  answer: 0
+  explanation: "The first transaction committed; ROLLBACK only undoes the second, still-open transaction."
+
+- id: w10-q-after-error-ignored
+  type: true_false
+  topics: [tx.basics]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "In Postgres, after one statement inside a BEGIN block fails, the following statements in the block still run, and only the failed statement is undone at COMMIT."
+  answer: false
+  explanation: "After an error Postgres refuses every further statement (\"current transaction is aborted, commands ignored until end of transaction block\"), and the COMMIT or END rolls the whole block back."
+
+- id: w10-q-each-dml-transaction
+  type: true_false
+  topics: [tx.basics]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "In Postgres, an INSERT run on its own, outside any BEGIN … COMMIT block, is a complete transaction that is committed automatically."
+  answer: true
+  explanation: "Autocommit: each statement that changes the database is its own transaction."
+
+- id: w10-q-end-means
+  type: short
+  topics: [tx.basics]
+  difficulty: 1
+  prompt: "In Postgres, `END;` closes a transaction block. Which other command means exactly the same thing?"
+  answers: [COMMIT, "COMMIT;", COMMIT TRANSACTION, COMMIT WORK]
+  explanation: "END is Postgres's alternative spelling of COMMIT. (If the block failed, both roll back.)"
+
+- id: w10-q-start-block
+  type: short
+  topics: [tx.basics]
+  difficulty: 1
+  prompt: "Which Postgres command starts a transaction block, so that the statements after it are committed or rolled back together?"
+  answers: [BEGIN, "BEGIN;", BEGIN TRANSACTION, START TRANSACTION, BEGIN WORK]
+  explanation: "BEGIN (or START TRANSACTION)."
+
+- id: w10-q-transaction-def
+  type: mcq
+  topics: [tx.basics]
+  difficulty: 1
+  style: direct
+  prompt: "Which best describes a transaction?"
+  options:
+    - "A sequence of one or more changes forming one logical unit of work, applied all together or not at all"
+    - "A single SELECT statement"
+    - "A backup copy of the database taken at a checkpoint"
+    - "Any statement that is guaranteed never to fail"
+  answer: 0
+
+- id: w10-q-consistent-during
+  type: true_false
+  topics: [tx.basics, tx.acid]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "A transaction must keep the database in a consistent state at every moment, including between its own steps."
+  answer: false
+  explanation: "Only before and after. Part way through a transfer, money has left one account and not yet reached the other; that's allowed as long as the transaction finishes (or is fully rolled back)."
+
+# ---------------------------------------------------------------- logs
+
+- id: w10-q-commit-logs
+  type: mcq
+  topics: [tx.logs]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "In the model from class, the transaction's changes are already in the tables and the redo log when it ends. What does COMMIT itself do?"
+  options:
+    - "Removes the transaction's undo entries"
+    - "Copies the redo log into the tables"
+    - "Applies the undo entries to the tables"
+    - "Deletes the redo log"
+  answer: 0
+  explanation: "With the undo entries gone, the changes can no longer be reversed: they're permanent. A checkpoint is also logged."
+
+- id: w10-q-rollback-order
+  type: order_steps
+  topics: [tx.logs]
+  difficulty: 2
+  prompt: "Put what ROLLBACK does in order."
+  items:
+    - "Write to the redo log, so the rollback can be reconstructed later"
+    - "Apply the undo entries to put the old values back"
+    - "Delete the undo entries"
+  explanation: "Redo log, apply the undo entries, then throw them away."
+
+- id: w10-q-change-order
+  type: order_steps
+  topics: [tx.logs]
+  difficulty: 2
+  prompt: "When a DML statement changes data, put the three places the change is recorded in order."
+  items: ["Redo log", "Undo entries", "The database tables"]
+
+- id: w10-q-logs-not-true
+  type: mcq
+  topics: [tx.logs, tx.acid]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: "Which of the following is **not true**?"
+  options:
+    - "Undo entries hold the old values, so a change can be reversed."
+    - "The redo log lets committed changes be replayed after a failure."
+    - "After a crash, work after the last checkpoint is recovered with the redo and undo logs."
+    - "A committed change can still be reversed with ROLLBACK as long as its redo log entry exists."
+  answer: 3
+  explanation: "Once committed, the undo entries are gone and ROLLBACK only affects an open transaction. The other three are true."
+
+# ---------------------------------------------------------------- ACID
+
+- id: w10-q-acid-letters
+  type: blanks
+  topics: [tx.acid]
+  difficulty: 1
+  style: direct
+  strictCase: false
+  prompt: "What does each letter of ACID stand for?"
+  parts:
+    - { text: "A", answer: Atomicity }
+    - { text: "C", answer: Consistency, accept: [Consistency preservation] }
+    - { text: "I", answer: Isolation }
+    - { text: "D", answer: Durability, accept: [Permanency, Durability or permanency] }
+
+- id: w10-q-acid-match
+  type: matching
+  topics: [tx.acid]
+  difficulty: 1
+  points: 2
+  tags: [tx-match, quiz-style]
+  prompt: "Match each description to the ACID property."
+  left:
+    - "A transaction runs completely or not at all"
+    - "A transaction can't leave the database breaking its integrity constraints"
+    - "A transaction behaves as if no other transaction were running"
+    - "Once committed, the changes survive a crash"
+  right: [Atomicity, Consistency, Isolation, Durability]
+  answer: [0, 1, 2, 3]
+
+- id: w10-q-acid-scenarios
+  type: matching
+  topics: [tx.acid]
+  difficulty: 2
+  points: 2
+  tags: [tx-match, quiz-style]
+  prompt: "Each scenario breaks one ACID property. Match them."
+  left:
+    - "The server crashes a second after a transfer was committed, and on restart the transfer is gone."
+    - "A transfer takes money out of A, then fails; the money never reaches B and isn't put back into A."
+    - "While T1 is half-way through a transfer, T2 reads both balances and reports a total that's $100 short."
+    - "A transaction leaves an order line pointing at a product that doesn't exist."
+  right: [Durability, Atomicity, Isolation, Consistency]
+  answer: [0, 1, 2, 3]
+
+- id: w10-q-component
+  type: matching
+  topics: [tx.acid]
+  difficulty: 2
+  points: 2
+  tags: [tx-match, quiz-style]
+  prompt: "Match each DBMS component or mechanism with the property it is there to provide."
+  left: ["Concurrency control unit", "Recovery manager (roll forward and roll back)", "Rolling back every statement after an error in the block", "Primary key, foreign key and CHECK constraints"]
+  right: [Isolation, Durability, Atomicity, Consistency]
+  answer: [0, 1, 2, 3]
+
+- id: w10-q-isolation-restaurant
+  type: mcq
+  topics: [tx.acid]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "Your meal at a busy restaurant is the same as if you were the only diner. Which ACID property is this an analogy for?"
+  options: [Atomicity, Consistency, Isolation, Durability]
+  answer: 2
+
+- id: w10-q-pk-violation-property
+  type: mcq
+  topics: [tx.acid, tx.basics]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: "A transaction of four INSERTs is rolled back because the third breaks the primary key, so the table is exactly as it was before. Which two properties does this show?"
+  options:
+    - "Atomicity and consistency"
+    - "Isolation and durability"
+    - "Durability and atomicity"
+    - "Consistency and isolation"
+  answer: 0
+  explanation: "All or nothing (atomicity), and the key constraint is never broken (consistency)."
+
+- id: w10-q-acid-not-true
+  type: mcq
+  topics: [tx.acid]
+  difficulty: 2
+  tags: [quiz-style, negated-stem, all-none-option]
+  prompt: "Which of the following is **not true**?"
+  options:
+    - "Durability means a committed change stays even if the system fails."
+    - "Isolation is looked after by the concurrency control unit."
+    - "Atomicity means a transaction is performed entirely or not at all."
+    - "None of the given choices"
+  answer: 3
+  explanation: "All three statements are true, so the answer is None."
+
+# ---------------------------------------------------------------- concurrency basics
+
+- id: w10-q-interleaved-parallel
+  type: mcq
+  topics: [tx.concurrency]
+  difficulty: 1
+  tags: [quiz-style]
+  prompt: "A server with one CPU runs part of transaction A, switches to B, back to A, then finishes B. This is:"
+  options: ["Interleaved processing", "Parallel processing", "Serial processing", "Distributed processing"]
+  answer: 0
+  explanation: "One CPU taking turns is interleaving; parallel processing needs several CPUs running at the same time."
+
+- id: w10-q-multiuser
+  type: mcq
+  topics: [tx.concurrency]
+  difficulty: 1
+  style: direct
+  prompt: "Which is an example of a multiuser DBMS from class?"
+  options: ["An airline reservation system", "A database on a home computer", "A spreadsheet open on one laptop", "A printed report"]
+  answer: 0
+
+- id: w10-q-data-item
+  type: multi
+  topics: [tx.concurrency]
+  difficulty: 1
+  style: direct
+  prompt: "Which can be a data item in transaction processing?"
+  options: ["A record", "A disk block", "One attribute value of a record", "None of the given choices"]
+  answer: [0, 1, 2]
+  explanation: "Any of them; the theory doesn't depend on the item's size."
+
+- id: w10-q-assign-no-change
+  type: true_false
+  topics: [tx.concurrency]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "After `Read(A); A = A - 50;` the database item A has already decreased by 50."
+  answer: false
+  explanation: "The subtraction happens on the transaction's program variable. The database changes only at Write(A)."
+
+- id: w10-q-write-def
+  type: mcq
+  topics: [tx.concurrency]
+  difficulty: 1
+  style: direct
+  prompt: "What does Write(X) do?"
+  options:
+    - "Copies the program variable X into the database item X"
+    - "Copies the database item X into the program variable X"
+    - "Commits the transaction"
+    - "Locks X so no other transaction can read it"
+  answer: 0
+
+- id: w10-q-valid-schedule
+  type: mcq
+  topics: [tx.concurrency]
+  difficulty: 2
+  tags: [quiz-style]
+  prompt: |
+    T1 is `Read(A), Write(A), Read(B), Write(B)` and T2 is `Read(B), Write(B)`. Which of these is **not** a valid schedule of T1 and T2?
+  options:
+    - "T1: Read(A), T2: Read(B), T1: Write(A), T2: Write(B), T1: Read(B), T1: Write(B)"
+    - "T2: Read(B), T2: Write(B), T1: Read(A), T1: Write(A), T1: Read(B), T1: Write(B)"
+    - "T1: Read(A), T1: Read(B), T1: Write(A), T2: Read(B), T2: Write(B), T1: Write(B)"
+    - "T1: Read(A), T1: Write(A), T1: Read(B), T1: Write(B), T2: Read(B), T2: Write(B)"
+  answer: 2
+  explanation: "A schedule may interleave transactions but must keep each one's own operations in order. Option c runs T1's Read(B) before its Write(A)."
+
+- id: w10-q-serial-orders
+  type: true_false
+  topics: [tx.schedules]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "Running T1 then T2 and running T2 then T1 must give the same final values; if they don't, one of the orders is wrong."
+  answer: false
+  explanation: "Serial orders can give different values (for example, take 20% of A before or after a $100 transfer). Each serial order is considered correct."
+
+# ---------------------------------------------------------------- the problems
+
+- id: w10-q-problem-match
+  type: matching
+  topics: [tx.problems]
+  difficulty: 2
+  points: 2
+  tags: [tx-match, quiz-style]
+  prompt: "Match each description to the problem."
+  left:
+    - "T2 uses a value T1 wrote and then rolled back"
+    - "T2 reads the same row twice and gets two different values because T1 updated it"
+    - "T2 runs the same query twice and gets an extra row because T1 inserted it"
+    - "T1's write is overwritten by T2, which had read the value before T1 wrote it"
+  right: ["Dirty read", "Unrepeatable read", "Phantom read", "Lost update"]
+  answer: [0, 1, 2, 3]
+
+- id: w10-q-dirty-data-def
+  type: mcq
+  topics: [tx.problems]
+  difficulty: 1
+  style: direct
+  prompt: "What is dirty data?"
+  options:
+    - "Data written by a transaction that hasn't committed yet"
+    - "Data that breaks an integrity constraint"
+    - "Data that was deleted by a committed transaction"
+    - "Data restored from a backup after a crash"
+  answer: 0
+
+- id: w10-q-lost-update-other-name
+  type: mcq
+  topics: [tx.problems]
+  difficulty: 1
+  style: direct
+  prompt: "The lost update problem is also called a:"
+  options: ["Write–write conflict", "Read–read conflict", "Phantom write", "Dirty commit"]
+  answer: 0
+
+- id: w10-q-phantom-cause
+  type: mcq
+  topics: [tx.problems]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "T1 counts the students in CIS3530 twice and gets 40, then 41. Between the two counts, T2 enrolled a new student and committed. Which problem is this?"
+  options: ["Phantom read", "Unrepeatable read", "Dirty read", "Lost update"]
+  answer: 0
+  explanation: "A new row appeared in the set T1 is reading: a phantom. An unrepeatable read is the same row changing value."
+
+- id: w10-q-unrepeatable-cause
+  type: mcq
+  topics: [tx.problems]
+  difficulty: 2
+  tags: [quiz-style, trap]
+  prompt: "T1 reads a flight's price twice and gets $310, then $345. In between, T2 updated that flight's price and committed. Which problem is this?"
+  options: ["Unrepeatable read", "Phantom read", "Dirty read", "Lost update"]
+  answer: 0
+
+- id: w10-q-problems-not-true
+  type: mcq
+  topics: [tx.problems]
+  difficulty: 2
+  tags: [quiz-style, negated-stem]
+  prompt: "Which of the following is **not true**?"
+  options:
+    - "A phantom read is caused by another transaction inserting or deleting rows."
+    - "A dirty read reads a value written by a transaction that hasn't committed."
+    - "A lost update needs both transactions to write the same item."
+    - "An unrepeatable read can only happen if the other transaction rolls back."
+  answer: 3
+  explanation: "An unrepeatable read happens when another transaction updates the item between the two reads, whether or not it later commits. Needing a rollback describes the harmful dirty read."
+
+# ---------------------------------------------------------------- schedules (answers worked out by the build)
+
+# Two transfers between A and B
+- id: w10-q-bank-serial-12
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: bank-800
+  initial: { A: 800, B: 1500 }
+  txns:
+    T1: ["Read(A)", "A = A - 100", "Write(A)", "Read(B)", "B = B + 100", "Write(B)"]
+    T2: ["Read(A)", "Temp = A * 0.2", "A = A - Temp", "Write(A)", "Read(B)", "B = B + Temp", "Write(B)"]
+  serial: [T1, T2]
+  mode: values
+
+- id: w10-q-bank-serial-21
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: bank-800-21
+  initial: { A: 800, B: 1500 }
+  txns:
+    T1: ["Read(A)", "A = A - 100", "Write(A)", "Read(B)", "B = B + 100", "Write(B)"]
+    T2: ["Read(A)", "Temp = A * 0.2", "A = A - Temp", "Write(A)", "Read(B)", "B = B + Temp", "Write(B)"]
+  serial: [T2, T1]
+  mode: values
+
+- id: w10-q-bank-serial-sum
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 1
+  context: bank-800-sum
+  initial: { A: 800, B: 1500 }
+  txns:
+    T1: ["Read(A)", "A = A - 100", "Write(A)", "Read(B)", "B = B + 100", "Write(B)"]
+    T2: ["Read(A)", "Temp = A * 0.2", "A = A - Temp", "Write(A)", "Read(B)", "B = B + Temp", "Write(B)"]
+  serial: [T2, T1]
+  mode: value
+  ask: A + B
+  explanation: "Both transactions only move money between A and B, so any serial order keeps A + B at 2300."
+
+- id: w10-q-bank-good-sum
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: bank-good
+  initial: { A: 800, B: 1500 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 100"
+    - "T1: Write(A)"
+    - "T2: Read(A)"
+    - "T2: Temp = A * 0.2"
+    - "T2: A = A - Temp"
+    - "T2: Write(A)"
+    - "T1: Read(B)"
+    - "T1: B = B + 100"
+    - "T1: Write(B)"
+    - "T2: Read(B)"
+    - "T2: B = B + Temp"
+    - "T2: Write(B)"
+  mode: value
+  ask: A + B
+
+- id: w10-q-bank-good-serial
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: bank-good
+  initial: { A: 800, B: 1500 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 100"
+    - "T1: Write(A)"
+    - "T2: Read(A)"
+    - "T2: Temp = A * 0.2"
+    - "T2: A = A - Temp"
+    - "T2: Write(A)"
+    - "T1: Read(B)"
+    - "T1: B = B + 100"
+    - "T1: Write(B)"
+    - "T2: Read(B)"
+    - "T2: B = B + Temp"
+    - "T2: Write(B)"
+  mode: serial_match
+  tags: [quiz-style]
+
+- id: w10-q-bank-bad-sum
+  type: schedule
+  topics: [tx.schedules, tx.problems]
+  difficulty: 3
+  context: bank-bad
+  initial: { A: 800, B: 1500 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 100"
+    - "T2: Read(A)"
+    - "T2: Temp = A * 0.2"
+    - "T2: A = A - Temp"
+    - "T2: Write(A)"
+    - "T2: Read(B)"
+    - "T1: Write(A)"
+    - "T1: Read(B)"
+    - "T1: B = B + 100"
+    - "T1: Write(B)"
+    - "T2: B = B + Temp"
+    - "T2: Write(B)"
+  mode: value
+  ask: A + B
+
+- id: w10-q-bank-bad-problem
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  context: bank-bad
+  initial: { A: 800, B: 1500 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 100"
+    - "T2: Read(A)"
+    - "T2: Temp = A * 0.2"
+    - "T2: A = A - Temp"
+    - "T2: Write(A)"
+    - "T2: Read(B)"
+    - "T1: Write(A)"
+    - "T1: Read(B)"
+    - "T1: B = B + 100"
+    - "T1: Write(B)"
+    - "T2: B = B + Temp"
+    - "T2: Write(B)"
+  mode: problem
+
+- id: w10-q-bank-bad-serial
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: bank-bad
+  initial: { A: 800, B: 1500 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 100"
+    - "T2: Read(A)"
+    - "T2: Temp = A * 0.2"
+    - "T2: A = A - Temp"
+    - "T2: Write(A)"
+    - "T2: Read(B)"
+    - "T1: Write(A)"
+    - "T1: Read(B)"
+    - "T1: B = B + 100"
+    - "T1: Write(B)"
+    - "T2: B = B + Temp"
+    - "T2: Write(B)"
+  mode: serial_match
+
+# A second pair of transfers, to practise on
+- id: w10-q-shop-bad-values
+  type: schedule
+  topics: [tx.schedules, tx.problems]
+  difficulty: 3
+  context: shop
+  initial: { X: 500, Y: 300 }
+  schedule:
+    - "T1: Read(X)"
+    - "T2: Read(X)"
+    - "T1: X = X - 40"
+    - "T2: Fee = X * 0.1"
+    - "T2: X = X - Fee"
+    - "T1: Write(X)"
+    - "T1: Read(Y)"
+    - "T2: Write(X)"
+    - "T1: Y = Y + 40"
+    - "T1: Write(Y)"
+    - "T2: Read(Y)"
+    - "T2: Y = Y + Fee"
+    - "T2: Write(Y)"
+  mode: values
+  prompt: "T1 moves $40 from X to Y; T2 moves 10% of X to Y. Give X and Y after this schedule."
+
+- id: w10-q-shop-bad-sum
+  type: schedule
+  topics: [tx.schedules, tx.problems]
+  difficulty: 2
+  context: shop
+  initial: { X: 500, Y: 300 }
+  schedule:
+    - "T1: Read(X)"
+    - "T2: Read(X)"
+    - "T1: X = X - 40"
+    - "T2: Fee = X * 0.1"
+    - "T2: X = X - Fee"
+    - "T1: Write(X)"
+    - "T1: Read(Y)"
+    - "T2: Write(X)"
+    - "T1: Y = Y + 40"
+    - "T1: Write(Y)"
+    - "T2: Read(Y)"
+    - "T2: Y = Y + Fee"
+    - "T2: Write(Y)"
+  mode: value
+  ask: X + Y
+  prompt: "T1 moves $40 from X to Y; T2 moves 10% of X to Y. Run serially, X + Y would stay 800. What is X + Y after this schedule?"
+
+# Dirty read with a rollback
+- id: w10-q-dirty-value
+  type: schedule
+  topics: [tx.schedules, tx.problems]
+  difficulty: 2
+  context: dirty-x
+  showTime: true
+  initial: { X: 150 }
+  schedule:
+    - "T2: Begin"
+    - "T2: Read(X)"
+    - "T2: X = X + 60"
+    - "T1: Begin | T2: Write(X)"
+    - "T1: Read(X)"
+    - "T1: X = X - 25 | T2: Rollback"
+    - "T1: Write(X)"
+    - "T1: Commit"
+  mode: value
+  ask: X
+  prompt: "What is X after t8?"
+
+- id: w10-q-dirty-should
+  type: numeric
+  topics: [tx.schedules, tx.problems]
+  difficulty: 2
+  prompt: "X = 150. T2 reads X, adds 60 and writes it, then rolls back. T1 subtracts 25 from X and commits. Since T2 rolled back, it should have no effect at all. What *should* X be at the end?"
+  answer: 125
+  explanation: "Only T1's change counts: 150 − 25 = 125. If T1 read T2's uncommitted 210 (a dirty read), it would write 185 instead."
+
+- id: w10-q-dirty-problem
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  context: dirty-x
+  showTime: true
+  initial: { X: 150 }
+  schedule:
+    - "T2: Begin"
+    - "T2: Read(X)"
+    - "T2: X = X + 60"
+    - "T1: Begin | T2: Write(X)"
+    - "T1: Read(X)"
+    - "T1: X = X - 25 | T2: Rollback"
+    - "T1: Write(X)"
+    - "T1: Commit"
+  mode: problem
+  tags: [quiz-style]
+
+- id: w10-q-dirty-failure
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  initial: { A: 40 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A + 15"
+    - "T1: Write(A)"
+    - "T2: Read(A)"
+    - "T2: Commit"
+    - "T1: Failure"
+  mode: problem
+
+# Unrepeatable and phantom
+- id: w10-q-unrepeatable
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  initial: { P: 310 }
+  schedule:
+    - "T2: Read(P)"
+    - "T1: Read(P)"
+    - "T1: P = P + 35"
+    - "T1: Write(P)"
+    - "T1: Commit"
+    - "T2: Read(P)"
+  mode: problem
+
+- id: w10-q-phantom
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  initial: { R: 1 }
+  schedule:
+    - "T1: Read(R)"
+    - "T2: Read(R)"
+    - "T1: Delete(R)"
+    - "T1: Commit"
+    - "T2: Read(R)"
+  mode: problem
+
+# Lost update
+- id: w10-q-lost-value
+  type: schedule
+  topics: [tx.schedules, tx.problems]
+  difficulty: 2
+  context: lost-a
+  initial: { A: 20 }
+  schedule:
+    - "T1: Read(A)"
+    - "T2: Read(A)"
+    - "T1: A = A + 5"
+    - "T2: A = A * 2"
+    - "T1: Write(A)"
+    - "T2: Write(A)"
+  mode: value
+  ask: A
+
+- id: w10-q-lost-problem
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 2
+  context: lost-a
+  initial: { A: 20 }
+  schedule:
+    - "T1: Read(A)"
+    - "T2: Read(A)"
+    - "T1: A = A + 5"
+    - "T2: A = A * 2"
+    - "T1: Write(A)"
+    - "T2: Write(A)"
+  mode: problem
+
+- id: w10-q-lost-serial
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: lost-a
+  initial: { A: 20 }
+  schedule:
+    - "T1: Read(A)"
+    - "T2: Read(A)"
+    - "T1: A = A + 5"
+    - "T2: A = A * 2"
+    - "T1: Write(A)"
+    - "T2: Write(A)"
+  mode: serial_match
+  tags: [trap]
+
+# Schedules that are fine
+- id: w10-q-clean
+  type: schedule
+  topics: [tx.problems, tx.schedules]
+  difficulty: 2
+  initial: { A: 50, B: 70 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 10"
+    - "T1: Write(A)"
+    - "T2: Read(B)"
+    - "T2: B = B * 2"
+    - "T2: Write(B)"
+    - "T1: Read(B)"
+    - "T1: B = B + 10"
+    - "T1: Write(B)"
+    - "T1: Commit"
+    - "T2: Commit"
+  mode: problem
+  tags: [trap]
+  explanation: "T2 touches only B before T1 reads it, and nobody reads or overwrites anything they shouldn't. The result equals T2 then T1."
+
+- id: w10-q-clean-serial
+  type: schedule
+  topics: [tx.schedules]
+  difficulty: 2
+  context: clean-ab
+  initial: { A: 50, B: 70 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 10"
+    - "T1: Write(A)"
+    - "T2: Read(B)"
+    - "T2: B = B * 2"
+    - "T2: Write(B)"
+    - "T1: Read(B)"
+    - "T1: B = B + 10"
+    - "T1: Write(B)"
+  mode: serial_match
+
+- id: w10-q-failure-alone
+  type: schedule
+  topics: [tx.schedules, tx.basics]
+  difficulty: 1
+  initial: { A: 90, B: 10 }
+  schedule:
+    - "T1: Read(A)"
+    - "T1: A = A - 30"
+    - "T1: Write(A)"
+    - "T1: Failure"
+    - "T2: Read(B)"
+    - "T2: B = B + 5"
+    - "T2: Write(B)"
+    - "T2: Commit"
+  mode: values
+  explanation: "T1's failure undoes its write of A before anyone reads it, so it has no effect at all."
+
+# More than one problem
+- id: w10-q-multi-problems
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 3
+  initial: { Q: 12 }
+  schedule:
+    - "T1: Read(Q)"
+    - "T2: Read(Q)"
+    - "T2: Q = Q - 3"
+    - "T2: Write(Q)"
+    - "T1: Read(Q)"
+    - "T2: Rollback"
+    - "T1: Q = Q + 8"
+    - "T1: Write(Q)"
+    - "T1: Commit"
+  mode: problem
+  multi: true
+  tags: [trap]
+
+- id: w10-q-multi-lost-unrep
+  type: schedule
+  topics: [tx.problems]
+  difficulty: 3
+  initial: { Q: 12, R: 4 }
+  schedule:
+    - "T1: Read(Q)"
+    - "T2: Read(Q)"
+    - "T2: Read(R)"
+    - "T1: Q = Q + 8"
+    - "T1: Write(Q)"
+    - "T2: Q = Q - 3"
+    - "T2: Write(Q)"
+    - "T1: Read(R)"
+    - "T1: R = R * 2"
+    - "T1: Write(R)"
+    - "T2: Read(R)"
+  mode: problem
+  multi: true
+  tags: [trap]
+
+# ---------------------------------------------------------------- bonus (the instructor confirmed it will appear on an upcoming quiz; carry it forward each week)
+
+- id: w10-q-bonus-director
+  type: short
+  topics: [course.bonus]
+  difficulty: 1
+  tags: [bonus]
+  prompt: "Bonus: who is the Director of the School of Computer Science (SoCS) at the University of Guelph?"
+  answers: [Minglun Gong, Dr. Minglun Gong, Dr Minglun Gong, Prof. Minglun Gong, Professor Minglun Gong, Gong, Dr. Gong, Dr Gong, Prof. Gong, Professor Gong, Gong Minglun]
+  explanation: "Minglun Gong, Professor and Director of the School of Computer Science (from the school's people page)."

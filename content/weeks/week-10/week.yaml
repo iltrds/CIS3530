@@ -1,0 +1,8 @@
+number: 10
+title: "Transaction management: ACID and concurrency problems"
+summary: What a transaction is, COMMIT and ROLLBACK (with undo and redo logs), autocommit and BEGIN … END in Postgres, the ACID properties, interleaved schedules of Read and Write steps, and the four problems uncontrolled concurrency causes - dirty reads, unrepeatable reads, phantom reads and lost updates.
+status: published
+quizFormat: in-class-tx
+topics: [tx.basics, tx.logs, tx.acid, tx.concurrency, tx.problems, tx.schedules, course.bonus]
+readings: ["Elmasri & Navathe: introduction to transaction processing concepts and theory"]
+sources: [W10_TransactionM.pdf, Worksheet10.pdf]
